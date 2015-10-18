@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.paint.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="334.0" prefWidth="903.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fxController.MainController">
+   <children>
+      <TableView fx:id="tvTable" layoutX="67.0" prefHeight="334.0" prefWidth="836.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="67.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columns>
+          <TableColumn fx:id="colFileName" prefWidth="205.0" text="FileName" />
+          <TableColumn fx:id="colStatus" prefWidth="76.0" text="Status" />
+          <TableColumn fx:id="colSize" prefWidth="67.0" sortType="DESCENDING" text="Size" />
+          <TableColumn fx:id="colUpdateDate" prefWidth="123.0" sortType="DESCENDING" text="UpdateDate" />
+            <TableColumn fx:id="colCreateDate" prefWidth="123.0" sortType="DESCENDING" text="CreateDate" />
+            <TableColumn fx:id="colDirectory" prefWidth="225.0" sortType="DESCENDING" text="Directory" />
+            <TableColumn fx:id="colType" prefWidth="76.0" sortType="DESCENDING" text="Type" visible="false" />
+            <TableColumn fx:id="colParentGUID" prefWidth="180.0" sortType="DESCENDING" text="ParentGUID" visible="false" />
+            <TableColumn fx:id="colFileGUID" prefWidth="180.0" sortType="DESCENDING" text="FileGUID" visible="false" />
+            <TableColumn fx:id="colContentGUID" prefWidth="180.0" sortType="DESCENDING" text="ContentGUID" visible="false" />
+        </columns>
+      </TableView>
+      <Accordion maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="68.0">
+        <panes>
+          <TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="41.0" prefWidth="67.0" text="Status">
+               <content>
+                  <Button fx:id="btnStatus" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#actStatus" prefHeight="40.0" prefWidth="66.0" text="Status" />
+               </content>
+            </TitledPane>
+          <TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="41.0" prefWidth="67.0" text="Setting">
+               <content>
+                  <Button fx:id="btnSettings" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#actSettings" prefHeight="40.0" prefWidth="66.0" text="Settings" />
+               </content>
+            </TitledPane>
+            <TitledPane animated="false" layoutX="10.0" layoutY="35.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="41.0" prefWidth="67.0" text="Helps">
+               <content>
+                  <Button fx:id="btnHelps" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#actHelps" prefHeight="40.0" prefWidth="66.0" text="Helps" />
+               </content>
+            </TitledPane>
+        </panes>
+      </Accordion>
+   </children>
+</AnchorPane>
