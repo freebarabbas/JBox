@@ -826,7 +826,7 @@ public class SyncV2 implements Runnable {
 
                 if (flgchanged){             
                     merged.WriteToDisk(m_metafile); 
-                    fxController.MainController.readMetaDataintoTable();
+                    //fxController.MainController.readMetaDataintoTable();
                 }
                     
                Config.logger.info("Finish sync process");  
