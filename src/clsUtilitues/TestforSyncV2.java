@@ -19,8 +19,8 @@ public class TestforSyncV2 {
 			
 			//String strUserName = "10846130789747:JBOX@hp.com";
 			//String strPassWord = "Wang_634917";			
-			Config.setswiftusr("10846130789747:JBOX@hp.com");
-			Config.setswiftpwd("Wang_634917");			
+			Config.setswiftusr("johnnywa");
+			Config.setswiftpwd("Chianing2345");			
 			Config.logger.debug(Config.ConvertToHTML());
 						
 			Runnable r=new SyncV2(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,0);
