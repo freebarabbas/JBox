@@ -6,7 +6,7 @@ public class clsJavaVariableChunk {
 	// native method that prints a prompt and reads a line
 	private native String getVariableChunkProfile(String prompt, int mod);
 	static {
-		System.loadLibrary("dll//clsJavaVariableChunk");
+		System.loadLibrary("clsJavaVariableChunk");
 	}	
 	public static String GetVariableChunks(String strPath, int mod) throws IOException {
 		 clsJavaVariableChunk vc = new clsJavaVariableChunk();

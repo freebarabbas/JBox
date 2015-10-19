@@ -12,9 +12,9 @@ public class TestforCityHash {
 
 	public static void main(String args[]) throws Exception {
 		
-		String path="C:\\Users\\chencyun\\Downloads\\com.good.gdgma.apk";
+		String path="//home//ubuntu//Downloads//jdk-8u60-linux-x64.tar.gz";
 		System.out.println(HashCalc.GetFileCityHash(path)); 
-		List<chunk> aaa=ChunkProcess.GetFixChunk(path, 4*1024);
+		//List<chunk> aaa=ChunkProcess.GetFixChunk(path, 4*1024);
 		List<chunk> bbb=ChunkProcess.GetChunk(path,21,4*1024,chunkType.VAR);
 		System.out.println(bbb);
 		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,21));
