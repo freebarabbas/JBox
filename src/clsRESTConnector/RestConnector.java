@@ -34,12 +34,19 @@ public class RestConnector {
 		 
 		conn.setRequestProperty("X-Auth-User", username);
 		conn.setRequestProperty("X-Auth-Key", pwd);
+		conn.setRequestProperty("ST_AUTH", url);
+		//conn.setRequestProperty("ST_USER", username);
+		//conn.setRequestProperty("ST_KEY", pwd);		
 		
 		int responseCode = conn.getResponseCode();
 		if (responseCode == HttpURLConnection.HTTP_OK)
         {
             String storageurl=conn.getHeaderField("X-Storage-Url");
             String token=conn.getHeaderField("X-Auth-Token");
+            
+            //String storageurl=conn.getHeaderField("OS_STORAGE_URL");
+            //String token=conn.getHeaderField("OS_AUTH_TOKEN");
+            
             return new RestResult(responseCode,true,"",storageurl,token);
         }
 		else if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED)

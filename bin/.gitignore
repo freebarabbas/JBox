@@ -1,9 +1,7 @@
-/clsCityHashCalc
-/clsCompExtract
-/clsRESTConnector
-/clsTypes
-/clsUtilitues
-/fxController
-/fxDataModel
-/fxJBox
-/refJAR
+/clsCityHashCalc/
+/clsCompExtract/
+/clsRESTConnector/
+/clsTypes/
+/clsUtilitues/
+/refJAR/
+/.DS_Store
