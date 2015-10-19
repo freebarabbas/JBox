@@ -13,9 +13,9 @@ import clsRESTConnector.ebProxy;
 public class Config {
 	
 	//public static String syncfoler="c:\\kenstuff\\jboxsync1";
-	public static String syncfoler="c:\\JBoxSync";
+	public static String syncfoler="//home//ubuntu//JBox";
 	
-	public static String usermetafile="c:\\JBoxLog\\10846130789747_JBOX_hp_com";
+	public static String usermetafile="//home//ubuntu//JBoxLog//10846130789747_JBOX_hp_com";
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
 
@@ -34,9 +34,9 @@ public class Config {
     public static String metafileversion = "2.0";
     public static int fixedchunksize = 4 * 1024 * 1024;
     public static String apppath= Paths.get("").toAbsolutePath().toString();    
-    public static String dbpath=String.format("%s\\userdata.db",apppath);
+    public static String dbpath=String.format("%s//userdata.db",apppath);
     //public static String loggerfile=String.format("%s\\run.html", apppath);
-    public static String loggerfile=String.format("c:\\JBoxLog\\run.html", apppath);    
+    public static String loggerfile=String.format("//home//ubuntu//JBoxLog//run.html", apppath);    
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
     public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk
     public static Logger logger=null;
