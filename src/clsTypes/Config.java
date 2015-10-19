@@ -12,17 +12,18 @@ import clsRESTConnector.ebProxy;
 
 public class Config {
 	
-	//public static String syncfoler="c:\\kenstuff\\jboxsync1";
-	public static String syncfoler="c:\\JBoxSync";
+	public static String syncfoler="//home//ubuntu//JBox";
+	//public static String syncfoler="c:\\JBoxSync";
 	
-	public static String usermetafile="c:\\JBoxLog\\10846130789747_JBOX_hp_com";
+	public static String usermetafile="//home//ubuntu//JBoxLog//johnnywa";
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
 
 	//public static String swiftusr = "10846130789747:JavaTestUser";
     //public static String swiftpwd = "!qaz2wsx";    
     
-    public static String serverlogin = "https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/";
+    //public static String serverlogin = "https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/";
+    public static String serverlogin = "http://svl12-csl-swift-ctl-001/auth/v1.0";
     public static String storageurl = "";//https://region-a.geo-1.objects.hpcloudsvc.com/v1/10846130789747";
     
     //public static String restproxy = "web-proxy.corp.hp.com";
@@ -33,10 +34,11 @@ public class Config {
     public static ebProxy proxyobj=null;
     public static String metafileversion = "2.0";
     public static int fixedchunksize = 4 * 1024 * 1024;
-    public static String apppath= Paths.get("").toAbsolutePath().toString();    
-    public static String dbpath=String.format("%s\\userdata.db",apppath);
+    public static String apppath= Paths.get("").toAbsolutePath().toString();   
+    public static String dbpath=String.format("//home//ubuntu//JBoxLog//userdata.db",apppath);
+    //public static String dbpath=String.format("%s//userdata.db",apppath);
     //public static String loggerfile=String.format("%s\\run.html", apppath);
-    public static String loggerfile=String.format("c:\\JBoxLog\\run.html", apppath);    
+    public static String loggerfile=String.format("//home//ubuntu//JBoxLog//run.html", apppath);    
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
     public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk
     public static Logger logger=null;

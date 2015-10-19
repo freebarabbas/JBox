@@ -43,13 +43,15 @@ public class TestforRESTConnector {
 		//GetToken
 		System.out.println("0. GetToken");
 		//ebProxy pxy=new ebProxy();
-		ebProxy pxy=new ebProxy("web-proxy.corp.hp.com", 8080, "", "");
-		RestResult rr=RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:johnny.wang2@hp.com", "Johnny634917", pxy);
+		//ebProxy pxy=new ebProxy("web-proxy.corp.hp.com", 8080, "", "");
+		ebProxy pxy=new ebProxy();
+		RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", "johnnywa", "Chianing2345", pxy);
+		//RestResult rr=RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:johnny.wang2@hp.com", "Johnny634917", pxy);
 		System.out.println(rr.token);
 		System.out.println(rr.storageurl);
 		
-		rr=RestConnector.GetContainer(rr.token, rr.storageurl, pxy);
-		String aaaaaa=new String(rr.data);
+		RestResult rrcontainer=RestConnector.GetContainer(rr.token, rr.storageurl, pxy);
+		String aaaaaa=new String(rrcontainer.data);
 		System.out.println(aaaaaa);
 		//PutContainer
 		System.out.println("1.PutContainer");
@@ -58,8 +60,8 @@ public class TestforRESTConnector {
 		System.out.println(rr1.httpcode);
 		
 		//GetContainer
-		System.out.println("2.GetContainer");
-		RestResult rr2=RestConnector.GetContainer(rr.token, rr.storageurl+"/UUUU", pxy);
+		System.out.println("2.Get Obj from Container");
+		RestResult rr2=RestConnector.GetContainer(rr.token, rr.storageurl+"/JOHNNY", pxy);
 		System.out.println(rr2.result);
 		System.out.println(rr2.httpcode);
 		System.out.println("--------------------contain Start------------------");
@@ -68,7 +70,7 @@ public class TestforRESTConnector {
 		
 
 		//Load File into datainputstream
-		File file = new File("c:\\JBox\\JBOX.txt");
+		File file = new File("//home//ubuntu//JBox//JBox_note");
 		byte[] fileData = new byte[(int) file.length()];
 		DataInputStream dis = new DataInputStream(new FileInputStream(file));
 		dis.readFully(fileData);
@@ -82,7 +84,7 @@ public class TestforRESTConnector {
 		
 		//copy file
 		System.out.println("5.CopyFile");
-		RestResult rr5=RestConnector.CopyFile(rr.token, "/JOHNNY/JBOX.txt",rr.storageurl+"/UUUU/JBOX_cp.txt",pxy);
+		RestResult rr5=RestConnector.CopyFile(rr.token, "/JOHNNY/JBOX.txt",rr.storageurl+"/JOHNNY/JBOX_cp.txt",pxy);
 		System.out.println(rr5.result);
 		System.out.println(rr5.httpcode);
 		 
