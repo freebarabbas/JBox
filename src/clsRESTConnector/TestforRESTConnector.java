@@ -60,7 +60,7 @@ public class TestforRESTConnector {
 		System.out.println(rr1.httpcode);
 		
 		//GetContainer
-		System.out.println("2.GetContainer");
+		System.out.println("2.Get Obj from Container");
 		RestResult rr2=RestConnector.GetContainer(rr.token, rr.storageurl+"/JOHNNY", pxy);
 		System.out.println(rr2.result);
 		System.out.println(rr2.httpcode);
