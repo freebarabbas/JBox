@@ -50,9 +50,10 @@ public class TestforRESTConnector {
 		System.out.println(rr.token);
 		System.out.println(rr.storageurl);
 		
-		RestResult rrcontainer=RestConnector.GetContainer(rr.token, rr.storageurl, pxy);
-		String aaaaaa=new String(rrcontainer.data);
-		System.out.println(aaaaaa);
+		//RestResult rrcontainer=RestConnector.GetContainer(rr.token, rr.storageurl, pxy);
+		//String aaaaaa=new String(rrcontainer.data);
+		//System.out.println(aaaaaa);
+		
 		//PutContainer
 		System.out.println("1.PutContainer");
 		RestResult rr1=RestConnector.PutContainer(rr.token, rr.storageurl+"/JOHNNY", pxy);
@@ -61,7 +62,7 @@ public class TestforRESTConnector {
 		
 		//GetContainer
 		System.out.println("2.Get Obj from Container");
-		RestResult rr2=RestConnector.GetContainer(rr.token, rr.storageurl+"/JOHNNY", pxy);
+		RestResult rr2=RestConnector.GetContainer(rr.token, rr.storageurl+"", pxy);
 		System.out.println(rr2.result);
 		System.out.println(rr2.httpcode);
 		System.out.println("--------------------contain Start------------------");
@@ -104,6 +105,12 @@ public class TestforRESTConnector {
 		RestResult rr6=RestConnector.DeleteFile(rr.token, rr.storageurl+"/JOHNNY","JBOX.txt" ,pxy);
 		System.out.println(rr6.result);
 		System.out.println(rr6.httpcode);
+		
+		//DeleteFile
+		System.out.println("7.DeleteFile another copy file");
+		RestResult rr8=RestConnector.DeleteFile(rr.token, rr.storageurl+"/JOHNNY","JBOX_cp.txt" ,pxy);
+		System.out.println(rr8.result);
+		System.out.println(rr8.httpcode);		
 		
 		//DeleteContainer PS: Container have to be empty
 		System.out.println("3.DeleteContainer");
