@@ -15,7 +15,7 @@ public class TestforCleanObj {
 		//String tkn="AUTH_tke051cb50ffbd45949a31fe1e8c61a2f8";
 		//String surl="http://svl12-csl-swift-ctl-001/v1/AUTH_swift";
 		//RestResult rr=RestConnector.GetContainer(tkn, surl, m_pxy);
-		RestConnector.GetContainer(tkn, surl, m_pxy);
+		rr=RestConnector.GetContainer(tkn, surl, m_pxy);
 		if(rr.result && rr.data!=null)
 		{
 			String tmp=new String(rr.data);
