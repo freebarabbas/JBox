@@ -3,6 +3,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+//this is the zip funciton using in SyncV2
 public class ZipProcess {
 	public static byte[] zip(byte[] bytes)
 	{

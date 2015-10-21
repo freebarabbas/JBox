@@ -42,8 +42,8 @@ public class Config {
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
     public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk
     public static Logger logger=null;
-    public static Level loglevel=Level.INFO; //DEBUG show all info or INFO or ERROR
-    
+    public static Level loglevel=Level.DEBUG; //DEBUG show all info or INFO or ERROR
+    public static int compress=1; // bit 1: compress and 0 is no compress
     
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";

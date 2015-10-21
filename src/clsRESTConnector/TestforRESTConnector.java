@@ -70,7 +70,7 @@ public class TestforRESTConnector {
 		
 
 		//Load File into datainputstream
-		File file = new File("//home//ubuntu//JBox//JBox_Note");
+		File file = new File("//home//ubuntu//JBox_Backup//JBox_Note");
 		//System.out.println(file.listFiles());
 		byte[] fileData = new byte[(int) file.length()];
 		DataInputStream dis = new DataInputStream(new FileInputStream(file));

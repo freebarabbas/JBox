@@ -1,5 +1,9 @@
 package clsUtilitues;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import clsTypes.Config;
+
 
 public class TestforSyncV2 {
 
@@ -27,7 +31,11 @@ public class TestforSyncV2 {
 			new Thread(r).start();
 			while(true)
 			{
-				System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+				String timeStamp = new SimpleDateFormat("yyyy/MMdd/HHmm-ss").format(Calendar.getInstance().getTime());
+				//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+				String strStatus = "";
+				if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
+				System.out.println(timeStamp+": "+ strStatus);
 				Thread.sleep(1000);
 			}
 			

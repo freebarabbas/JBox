@@ -5,7 +5,7 @@ import java.lang.String;
 public class chunk implements Comparable<chunk>
 {
 	public int index;
-	public int flag; // bit 1: compress 
+	public int flag = Config.compress; // bit 1: compress 
 	public long start;
 	public long end;
 	public String hashvalue;
