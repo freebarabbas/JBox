@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import clsTypes.*;
-import clsCityHashCalc.ZipProcess;
+import clsCompExtract.ZipProcess;
 import clsRESTConnector.*;
 
 public class SyncV2 implements Runnable {

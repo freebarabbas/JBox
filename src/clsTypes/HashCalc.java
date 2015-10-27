@@ -228,7 +228,7 @@ public class HashCalc {
 	
 	public static String GetFileCityHash(String filename) throws Exception
 	{
-		String ret=clsJavaVariableChunk.GetVariableChunks(filename,0);
+		String ret=clsJavaVariableChunk.GetVariableChunks(filename,0,0);
 		String[] lines=ret.split("\r\n|\n|\r");
 		String[] tmp=lines[0].split("\\s+");
 		return tmp[4];

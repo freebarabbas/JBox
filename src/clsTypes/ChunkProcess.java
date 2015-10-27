@@ -20,12 +20,12 @@ public class ChunkProcess {
 	 * @param mod module
 	 * @return the chunk list
 	 */
-	public static List<chunk> GetVarChunk(String filename,int mod)
+	public static List<chunk> GetVarChunk(String filename, int mod)
     {
 		 List<chunk> ret=new ArrayList<chunk>();
 		 try
 		 {
-			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod);
+			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,2);
 			 String[] lines=varresult.split("\r\n|\n|\r");
 			 for(int i=0;i<lines.length;i++)
 			 {
@@ -90,8 +90,9 @@ public class ChunkProcess {
 	 * @return the chunk list
 	 * @throws Exception the exception
 	 */
-	public static List<chunk> GetFixChunk(String filename, int chunksize) throws Exception
+	public static List<chunk> GetFixChunk(String filename, int mod)// int chunksize) throws Exception
     {
+		/*
         List<chunk> ret = new ArrayList<chunk>();
         File file=new File(filename);
         long filelength = file.length();
@@ -112,6 +113,33 @@ public class ChunkProcess {
 		if(fis!=null)
 			fis.close();
         return ret;
+        */
+		
+		 List<chunk> ret=new ArrayList<chunk>();
+		 try
+		 {
+			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,1);
+			 String[] lines=varresult.split("\r\n|\n|\r");
+			 for(int i=0;i<lines.length;i++)
+			 {
+				 String[] tmp=lines[i].split("\\s+");
+				 //if (i==0 && tmp[0].equals("file")){
+				//	 mod = Integer.parseInt(tmp[3]);
+				 //}
+				 int s=Integer.parseInt(tmp[1]);
+				 int l=Integer.parseInt(tmp[2]);
+				 int e=s+l-1;
+				 //if i = 0 means file level record, then end = length
+				 if(i==0)
+					 e=l;
+				 ret.add(new chunk(i,Integer.parseInt(tmp[3]),s,e,tmp[4]));
+			 }
+		 }
+		 catch(Exception e)
+		 {
+			 return null;
+		 }
+       return ret;           
     }
 
    
@@ -150,7 +178,7 @@ public class ChunkProcess {
             case VAR:
                 return GetVarChunk(filename,mod);
             case FIX:
-                return GetFixChunk(filename, chunksize);
+                return GetFixChunk(filename,mod);
             case NO:
                 return GetNoChunk(filename);
             default:

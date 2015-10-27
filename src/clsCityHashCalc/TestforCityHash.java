@@ -12,12 +12,16 @@ public class TestforCityHash {
 
 	public static void main(String args[]) throws Exception {
 		
-		String path="//home//ubuntu//Downloads//jdk-8u60-linux-x64.tar.gz";
+		String path="//home//ubuntu//Downloads//test.tar.gz";
 		System.out.println(HashCalc.GetFileCityHash(path)); 
-		//List<chunk> aaa=ChunkProcess.GetFixChunk(path, 4*1024);
-		List<chunk> bbb=ChunkProcess.GetChunk(path,21,4*1024,chunkType.VAR);
+		List<chunk> aaa=ChunkProcess.GetChunk(path,0,0,chunkType.FIX);
+		System.out.println(aaa);
+		List<chunk> bbb=ChunkProcess.GetChunk(path,0,0,chunkType.VAR);
 		System.out.println(bbb);
-		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,21));
+		List<chunk> ccc=ChunkProcess.GetChunk(path,0,0,chunkType.NO);
+		System.out.println(ccc);		
+		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,0,1));		
+		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,0,2));
 		return;
 		
 		//System.out.println("Hello World");

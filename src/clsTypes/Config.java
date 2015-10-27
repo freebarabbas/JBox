@@ -40,9 +40,9 @@ public class Config {
     //public static String loggerfile=String.format("%s\\run.html", apppath);
     public static String loggerfile=String.format("/home/ubuntu/JBoxLog/run.html", apppath);    
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
-    public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk
+    public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk and NO for no chunk
     public static Logger logger=null;
-    public static Level loglevel=Level.DEBUG; //DEBUG show all info or INFO or ERROR
+    public static Level loglevel=Level.INFO; //DEBUG show all info or INFO or ERROR
     public static int compress=0; // bit 1: compress and 0 is no compress
     
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
