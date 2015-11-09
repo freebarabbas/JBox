@@ -40,6 +40,12 @@ public class TestforRESTConnector {
 	//@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
 		
+		//Get the jvm heap size.
+        long heapSize = Runtime.getRuntime().totalMemory();
+
+        //Print the jvm heap size.
+        System.out.println("Heap Size = " + heapSize);
+		
 		//GetToken
 		System.out.println("0. GetToken");
 		//ebProxy pxy=new ebProxy();
