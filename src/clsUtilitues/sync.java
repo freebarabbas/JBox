@@ -594,7 +594,7 @@ public class sync implements Runnable {
                                     if (needupload)
                                     {
                                         RestConnector.PutContainer(tkn, storageurl + "/" + fi.guid, pxy);
-                                        fileMetadata fmd = fileMetadata.GetMetadata(fi.filename,m_mod,Config.fixedchunksize,Config.ct);
+                                        fileMetadata fmd = fileMetadata.GetMetadata(fi.filename,m_mod,Config.divider, Config.fixedchunksize,Config.ct);
                                         fileMetadataWithVersion fmds = new fileMetadataWithVersion();
                                         fmds.data.add(fmd);
                                         RestConnector.PutFile(tkn, storageurl + "/" + fi.guid, "metadata", fmds.ConvertToByteArray(), pxy);
@@ -644,7 +644,7 @@ public class sync implements Runnable {
                                     byte[] realdata = new byte[(int)fmd.data.get(lastversion-1).byteslength];
                                     long dsize = 0;
                                     Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
-                                    fileMetadata localfmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.fixedchunksize,Config.ct);
+                                    fileMetadata localfmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.fixedchunksize,Config.ct);
                                     byte[] localcache = Files.readAllBytes(new File(fi.filename).toPath());
                                     int downloadsize=0;
                                     for (chunk c : localfmd.data)
@@ -695,7 +695,7 @@ public class sync implements Runnable {
                                     Date dts=new Date();
                                     byte[] remotefilemetadata = RestConnector.GetContainer(tkn, storageurl + "/"+fi.guid+"/metadata", pxy).data;
                                     fileMetadataWithVersion fmds = new fileMetadataWithVersion(remotefilemetadata);
-                                    fileMetadata fmd = fileMetadata.GetMetadata(fi.filename,m_mod, Config.fixedchunksize,Config.ct);
+                                    fileMetadata fmd = fileMetadata.GetMetadata(fi.filename,m_mod, Config.divider, Config.fixedchunksize,Config.ct);
                                     fmds.data.add(fmd);
                                     RestConnector.PutFile(tkn, storageurl + "/" + fi.guid, "metadata",  fmds.ConvertToByteArray(), pxy);                                   
                                     byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());

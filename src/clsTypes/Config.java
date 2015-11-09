@@ -12,11 +12,11 @@ import clsRESTConnector.ebProxy;
 
 public class Config {
 	
-	public static String syncfoler="/home/johnny/JBox";
-	//public static String syncfoler="/home/ubuntu/JBox";
+	//public static String syncfoler="/home/johnny/JBox";
+	public static String syncfoler="/home/ubuntu/JBox";
 	
-	public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
-	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";
+	//public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
+	public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
 
@@ -39,13 +39,14 @@ public class Config {
     public static String dbpath=String.format("/home/johnny/JBoxLog/userdata.db",apppath);
     //public static String dbpath=String.format("%s//userdata.db",apppath);
     //public static String loggerfile=String.format("%s\\run.html", apppath);
-    public static String loggerfile=String.format("/home/johnny/JBoxLog/run.html", apppath); 
-    //public static String loggerfile=String.format("/home/ubuntu/JBoxLog/run.html", apppath);  
+    //public static String loggerfile=String.format("/home/johnny/JBoxLog/run.html", apppath); 
+    public static String loggerfile=String.format("/home/ubuntu/JBoxLog/run.html", apppath);  
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
     public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk and NO for no chunk
     public static Logger logger=null;
     public static Level loglevel=Level.INFO; //DEBUG show all info or INFO or ERROR
     public static int compress=0; // bit 1: compress and 0 is no compress
+    public static int divider=64;
     
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
@@ -53,7 +54,7 @@ public class Config {
     
     public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; }
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
-    //public static void setswiftalg(String strswiftalg){ swiftalg = strswiftalg; }    
+    public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; }    
     
     
     public static String token="";

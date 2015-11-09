@@ -17,7 +17,7 @@ public class TestforSyncV2 {
 		
 		try{
 			
-			if((args != null) && (args.length != 0) && (args.length <= 3)){
+			if((args != null) && (args.length != 0) && (args.length <= 4)){
 				Config.logger.info("Start the program");
 				Config.logger.info("Initialize the paramters");
 				Config.InitConfig(args);
@@ -42,7 +42,9 @@ public class TestforSyncV2 {
 				//String strPassWord = "Wang_634917";			
 				
 				//Config.setswiftusr("johnnywa");
-				//Config.setswiftpwd("Chianing2345");			
+				//Config.setswiftpwd("Chianing2345");
+				
+				Config.setswiftdiv(Integer.parseInt(args[3].toString()));
 				
 				Config.logger.debug(Config.ConvertToHTML());
 							
