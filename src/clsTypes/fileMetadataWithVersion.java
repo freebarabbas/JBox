@@ -100,14 +100,15 @@ public class fileMetadataWithVersion {
         {
             StringBuilder s = new StringBuilder();
             Collections.sort(data);
-            int i = 0;
+            //int i = 0;
             for (int j=0; j<data.size();j++)
             {
                 s.append(data.get(j).ConvertToString());
                 s.append("---------------------------------------------").append(System.getProperty("line.separator"));;
-                i++;
-                if (i == 5)
-                    break;
+                //i++;
+                //for keep only 5 versions
+                //if (i == 5)
+                //    break;
             }
             return s.toString();
         }
