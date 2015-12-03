@@ -17,7 +17,7 @@ public class TestforSyncV2 {
 		
 		try{
 			
-			if((args != null) && (args.length != 0) && (args.length <= 4)){
+			if((args != null) && (args.length != 0) && (args.length <= 5)){
 				Config.logger.info("Start the program");
 				Config.logger.info("Initialize the paramters");
 				Config.InitConfig(args);
@@ -28,7 +28,7 @@ public class TestforSyncV2 {
 				//}
 				
 				
-				System.out.println("username:" + args[0].toString() + ", password:" + args[1].toString() + ", dedup-alg:" + args[2].toString());
+				System.out.println("username:" + args[0].toString() + ", password:" + args[1].toString() + ", dedup-alg:" + args[2].toString() + ", divider:" + args[3].toString() + ", refactor:" + args[4].toString());
 				
 				
 				Config.setswiftusr(args[0].toString());
@@ -45,7 +45,7 @@ public class TestforSyncV2 {
 				//Config.setswiftpwd("Chianing2345");
 				
 				Config.setswiftdiv(Integer.parseInt(args[3].toString()));
-				
+				Config.setswiftrefactor(Integer.parseInt(args[4].toString()));
 				Config.logger.debug(Config.ConvertToHTML());
 							
 				Runnable r=new SyncV2(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,0);
@@ -62,7 +62,7 @@ public class TestforSyncV2 {
 			}
 			else
 			{
-				System.out.println("try ... #java -jar JBox.jar <username> <password> <v=var || f=fix || n=no>");
+				System.out.println("try ... #java -jar JBox.jar <username> <password> <var || fix || no> <divider= 16 || 32 || 64 || 128 ... > <refactor= 0 ... || 3 || 4 || 5 ...>");
 			}
 		}
 		catch(Exception e)
