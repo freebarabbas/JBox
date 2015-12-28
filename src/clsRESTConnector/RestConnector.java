@@ -135,6 +135,37 @@ public class RestConnector {
         }
     }
 	
+	public static RestResult GetObjectRefCount(String curtoken, String container, String object, ebProxy pxy) throws Exception
+    {
+		HttpURLConnection conn=GetConnection(container+"/"+object,pxy);
+		//HttpURLConnection conn=GetConnection(object,pxy);
+		conn.setRequestMethod("GET");
+
+		conn.setRequestProperty("X-Auth-Token", curtoken);
+		conn.setRequestProperty("Accept", "*/*");
+		conn.setDoOutput(true);
+		int responseCode = conn.getResponseCode();
+		if (responseCode == HttpURLConnection.HTTP_OK)
+        {
+			try{
+				String strRefCount=conn.getHeaderField("X-Delete-At");
+				long l=Long.parseLong(strRefCount);//.parseInt(strRefCount.toString());
+				l++;
+			} catch (Exception e){
+			    System.err.println("Caught IOException: " + e.getMessage());
+			}
+            return new RestResult(responseCode,true,"","","");
+        }
+		else if(responseCode == HttpURLConnection.HTTP_NO_CONTENT)
+		{
+			return new RestResult(responseCode,true,"no X-Delete-At","","");
+		}
+        else
+        {
+            return new RestResult(responseCode,false,"","","");
+        }			
+    }
+	
 	public static RestResult PutFile(String curtoken, String container, String filename, byte[] data,ebProxy pxy) throws Exception
     {
 		HttpURLConnection conn=GetConnection(container+"/"+filename,pxy);
@@ -143,6 +174,11 @@ public class RestConnector {
 		conn.setRequestProperty("X-Auth-Token", curtoken);
 		conn.setRequestProperty("Content-Length", String.valueOf(data.length));
 		conn.setRequestProperty("Content-Type", "application/octet-stream");
+		
+		if (filename.substring(0,1).equals("c")){
+			conn.setRequestProperty("X-Delete-At", "9000000001"); //
+		}
+		
 		conn.setDoOutput(true);
 		
 		OutputStream out=conn.getOutputStream();

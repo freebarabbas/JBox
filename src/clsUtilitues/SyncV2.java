@@ -539,12 +539,17 @@ public class SyncV2 implements Runnable {
                                             if (ht.get(c.hashvalue)==null)
                                             {
                                                int tmpf=-1;
-                                            	if(cc.contains("c1"+c.hashvalue))
+                                               
+                                            	if(cc.contains("c1"+c.hashvalue)){
                                             		tmpf=1;
-                                            	else if (cc.contains("c0"+c.hashvalue))
+                                            	    RestConnector.GetObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            	}
+                                            	else if (cc.contains("c0"+c.hashvalue)){
                                             		tmpf=0;
+                                            		RestConnector.GetObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            	}
                                             	if(tmpf==1)
-                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash
+                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
                                             	else if(tmpf==0)
                                             		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
                                             	if(tmpf>=0)
@@ -554,6 +559,7 @@ public class SyncV2 implements Runnable {
                                             	byte[] tmp = new byte[(int)(c.end - c.start + 1)];                                            
                                                 System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
                                                 byte[] ztmp=ZipProcess.zip(tmp);
+                                                
                                                 if(ztmp.length < tmp.length)
                                                 {
                                                 	c.flag= c.flag | 1;
