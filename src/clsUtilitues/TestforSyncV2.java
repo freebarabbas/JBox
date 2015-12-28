@@ -62,7 +62,7 @@ public class TestforSyncV2 {
 			}
 			else
 			{
-				System.out.println("try ... #java -jar JBox.jar <username> <password> <var || fix || no> <divider= 16 || 32 || 64 || 128 ... > <refactor= 0 ... || 3 || 4 || 5 ...>");
+				System.out.println("try ... #java -jar JBox.jar <username> <password> <var || fix || no> <divider= 16 || 32 || 64 || 128 ... > <refactor= 0(no refactor) ... || 3 || 4 || 5 ...>");
 			}
 		}
 		catch(Exception e)
