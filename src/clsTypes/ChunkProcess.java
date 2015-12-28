@@ -25,6 +25,7 @@ public class ChunkProcess {
 		 List<chunk> ret=new ArrayList<chunk>();
 		 try
 		 {
+			 //2 = var
 			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,2, divide, refactor);
 			 String[] lines=varresult.split("\r\n|\n|\r");
 			 for(int i=0;i<lines.length;i++)

@@ -544,9 +544,9 @@ public class SyncV2 implements Runnable {
                                             	else if (cc.contains("c0"+c.hashvalue))
                                             		tmpf=0;
                                             	if(tmpf==1)
-                                            		c.flag= c.flag | 1;
+                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash
                                             	else if(tmpf==0)
-                                            		c.flag= c.flag & ~1;
+                                            		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
                                             	if(tmpf>=0)
                                             		continue;
                                             		
