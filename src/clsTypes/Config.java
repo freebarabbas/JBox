@@ -48,6 +48,7 @@ public class Config {
     public static int compress=0; // bit 1: compress and 0 is no compress
     public static int divider=64; //divider default is 64 , splite file into 32 ~ 73 chunks 
     public static int refactor=0; //no refactor
+    public static int refcounter=0; //0 default is off, 1 is on
     
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
@@ -57,6 +58,7 @@ public class Config {
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
     public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; }    
     public static void setswiftrefactor(int intswiftrefactor){ refactor = intswiftrefactor; }  
+    public static void setswiftrefcounter(int intswiftrefcounter){ refcounter = intswiftrefcounter; }  
     
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  

@@ -106,7 +106,7 @@ public class SyncV2 implements Runnable {
 				String tmp=new String(rr.data);
 				String[] lines = tmp.split("\r\n|\n|\r");
 				for(int i=0;i<lines.length;i++)
-					if(lines[i].startsWith("c"))
+					if(lines[i].startsWith("c") && !lines[i].endsWith("_d"))
 						hs.add(lines[i]);
 			}
 		}
@@ -245,7 +245,7 @@ public class SyncV2 implements Runnable {
 		}
 		SyncStatus.SetStatus("Identitying the changes");
 		RestResult rr=null;
-		Set<String> cc=GetCurrentChunk();
+		Set<String> cc=GetCurrentChunk(); //get object list under user container from swift
         while (true)
         {
             try
@@ -542,11 +542,15 @@ public class SyncV2 implements Runnable {
                                                
                                             	if(cc.contains("c1"+c.hashvalue)){
                                             		tmpf=1;
-                                            	    RestConnector.GetObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            		if (Config.refcounter == 1) {
+                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            		}
                                             	}
                                             	else if (cc.contains("c0"+c.hashvalue)){
                                             		tmpf=0;
-                                            		RestConnector.GetObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            		if (Config.refcounter == 1){
+                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+                                            		}
                                             	}
                                             	if(tmpf==1)
                                             		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	

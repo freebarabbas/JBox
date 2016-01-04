@@ -17,7 +17,7 @@ public class TestforSyncV2 {
 		
 		try{
 			
-			if((args != null) && (args.length != 0) && (args.length <= 5)){
+			if((args != null) && (args.length != 0) && (args.length <= 6)){
 				Config.logger.info("Start the program");
 				Config.logger.info("Initialize the paramters");
 				Config.InitConfig(args);
@@ -46,6 +46,13 @@ public class TestforSyncV2 {
 				
 				Config.setswiftdiv(Integer.parseInt(args[3].toString()));
 				Config.setswiftrefactor(Integer.parseInt(args[4].toString()));
+				
+				if (args.length > 5){
+					if (args[5] != null && !args[5].toString().isEmpty()){
+						Config.setswiftrefcounter(Integer.parseInt(args[5].toString()));
+					}
+				}
+				
 				Config.logger.debug(Config.ConvertToHTML());
 							
 				Runnable r=new SyncV2(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,0);
@@ -62,7 +69,7 @@ public class TestforSyncV2 {
 			}
 			else
 			{
-				System.out.println("try ... #java -jar JBox.jar <username> <password> <var || fix || no> <divider= 16 || 32 || 64 || 128 ... > <refactor= 0(no refactor) ... || 3 || 4 || 5 ...>");
+				System.out.println("try ... #java -jar JBox.jar <username> <password> <var || fix || no> <divider= 16 || 32 || 64 || 128 ... > <refactor= 0(no refactor) ... || 3 || 4 || 5 ...> <refcounter off(0) or on(1)>");
 			}
 		}
 		catch(Exception e)

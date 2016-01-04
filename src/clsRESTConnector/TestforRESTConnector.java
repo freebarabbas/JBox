@@ -51,7 +51,7 @@ public class TestforRESTConnector {
 		//ebProxy pxy=new ebProxy();
 		//ebProxy pxy=new ebProxy("web-proxy.corp.hp.com", 8080, "", "");
 		ebProxy pxy=new ebProxy();
-		RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", "johnnywa", "Chianing2345", pxy);
+		RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", "var", "var", pxy);
 		//RestResult rr=RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:johnny.wang2@hp.com", "Johnny634917", pxy);
 		System.out.println(rr.token);
 		System.out.println(rr.storageurl);
@@ -96,6 +96,12 @@ public class TestforRESTConnector {
 		System.out.println(rr5.result);
 		System.out.println(rr5.httpcode);
 		 
+		//copy file
+		System.out.println("5.CopyFile");
+		RestResult rr15=RestConnector.CopyFile(rr.token,"/var/c139482d0736b5323fcc4b3b85b4e73452",rr.storageurl+"/var/c139482d0736b5323fcc4b3b85b4e73452_d",pxy);
+		System.out.println(rr15.result);
+		System.out.println(rr15.httpcode);
+		
 		//GetFile
 		//GetContainer
 		System.out.println("7.GetContainner(File)");
@@ -120,10 +126,16 @@ public class TestforRESTConnector {
 		
 		//DeleteContainer PS: Container have to be empty
 		System.out.println("3.DeleteContainer");
-		RestResult rr3=RestConnector.DeleteContainer(rr.token, rr.storageurl+"/JOHNNY", pxy);
+		RestResult rr3=RestConnector.DeleteContainer(rr.token, rr.storageurl+"/backup", pxy);
 		System.out.println(rr3.result);
 		System.out.println(rr3.httpcode);
 
+		//DeleteContainer PS: Container have to be empty
+		System.out.println("3.DeleteContainer");
+		RestResult rr13=RestConnector.DeleteContainer(rr.token, rr.storageurl+"/JOHNNY", pxy);
+		System.out.println(rr13.result);
+		System.out.println(rr13.httpcode);
+		
 		return;
 	}
 
