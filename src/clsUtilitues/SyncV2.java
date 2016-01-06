@@ -228,6 +228,52 @@ public class SyncV2 implements Runnable {
         }
     }
 	
+	private  boolean ReduceRefCounterAndPurgeFile(fileInfo fi)
+    {
+		  try
+	        {
+	        	Config.logger.debug("Start to Reduce ref counter in file level meta file for " + fi.filename);
+	        	
+                String srcguid = fi.guid;
+                //delete file level metadata after 2 min
+        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + 120);
+        		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
+        		Config.logger.debug("sum deletion flag at file level for " + "f"+srcguid);
+        		
+                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
+                byte[] filedata = rr.data;
+                //fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
+                fileMetadata fmds = new fileMetadata(filedata);
+                Collections.sort(fmds.data);
+	        	
+                if(fi.fop == FOP.LOCAL_HAS_DELETED)
+                {
+                	 for(chunk c : fmds.data)
+                     {
+                     	//reduce ref counter or delete object in 1 min
+                		RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
+                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
+                     }  
+                	
+                	//Iterator<fileMetadata> it = fmds.data.iterator();
+                	//while(it.hasNext()){
+                	//	//fileInfo tmp=it.hashCode();
+                	//	RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, Integer.toString(it.hashCode()), m_pxy);
+                    //   Config.logger.debug("reduce ref counter at object level for " + Integer.toString(it.hashCode()));
+                	//}
+                }
+
+                Config.logger.debug("Done to reduce ref counter at file level meta file for " + fi.filename);
+                return true;
+	        }
+	        catch (Exception e)
+	        {
+	        	Config.logger.error("Error to reduce ref counter at file level meta file for" + fi.filename+ ".Error:"+e.getMessage());
+	            return false;
+	        }
+    }
+	
+	
 	private  void StartSync() throws Exception
 	{
 		Config.logger.info("Starting sync process");
@@ -266,7 +312,11 @@ public class SyncV2 implements Runnable {
                     Config.logger.debug(lastlocal.ConvertToHTML("Merged with last snapshot"));                          	
                 }
 
-                boolean flgchanged = false;
+                boolean flgchanged = false; // default set flgchanged into false , don't delete any object
+        		//if (Config.refcounter == 1) {
+        		//	flgchanged = true;
+        		//}
+                
 
                 userMetaData merged;
 
@@ -311,7 +361,7 @@ public class SyncV2 implements Runnable {
                     SyncStatus.SetStatus(fi.filename,"start to sync","Syncing "+ fi.filename);
                 	if (fi.type == 1 || fi.type == 2)//2 root folder, 1 sub folder
                     {
-                        if(fi.fop == FOP.NEW)//fi.fop NEW, DOWNLOAD, UPLOAD and NONE
+                        if(fi.fop == FOP.NEW)//fi.fop 1. NEW, 2. DOWNLOAD, 3. UPLOAD and 4. NONE
                         	flgchanged=true;
                 		if (fi.fop == FOP.DOWNLOAD)
                         {
@@ -789,17 +839,27 @@ public class SyncV2 implements Runnable {
                         }
                         continue;
                     }
-                    switch (fi.fop)
+                    switch (fi.fop) //Deletion : LOCAL_HAS_DELETED or REMOTE_HAS_DELETED
                     {
                         case LOCAL_HAS_DELETED:
                             {
                                 try
                                 {
+                                	//local as delete, so don't need to delete local, just need to udpate the remove metadata
                                     flgchanged = true;
                                     if (new File(fi.filename).exists())
                                         new File(fi.filename).delete();
+                                    
                                     Config.logger.info("Delete file " + fi.filename);
-                                    UpdateRemoteUserMetaFile(fi);  
+                                    
+                                    //reduce ref counter
+                            		if (Config.refcounter == 1) 
+                            			ReduceRefCounterAndPurgeFile(fi);
+                            			//RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                    
+                                    //update remote metadata
+                                    UpdateRemoteUserMetaFile(fi); 
+                                    
                                 }
                                 catch (Exception ex)
                                 {
@@ -812,14 +872,14 @@ public class SyncV2 implements Runnable {
                             {
                                 try
                                 {
-
+                                	//remote has deleted, local have to delete
                                     flgchanged = true;
 
                                     if (new File(fi.filename).exists())
                                         new File(fi.filename).delete();
-
                                     Config.logger.info("Delete file " + fi.filename);
 
+                                    //since remote has been updated, don't need to do anything, just clean local
                                 }
                                 catch (Exception ex)
                                 {

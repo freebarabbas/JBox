@@ -145,7 +145,7 @@ public class RestConnector {
 		//conn.setRequestProperty("Content-Length", String.valueOf(data.length));
 		//conn.setRequestProperty("Content-Type", "application/octet-stream");
 		
-		if (object.substring(0,1).equals("c")){
+		if (object.substring(0,1).equals("c") || (object.substring(0,1).equals("f") && !objcount.substring(0,1).equals("9"))){
 			conn.setRequestProperty("X-Delete-At", objcount); //
 		}
 		

@@ -2,6 +2,7 @@ package clsTypes;
 
 /**
  * The constant value for file operation.
+ * FOP File Operation
  */
 public enum FOP {
 	NEW,
