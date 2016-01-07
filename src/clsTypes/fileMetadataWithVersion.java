@@ -22,7 +22,7 @@ public class fileMetadataWithVersion {
             data= new ArrayList<fileMetadata>();
             for(int i=0;i<lines.length;i++)
             {
-                if (lines[i].startsWith("----"))
+                if (lines[i].startsWith("----")) //always keep the lastest version
                     continue;
                 fileMetadata fmd = new fileMetadata();
                 fmd.dt = SmallFunctions.String2Date(lines[i++]);

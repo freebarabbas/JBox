@@ -126,6 +126,37 @@ public class fileMetadata implements Metadata,Comparable<fileMetadata> {
         }
     }
     
+    public fileMetadata(byte[] d, boolean b)
+    {
+    	//this is only use for collect object which need to be purge
+    	if (b){
+	        try
+	        {
+	            String tmp = new String(d);
+	            String[] lines = tmp.split("\r\n|\n");
+	            dt = SmallFunctions.String2Date(lines[0]);
+	            String[] fileinfo = lines[1].trim().split("\\s+");
+	            byteslength = Long.parseLong(fileinfo[2]);
+	            mod=Integer.parseInt(fileinfo[3]);
+	            hashcode = fileinfo[4];
+	            data = new ArrayList<chunk>();
+	            for (int i = 2; i < lines.length; i++)
+	            {
+	                //if (lines[i].startsWith("----"))
+	                //    continue;
+	                String[] tmp2 = lines[i].trim().split("\\s+");
+	                if(tmp2.length==5)
+	                	//data.add(new chunk(i - 1, Long.parseLong(tmp2[1]), Long.parseLong(tmp2[2]), tmp2[3]));
+	                //else
+	                	data.add(new chunk(i - 1, Integer.parseInt(tmp2[3]) ,Long.parseLong(tmp2[1]), Long.parseLong(tmp2[2]), tmp2[4]));
+	            }
+	            Collections.sort(data);
+	        }
+	        catch (Exception e)
+	        {
+	        }
+    	}
+    }
 
 	/**
 	 * Write to disk.

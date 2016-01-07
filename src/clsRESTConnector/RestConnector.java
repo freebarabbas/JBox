@@ -145,7 +145,7 @@ public class RestConnector {
 		//conn.setRequestProperty("Content-Length", String.valueOf(data.length));
 		//conn.setRequestProperty("Content-Type", "application/octet-stream");
 		
-		if (object.substring(0,1).equals("c") || (object.substring(0,1).equals("f") && !objcount.substring(0,1).equals("9"))){
+		if (object.substring(0,1).equals("c") || object.substring(0,8).equals("backup/c") || (object.substring(0,1).equals("f") && !objcount.substring(0,1).equals("9"))){
 			conn.setRequestProperty("X-Delete-At", objcount); //
 		}
 		
@@ -181,9 +181,17 @@ public class RestConnector {
         {
 			try{
 				String strRefCount=conn.getHeaderField("X-Delete-At");
-				long l = Long.parseLong(strRefCount);
-				l = l + 1;
-				String objcount = String.valueOf(l);
+				String objcount="";
+				long l=0;
+				if (strRefCount==null){
+					objcount = "9000000001";
+				}else{
+
+					l = Long.parseLong(strRefCount);
+					l = l + 1;
+					objcount = String.valueOf(l);
+				}
+				
 				try {
 					UpdateObjectRefCount(curtoken, container,object,objcount,pxy);
 				}catch (Exception e){
@@ -226,22 +234,30 @@ public class RestConnector {
 					
 					String strContainer=container.substring(container.indexOf("/AUTH_")+ 6 + (container.length() - (container.indexOf("/AUTH_")+ 6) -1)/2, container.length());
 					
-					RestConnector.CopyFile(curtoken, strContainer + "/" + object, container + "/" +object + "_d", pxy);
+					RestConnector.CopyFile(curtoken, strContainer + "/" + object, container + "/backup/" +object + "", pxy);
 					RestConnector.DeleteFile(curtoken,container,object,pxy);
 					
 					objcount = String.valueOf((System.currentTimeMillis() / 1000L) + 60);
+					
+					try {
+						UpdateObjectRefCount(curtoken, container, "backup/" + object ,objcount,pxy);
+					}catch (Exception e){
+						System.err.println(e.getMessage());
+					}
 				}
 				else
 				{
 					l = l - 1;
 					objcount = String.valueOf(l);
+					
+					try {
+						UpdateObjectRefCount(curtoken, container, object ,objcount,pxy);
+					}catch (Exception e){
+						System.err.println(e.getMessage());
+					}
 				}
 				
-				try {
-					UpdateObjectRefCount(curtoken, container, object + "_d",objcount,pxy);
-				}catch (Exception e){
-					System.err.println(e.getMessage());
-				}
+
 				
 			} catch (Exception e){
 			    System.err.println("Caught IOException: " + e.getMessage());

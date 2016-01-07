@@ -48,7 +48,7 @@ public class Config {
     public static int compress=0; // bit 1: compress and 0 is no compress
     public static int divider=64; //divider default is 64 , splite file into 32 ~ 73 chunks 
     public static int refactor=0; //no refactor
-    public static int refcounter=1; //0 default is off, 1 is on
+    public static int refcounter=0; //0 default is off, 1 is on
     
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";

@@ -236,34 +236,36 @@ public class SyncV2 implements Runnable {
 	        	
                 String srcguid = fi.guid;
                 //delete file level metadata after 2 min
-        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + 120);
+        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + 1800);
         		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
-        		Config.logger.debug("sum deletion flag at file level for " + "f"+srcguid);
         		
-                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
-                byte[] filedata = rr.data;
-                //fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
-                fileMetadata fmds = new fileMetadata(filedata);
-                Collections.sort(fmds.data);
-	        	
-                if(fi.fop == FOP.LOCAL_HAS_DELETED)
-                {
-                	 for(chunk c : fmds.data)
-                     {
-                     	//reduce ref counter or delete object in 1 min
-                		RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
-                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
-                     }  
-                	
-                	//Iterator<fileMetadata> it = fmds.data.iterator();
-                	//while(it.hasNext()){
-                	//	//fileInfo tmp=it.hashCode();
-                	//	RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, Integer.toString(it.hashCode()), m_pxy);
-                    //   Config.logger.debug("reduce ref counter at object level for " + Integer.toString(it.hashCode()));
-                	//}
-                }
+        		if (Config.refcounter == 1) {
+        			Config.logger.debug("sum deletion flag at file level for " + "f"+srcguid);
+	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
+	                byte[] filedata = rr.data;
+	                //fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
+	                fileMetadata fmds = new fileMetadata(filedata, true);
+	                Collections.sort(fmds.data);
+		        	
+	                if(fi.fop == FOP.LOCAL_HAS_DELETED)
+	                {
+	                	 for(chunk c : fmds.data)
+	                     {
+	                     	//reduce ref counter or delete object in 1 min
+	                		RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
+	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
+	                     }  
+	                	
+	                	//Iterator<fileMetadata> it = fmds.data.iterator();
+	                	//while(it.hasNext()){
+	                	//	//fileInfo tmp=it.hashCode();
+	                	//	RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, Integer.toString(it.hashCode()), m_pxy);
+	                    //   Config.logger.debug("reduce ref counter at object level for " + Integer.toString(it.hashCode()));
+	                	//}
+	                }
+        		}
 
-                Config.logger.debug("Done to reduce ref counter at file level meta file for " + fi.filename);
+                Config.logger.debug("Done to delete file leve meta data or reduce ref counter at file level meta file for " + fi.filename);
                 return true;
 	        }
 	        catch (Exception e)
@@ -272,7 +274,6 @@ public class SyncV2 implements Runnable {
 	            return false;
 	        }
     }
-	
 	
 	private  void StartSync() throws Exception
 	{
@@ -399,17 +400,15 @@ public class SyncV2 implements Runnable {
                                     	}
                                     }
                                     
-                                    if (found == true)//it is a move action
+                                    if (found == true) //Move or Rename: it is a move action
                                     {
                                         fi.guid = f.guid;
                                         fi.parentguid = f.parentguid;
                                         fi.status = f.status;
                                         Config.logger.info("File:Move/Rename----" + fi.filename +" from "+ f.filename);
                                     }
-                                    else
+                                    else //COPY: not share the same object for multi-versions purpose. just copy the object in server side.
                                     {
-                                        //not share the same object for multi-versions purpose. just copy the object in server side.
-
                                         String desguid = SmallFunctions.GenerateGUID();
                                         String srcguid = fi.guid;
                                         fi.guid = desguid;
@@ -418,7 +417,28 @@ public class SyncV2 implements Runnable {
                                         byte[] filedata = rr.data;
                                         fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
                                         Collections.sort(fmds.data);
-                                        RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.data.get(0).ConvertToByteArray(), m_pxy);
+                                        
+                                        //Put File Level Meta Data fxxxxxx
+                                        //RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.data.get(0).ConvertToByteArray(), m_pxy);
+                                        
+                                        boolean bolbreak = false;
+                                        for(fileMetadata m : fmds.data)
+                                        {
+                                        	if (bolbreak){break;} //if did it already then skip , end loop
+                                        	if (m.hashcode.toString().equals(fi.filehash.toString())){ //if it's the correct file hash, then insert file level meta and add ref counter
+                                                //Put File Level Meta Data fxxxxxx
+                                                RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, m.ConvertToByteArray(), m_pxy);
+                                                if (Config.refcounter == 1) {
+			                                        for(chunk c : m.data)
+			                                        {
+		                                        	//reduce ref counter or delete object in 1 min
+			                                   		    RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
+			                                            Config.logger.debug("add last batch of ref counter at object level for COPY" + "c"+ Integer.toString(c.flag) + c.hashvalue);
+		                                    		}
+		                                        } 
+		                                        bolbreak = true;
+	                                        }
+                                        }
                                         
                                         Config.logger.info("File:COPY----" + fi.filename);;
                                     }
@@ -757,10 +777,22 @@ public class SyncV2 implements Runnable {
                                     	 if (ht.get(c.hashvalue)==null)
                                          {
                                     		 int tmpf=-1;
-                                         	if(cc.contains("c1"+c.hashvalue))
-                                         		tmpf=1;
-                                         	else if (cc.contains("c0"+c.hashvalue))
-                                         		tmpf=0;
+                                         	if(cc.contains("c1"+c.hashvalue)){
+                                        		tmpf=1;
+                                        		if (Config.refcounter == 1) {
+                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                        		}
+                                        	}
+                                        	else if (cc.contains("c0"+c.hashvalue)){
+                                        		tmpf=0;
+                                        		if (Config.refcounter == 1){
+                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+                                        		}
+                                        	}
+                                         	//if(cc.contains("c1"+c.hashvalue))
+                                         	//	tmpf=1;
+                                         	//else if (cc.contains("c0"+c.hashvalue))
+                                         	//	tmpf=0;
                                          	if(tmpf==1)
                                          		c.flag= c.flag | 1;
                                          	else if(tmpf==0)
@@ -853,8 +885,7 @@ public class SyncV2 implements Runnable {
                                     Config.logger.info("Delete file " + fi.filename);
                                     
                                     //reduce ref counter
-                            		if (Config.refcounter == 1) 
-                            			ReduceRefCounterAndPurgeFile(fi);
+                            		ReduceRefCounterAndPurgeFile(fi);
                             			//RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
                                     
                                     //update remote metadata
