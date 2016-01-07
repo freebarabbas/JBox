@@ -234,6 +234,7 @@ public class RestConnector {
 					
 					String strContainer=container.substring(container.indexOf("/AUTH_")+ 6 + (container.length() - (container.indexOf("/AUTH_")+ 6) -1)/2, container.length());
 					
+					//Object names might contain a slash character (“/”), so pseudo-nested directories are possible.
 					RestConnector.CopyFile(curtoken, strContainer + "/" + object, container + "/backup/" +object + "", pxy);
 					RestConnector.DeleteFile(curtoken,container,object,pxy);
 					
