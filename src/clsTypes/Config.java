@@ -50,6 +50,9 @@ public class Config {
     public static int refactor=0; //no refactor
     public static int refcounter=1; //0 default is off, 1 is on
     
+    public static int containerpurgetime=120;		//seconds
+    public static int objectpurgetime=86400;			//seconds
+    
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
     
