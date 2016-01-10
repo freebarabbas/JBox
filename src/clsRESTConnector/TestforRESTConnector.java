@@ -126,7 +126,7 @@ public class TestforRESTConnector {
 		
 		//DeleteContainer PS: Container have to be empty
 		System.out.println("3.DeleteContainer");
-		RestResult rr3=RestConnector.DeleteContainer(rr.token, rr.storageurl+"/varc1f3cf91ea8820fc58140e909f7eaf196c_d", pxy);
+		RestResult rr3=RestConnector.DeleteContainer(rr.token, rr.storageurl+"/varc1d073f1a20678d56d0b35cee8544dfeb6", pxy);
 		System.out.println(rr3.result);
 		System.out.println(rr3.httpcode);
 

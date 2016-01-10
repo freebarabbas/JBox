@@ -187,8 +187,10 @@ public class RestConnector {
 				long l=0;
 				if (strRefCount==null){
 					objcount = "9000000001";
-				}else{
-
+				}else if(!strRefCount.substring(0,1).equals("9")) {
+					objcount = "9000000001";
+				}
+				else{
 					l = Long.parseLong(strRefCount);
 					l = l + 1;
 					objcount = String.valueOf(l);
