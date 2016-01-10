@@ -1,7 +1,9 @@
 package clsTypes;
 
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.log4j.Level;
@@ -39,7 +41,9 @@ public class Config {
     public static String dbpath=String.format("/home/johnny/JBoxLog/userdata.db",apppath);
     //public static String dbpath=String.format("%s//userdata.db",apppath);
     //public static String loggerfile=String.format("%s\\run.html", apppath);
-    public static String loggerfile=String.format("/home/johnny/JBoxLog/run.html", apppath); 
+    //public static String loggerfile=String.format("/home/johnny/JBoxLog/run.html", apppath); 
+    private static String initialtime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
+    public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath); 
     //public static String loggerfile=String.format("/home/ubuntu/JBoxLog/run.html", apppath);  
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
     public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk and NO for no chunk
@@ -50,8 +54,9 @@ public class Config {
     public static int refactor=0; //no refactor
     public static int refcounter=1; //0 default is off, 1 is on
     
-    public static int containerpurgetime=120;		//seconds
-    public static int objectpurgetime=86400;			//seconds
+    public static int containerpurgetime=600;		//wait how long to puge the container, 600 second = 10 min seconds
+    public static int objectpurgetime=120;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
+    //public static String defaultrefcounter="9000000001";
     
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";

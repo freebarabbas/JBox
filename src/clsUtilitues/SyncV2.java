@@ -118,6 +118,29 @@ public class SyncV2 implements Runnable {
 		return hs;
 	}
 	
+	private Set<String> GetBackupChunk()
+	{
+		Set<String> hs = new HashSet<String>();
+		try
+		{
+			RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "backup/", m_pxy);
+			if(rr.result && rr.data!=null)
+			{
+				String tmp=new String(rr.data);
+				String[] lines = tmp.split("\r\n|\n|\r");
+				for(int i=0;i<lines.length;i++)
+					if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+						hs.add(lines[i]);
+			}
+		}
+		catch(Exception e)
+		{
+			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
+			hs.clear();
+		}		
+		return hs;
+	}
+	
 	private  boolean UpdateRemoteUserMetaFile(fileInfo fi)
     {
         try
@@ -236,7 +259,7 @@ public class SyncV2 implements Runnable {
 	        	
                 String srcguid = fi.guid;
                 //delete file level metadata after 2 min
-        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + 1800);
+        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.containerpurgetime);
         		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
         		
         		if (Config.refcounter == 1) {
@@ -293,6 +316,7 @@ public class SyncV2 implements Runnable {
 		SyncStatus.SetStatus("Identitying the changes");
 		RestResult rr=null;
 		Set<String> cc=GetCurrentChunk(); //get object list under user container from swift
+		Set<String> ccc=GetBackupChunk(); //get cold storage layer , backup chunk
         while (true)
         {
             try
@@ -610,6 +634,7 @@ public class SyncV2 implements Runnable {
                                             {
                                                int tmpf=-1;
                                                
+                                               // cc is current object ( hot data ) and ccc is backup object ( cold data )
                                             	if(cc.contains("c1"+c.hashvalue)){
                                             		tmpf=1;
                                             		if (Config.refcounter == 1) {
@@ -621,7 +646,23 @@ public class SyncV2 implements Runnable {
                                             		if (Config.refcounter == 1){
                                             			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
                                             		}
+                                            	}else if(ccc.contains("c1"+c.hashvalue)){
+                                            		tmpf=1;
+                                            		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                            			ccc.remove("c1"+c.hashvalue);
+                                            		}
                                             	}
+                                            	else if (ccc.contains("c0"+c.hashvalue)){
+                                            		tmpf=0;
+                                            		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "c1"+c.hashvalue, m_pxy);                                           			
+                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+                                            			ccc.remove("c0"+c.hashvalue);
+                                            		}
+                                            	}
+                                            	
                                             	if(tmpf==1)
                                             		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
                                             	else if(tmpf==0)
@@ -788,11 +829,23 @@ public class SyncV2 implements Runnable {
                                         		if (Config.refcounter == 1){
                                         			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
                                         		}
+                                        	}else if(ccc.contains("c1"+c.hashvalue)){
+                                        		tmpf=1;
+                                        		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+                                        			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "c1"+c.hashvalue, m_pxy);                                           			
+                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                        			ccc.remove("c1"+c.hashvalue);
+                                        		}
                                         	}
-                                         	//if(cc.contains("c1"+c.hashvalue))
-                                         	//	tmpf=1;
-                                         	//else if (cc.contains("c0"+c.hashvalue))
-                                         	//	tmpf=0;
+                                        	else if (ccc.contains("c0"+c.hashvalue)){
+                                        		tmpf=0;
+                                        		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+                                        			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "c1"+c.hashvalue, m_pxy);                                           			
+                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+                                        			ccc.remove("c0"+c.hashvalue);
+                                        		}
+                                        	}
+
                                          	if(tmpf==1)
                                          		c.flag= c.flag | 1;
                                          	else if(tmpf==0)
