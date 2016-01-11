@@ -120,7 +120,7 @@ public class SyncV2 implements Runnable {
 	
 	private Set<String> GetBackupChunk()
 	{
-		Set<String> hs = new HashSet<String>();
+		Set<String> bkhs = new HashSet<String>();
 		try
 		{
 			RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer, m_pxy);
@@ -130,15 +130,15 @@ public class SyncV2 implements Runnable {
 				String[] lines = tmp.split("\r\n|\n|\r");
 				for(int i=0;i<lines.length;i++)
 					if(lines[i].startsWith("backup/c")) // && !lines[i].endsWith("_d"))
-						hs.add(lines[i]);
+						bkhs.add(lines[i]);
 			}
 		}
 		catch(Exception e)
 		{
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
-			hs.clear();
+			bkhs.clear();
 		}		
-		return hs;
+		return bkhs;
 	}
 	
 	private  boolean UpdateRemoteUserMetaFile(fileInfo fi)
@@ -313,34 +313,36 @@ public class SyncV2 implements Runnable {
 	        else
 	        	m_usercontainer=m_storageurl+"/"+m_username;
 		}
-		SyncStatus.SetStatus("Identitying the changes");
-		RestResult rr=null;
 		
-		Set<String> cc=null;
-
-
-		Set<String> ccc=null;
-
-
+		RestResult rr=null;
+		Set<String> gcc=null;
+		Set<String> gbc=null;
+		//Set<String> cccc=GetCurrentChunk();
         while (true)
         {
             try
             {
-        		if(ccc != null) 
-        			ccc.clear();
-        		cc=GetCurrentChunk(); //get object list under user container from swift
+            	SyncStatus.SetStatus("Getting the chunk list from server");
+        		if(gcc != null) 
+        			gcc.clear();
+        		gcc=GetCurrentChunk(); //get object list under user container from swift
         		
-        		if(cc != null)
-        			cc.clear();
-        		ccc=GetBackupChunk(); //get cold storage layer , backup chunk
+        		SyncStatus.SetStatus("Getting the backup chunk list from server");
+        		if(gbc != null)
+        			gbc.clear();
+        		gbc=GetBackupChunk(); //get cold storage layer , backup chunk
+        		//gbc=GetCurrentChunk();
         		
+        		SyncStatus.SetStatus("Identitying the changes between current snapshot and local");
             	userMetaData local = null;
+            	
                 File localmetafile=new File(m_metafile);
                 if (localmetafile.exists())
                 {
                     local = new userMetaData(m_metafile);
                     Config.logger.debug(local.ConvertToHTML("Last snapshot"));
                 }
+                
                 userMetaData lastlocal = new userMetaData();              
                 lastlocal.GenerateFilesStructure(m_syncfolders);
                 Config.logger.debug(lastlocal.ConvertToHTML("Current snapshot"));
@@ -356,9 +358,9 @@ public class SyncV2 implements Runnable {
         		//}
                 
 
-                userMetaData merged;
+                
 
-                SyncStatus.SetStatus("Getting user information from server");
+                SyncStatus.SetStatus("Getting user information, file metadata from server");
                 rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
                 byte[] remotebin=null;
                 if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND)
@@ -367,6 +369,8 @@ public class SyncV2 implements Runnable {
                 }
                 else
                 	remotebin=rr.data;
+                
+                SyncStatus.SetStatus("Identitying the changes between local merge and remote");
                 if (remotebin == null)
                 {                    
                     Config.logger.debug("NO user metadata file in server at this time.");
@@ -385,18 +389,23 @@ public class SyncV2 implements Runnable {
                 else
                 {                  
                     userMetaData tmpumd=new userMetaData(remotebin);
-                    Config.logger.debug(tmpumd.ConvertToHTML("Remote snapshot"));
+                    Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
                     lastlocal.Merge(tmpumd);
                     Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
                 }
+                
+                userMetaData merged;
                 merged = lastlocal;
                                
                 Iterator<fileInfo> it = merged.filelist.iterator();
+                
+                SyncStatus.SetStatus("Identitying done and start to processsing objects");
+                
                 while(it.hasNext())
                 {
                     fileInfo fi=it.next();
                     Config.logger.debug("Start to process:"+fi.ConvertToHTML());
-                    SyncStatus.SetStatus(fi.filename,"start to sync","Syncing "+ fi.filename);
+                    SyncStatus.SetStatus(fi.filename,"start to sync","Syncing (upload/download/copy/overwrite) "+ fi.filename);
                 	if (fi.type == 1 || fi.type == 2)//2 root folder, 1 sub folder
                     {
                         if(fi.fop == FOP.NEW)//fi.fop 1. NEW, 2. DOWNLOAD, 3. UPLOAD and 4. NONE
@@ -648,33 +657,33 @@ public class SyncV2 implements Runnable {
                                                int tmpf=-1;
                                                
                                                // cc is current object ( hot data ) and ccc is backup object ( cold data )
-                                            	if(cc.contains("c1"+c.hashvalue)){
+                                            	if(gcc.contains("c1"+c.hashvalue)){
                                             		tmpf=1;
                                             		if (Config.refcounter == 1) {
                                             			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
                                             		}
                                             	}
-                                            	else if (cc.contains("c0"+c.hashvalue)){
+                                            	else if (gcc.contains("c0"+c.hashvalue)){
                                             		tmpf=0;
                                             		if (Config.refcounter == 1){
                                             			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
                                             		}
-                                            	}else if(ccc.contains("backup/" + "c1"+c.hashvalue)){
+                                            	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
                                             		tmpf=1;
                                             		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
                                             			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/" + "c1"+c.hashvalue, m_pxy);
                                             			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
-                                            			cc.add("c1" + c.hashvalue);
-                                            			ccc.remove("backup/" + "c1"+c.hashvalue);
+                                            			gcc.add("c1" + c.hashvalue);
+                                            			gbc.remove("backup/" + "c1"+c.hashvalue);
                                             		}
                                             	}
-                                            	else if (ccc.contains("backup/" + "c0"+c.hashvalue)){
+                                            	else if (gbc.contains("backup/" + "c0"+c.hashvalue)){
                                             		tmpf=0;
                                             		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
                                             			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/" + "c0"+c.hashvalue, m_pxy);                                           			
                                             			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
-                                            			cc.add("c0" + c.hashvalue);
-                                            			ccc.remove("backup/" + "c0"+c.hashvalue);
+                                            			gcc.add("c0" + c.hashvalue);
+                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
                                             		}
                                             	}
                                             	
@@ -705,7 +714,7 @@ public class SyncV2 implements Runnable {
                                                 	ht.put(c.hashvalue,"0");
                                                 	uploadsize+=tmp.length;
                                                 }
-                                                cc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
                                                 
                                                 
                                             }
@@ -833,33 +842,33 @@ public class SyncV2 implements Runnable {
                                     	 if (ht.get(c.hashvalue)==null)
                                          {
                                     		 int tmpf=-1;
-                                         	if(cc.contains("c1"+c.hashvalue)){
+                                         	if(gcc.contains("c1"+c.hashvalue)){
                                         		tmpf=1;
                                         		if (Config.refcounter == 1) {
                                         			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
                                         		}
                                         	}
-                                        	else if (cc.contains("c0"+c.hashvalue)){
+                                        	else if (gcc.contains("c0"+c.hashvalue)){
                                         		tmpf=0;
                                         		if (Config.refcounter == 1){
                                         			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
                                         		}
-                                        	}else if(ccc.contains("backup/" + "c1"+c.hashvalue)){
+                                        	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
                                         		tmpf=1;
                                         		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
                                         			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/"+"c1"+c.hashvalue, m_pxy);                                           			
                                         			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
-                                        			cc.add("c1" + c.hashvalue);
-                                        			ccc.remove("backup/" + "c1"+c.hashvalue);
+                                        			gcc.add("c1" + c.hashvalue);
+                                        			gbc.remove("backup/" + "c1"+c.hashvalue);
                                         		}
                                         	}
-                                        	else if (ccc.contains("backup/" + "c0"+c.hashvalue)){
+                                        	else if (gcc.contains("backup/" + "c0"+c.hashvalue)){
                                         		tmpf=0;
                                         		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
                                         			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/"+"c0"+c.hashvalue, m_pxy);                                           			
                                         			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
-                                        			cc.add("c1" + c.hashvalue);
-                                        			ccc.remove("backup/" + "c0"+c.hashvalue);
+                                        			gcc.add("c1" + c.hashvalue);
+                                        			gbc.remove("backup/" + "c0"+c.hashvalue);
                                         		}
                                         	}
 
@@ -887,7 +896,7 @@ public class SyncV2 implements Runnable {
                                              	ht.put(c.hashvalue,"0");
                                              	uploadsize+=tmp.length;
                                              }
-                                             cc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+                                             gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
                                          }
                                          else
                                          {
@@ -927,8 +936,10 @@ public class SyncV2 implements Runnable {
                             break;
                     }
                 }
+
                 for (fileInfo fi : merged.filelist)
                 {
+                    SyncStatus.SetStatus("Syncing (deletion)"+ fi.filename);
                     if (fi.type == 1 || fi.type == 2)//folder
                     {
                         if (fi.fop == FOP.LOCAL_HAS_DELETED || fi.fop == FOP.REMOTE_HAS_DELETED)

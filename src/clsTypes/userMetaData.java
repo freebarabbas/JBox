@@ -363,7 +363,7 @@ public class userMetaData  implements Metadata {
         	if(pre!=null)
 				pre.fop=FOP.LOCAL_HAS_DELETED;
         	
-
+        	//clean out the duplicated one for comparison before
         	it = filelist.iterator();
         	while (it.hasNext()) 
             {
