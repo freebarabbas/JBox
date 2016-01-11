@@ -305,7 +305,8 @@ public class userMetaData  implements Metadata {
         				if(pre.filename.compareToIgnoreCase(fi.filename)!=0||pre.type!=fi.type)
         				{   
         					if(pre.filename.compareToIgnoreCase(fi.filename)!=0){
-        						pre.versionflag=-1;
+        						//pre.versionflag=-1;
+        						pre.fop=FOP.LOCAL_HAS_DELETED;
         					}
         					fi.fop=FOP.NEW;  
         					if(fi.type==0)
