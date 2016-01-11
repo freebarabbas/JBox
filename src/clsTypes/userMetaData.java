@@ -303,7 +303,10 @@ public class userMetaData  implements Metadata {
         			else
         			{
         				if(pre.filename.compareToIgnoreCase(fi.filename)!=0||pre.type!=fi.type)
-        				{      					
+        				{   
+        					if(pre.filename.compareToIgnoreCase(fi.filename)!=0){
+        						pre.versionflag=-1;
+        					}
         					fi.fop=FOP.NEW;  
         					if(fi.type==0)
             					fi.filehash=HashCalc.GetFileCityHash(fi.filename);
@@ -348,9 +351,9 @@ public class userMetaData  implements Metadata {
         						fi.guid=pre.guid;
         						fi.status=pre.status;
         					}
+            				pre.versionflag=-1; //-1 means will be removed from the list
+            				pre=null;
         				}
-        				pre.versionflag=-1;
-        				pre=null;
         			}
         		}
         		else

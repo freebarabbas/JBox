@@ -936,7 +936,7 @@ public class SyncV2 implements Runnable {
                             break;
                     }
                 }
-
+                //Deletion
                 for (fileInfo fi : merged.filelist)
                 {
                     SyncStatus.SetStatus("Syncing (deletion)"+ fi.filename);
