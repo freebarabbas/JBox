@@ -451,6 +451,7 @@ public class SyncV2 implements Runnable {
                                         fi.guid = f.guid;
                                         fi.parentguid = f.parentguid;
                                         fi.status = f.status;
+                                        f.fop=FOP.MOVE_FROM_REF;
                                         Config.logger.info("File:Move/Rename----" + fi.filename +" from "+ f.filename);
                                     }
                                     else //COPY: not share the same object for multi-versions purpose. just copy the object in server side.
@@ -954,7 +955,12 @@ public class SyncV2 implements Runnable {
                     }
                     switch (fi.fop) //Deletion : LOCAL_HAS_DELETED or REMOTE_HAS_DELETED
                     {
-                        case LOCAL_HAS_DELETED:
+	                    case MOVE_FROM_REF:
+		                    {
+		                        //Do Nothing for Move From Reference
+		                    }
+		                    break;
+                    	case LOCAL_HAS_DELETED:
                             {
                                 try
                                 {

@@ -7,6 +7,7 @@ package clsTypes;
 public enum FOP {
 	NEW,
     COPY,
+    MOVE_FROM_REF,
     CHANGED,
     BRANCH,
     UPLOAD,

@@ -271,9 +271,9 @@ public class userMetaData  implements Metadata {
         	while (it.hasNext()) 
             {
         		fileInfo fi=it.next();
-        		if(fi.versionflag==1)
+        		if(fi.versionflag==1) //0 is local metadata (prelocal), 1 is current fs snapshot(curlocal), 2. merge local, 3. remote, 4 merge ( final )
         		{
-        			if(pre==null)
+        			if(pre==null) // if pre is null and fi version is 1, then means new file show up in local
         			{
         				fi.fop=FOP.NEW;
         				if(fi.type==0)
@@ -300,7 +300,7 @@ public class userMetaData  implements Metadata {
                             }
         				}
         			}
-        			else
+        			else // got a pair then compare the file name and type match
         			{
         				if(pre.filename.compareToIgnoreCase(fi.filename)!=0||pre.type!=fi.type)
         				{   
@@ -311,11 +311,11 @@ public class userMetaData  implements Metadata {
         					if(fi.type==0)
             					fi.filehash=HashCalc.GetFileCityHash(fi.filename);
         				}
-        				else
+        				else //file name match and type match, then check type 0 is object, other than that is folder =1 or root folder =2
         				{      					
-        					if(fi.type==0)
+        					if(fi.type==0) //object
         					{
-	        					if(pre.dt.compareTo(fi.dt)==0)
+	        					if(pre.dt.compareTo(fi.dt)==0) //check date is the same or not
 	        					{
 	        						fi.parentguid=pre.parentguid;
 	        						fi.guid=pre.guid;
@@ -323,7 +323,7 @@ public class userMetaData  implements Metadata {
 	        						fi.fop=FOP.ALREADYUPLOAD;
 	        						fi.filehash=pre.filehash;	        						
 	        					}
-	        					else
+	        					else if(pre.dt.compareTo(fi.dt)<0)//date diff, if <0, curlocal is newer
 	        					{	        						
 	        						fi.filehash=HashCalc.GetFileCityHash(fi.filename);
 	        						Iterator<fileInfo> it3 = loc.filelist.iterator();
@@ -335,7 +335,7 @@ public class userMetaData  implements Metadata {
                 						if(tmp3.guid.compareToIgnoreCase(pre.guid)==0)
                 							sameguid++;
                 					}
-	        						if(sameguid==1){     						
+	        						if(sameguid==1){ // as long as at least one object diff 						
 	        							fi.fop=FOP.REMOTE_NEED_OVERWRITE;
 	        							fi.guid=pre.guid;
 	        							fi.status=pre.status;
@@ -344,8 +344,29 @@ public class userMetaData  implements Metadata {
 	        						else
 	        							fi.fop=FOP.BRANCH;
 	        					}
+	        					else if(pre.dt.compareTo(fi.dt)>0)//date diff, if <0, prelocal is newer which is impossible
+	        					{	        						
+	        						fi.filehash=HashCalc.GetFileCityHash(fi.filename);
+	        						Iterator<fileInfo> it3 = loc.filelist.iterator();
+	        						int sameguid=0;
+	        						fileInfo tmp3=null;
+	        						while(it3.hasNext())
+                					{
+            							tmp3=it3.next();
+                						if(tmp3.guid.compareToIgnoreCase(pre.guid)==0)
+                							sameguid++;
+                					}
+	        						if(sameguid==1){ // as long as at least one object diff 	    						
+	        							fi.fop=FOP.LOCAL_NEED_OVERWRITE;
+	        							fi.guid=pre.guid;
+	        							fi.status=pre.status;
+	        							fi.parentguid=pre.parentguid;
+	        						}
+	        						else
+	        							fi.fop=FOP.BRANCH;
+	        					}
         					}
-        					else
+        					else // folder, then keep folder
         					{
         						fi.parentguid=pre.parentguid;
         						fi.guid=pre.guid;
@@ -356,9 +377,9 @@ public class userMetaData  implements Metadata {
         				}
         			}
         		}
-        		else
+        		else //for pre version = 0, then it should be pre local, then be pre
         		{
-        			if(pre!=null)
+        			if(pre!=null) //if pre version =0, fi version =0, means pre delete, move fi to pre
         				pre.fop=FOP.LOCAL_HAS_DELETED;
         			pre=fi;
         		}       		
@@ -447,7 +468,7 @@ public class userMetaData  implements Metadata {
             				}
             				else if(fi.dt.compareTo(pre.dt)==0)
             				{
-            					if(pre.fop!=FOP.LOCAL_HAS_DELETED)
+            					if(pre.fop!=FOP.LOCAL_HAS_DELETED&&pre.fop!=FOP.COPY)
             						pre.fop=FOP.NONE;
             				}
             				else
