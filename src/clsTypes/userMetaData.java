@@ -285,18 +285,59 @@ public class userMetaData  implements Metadata {
     						while(it4.hasNext())
         					{
         						tmp4=it4.next();
-        						if(tmp4.filehash.compareToIgnoreCase(fi.filehash)==0)
+        						if(tmp4.filehash.compareToIgnoreCase(fi.filehash)==0&&tmp4.status==0&&tmp4.versionflag==0)
         						{
-        							samehash++;
-        							break;
+        							Iterator<fileInfo> itpair = this.filelist.iterator();
+                            		fileInfo pair=null;
+                            		int haspair=0;
+                            		while (itpair.hasNext()){
+                            			pair=itpair.next();
+                            			if(pair.filename.compareTo(tmp4.filename)==0 && pair.versionflag==1){
+                            				haspair++;
+                            				break;
+                            			}
+                            		}
+                            		//it's not a pair which means was moved
+                            		if (haspair==0){
+	        							samehash++;
+	        							break;
+                            		}
         						}
         					}
                             if (samehash > 0)
                             {
+                   
                             	fi.status=tmp4.status;
                             	fi.guid=tmp4.guid;
                             	fi.parentguid=tmp4.parentguid;
-                            	fi.fop = FOP.COPY;
+                            	if(tmp4.fop==FOP.LOCAL_HAS_DELETED){
+                            		fi.fop = FOP.MOVE_FROM_REF;
+                            		//tmp4.versionflag=-1;//-1 means will be removed from the list
+                            		tmp4.fop=FOP.MOVE_TO_REF;
+                            	}
+                            	else{
+                            		Iterator<fileInfo> itcur = this.filelist.iterator();
+                            		fileInfo cur=null;
+                            		int samename=0;
+                            		while (itcur.hasNext())
+                            		{
+                            			cur=itcur.next(); // same name in fi list(flag=1, current snapshot) 
+                            			if(cur.filename.compareTo(tmp4.filename)==0&&cur.versionflag==1)
+                            			{
+                            				samename++;
+                            				break;
+                            			}
+                            		}
+                            		if(samename >0)
+                            		{
+                            			fi.fop = FOP.COPY;
+                            		}
+                            		else{
+                                		fi.fop = FOP.MOVE_FROM_REF;
+                                		//tmp4.versionflag=-1;//-1 means will be removed from the list
+                                		tmp4.fop=FOP.MOVE_TO_REF;
+                            		}
+                            	}
                             }
         				}
         			}
@@ -304,19 +345,37 @@ public class userMetaData  implements Metadata {
         			{
         				if(pre.filename.compareToIgnoreCase(fi.filename)!=0||pre.type!=fi.type)
         				{   
-        					if(pre.filename.compareToIgnoreCase(fi.filename)!=0){
-        						//pre.versionflag=-1;
-        						pre.fop=FOP.LOCAL_HAS_DELETED;
-        					}
-        					fi.fop=FOP.NEW;  
-        					if(fi.type==0)
-            					fi.filehash=HashCalc.GetFileCityHash(fi.filename);
+        					//1. get file hash
+        					fi.filehash=HashCalc.GetFileCityHash(fi.filename);
+        					
+    						//if fi can find the hash in pre but pre filename didn't exist in fil, then fi is move, move from tmppre
+    						if(fi.filehash.compareToIgnoreCase(pre.filehash)==0){ // as long as at least one object diff 	    						
+    							fi.fop=FOP.MOVE_FROM_REF;
+    							fi.guid=pre.guid;
+    							fi.status=pre.status;
+    							fi.parentguid=pre.parentguid;
+    							
+                				//pre.versionflag=-1; //-1 means will be removed from the list
+                				pre.fop=FOP.MOVE_TO_REF;
+                				pre=null;
+    						}
+    						else{
+	        					//if pre = filename 1 but fi = filename 2 , then filename 1 hash = filename 2 hash
+	        					if(pre.filename.compareToIgnoreCase(fi.filename)!=0){
+	        						//pre.versionflag=-1;
+	        						pre.fop=FOP.LOCAL_HAS_DELETED;
+	        					}
+	        					fi.fop=FOP.NEW;  
+	        					if(fi.type==0)
+	            					fi.filehash=HashCalc.GetFileCityHash(fi.filename);
+    						}
         				}
         				else //file name match and type match, then check type 0 is object, other than that is folder =1 or root folder =2
         				{      					
         					if(fi.type==0) //object
         					{
-	        					if(pre.dt.compareTo(fi.dt)==0) //check date is the same or not
+	        					//if ((pre.filename.compareTo(fi.filename)==0) || (pre.dt.compareTo(fi.dt)==0) ) //check date is the same or not
+        						if(pre.dt.compareTo(fi.dt)==0)
 	        					{
 	        						fi.parentguid=pre.parentguid;
 	        						fi.guid=pre.guid;
@@ -381,12 +440,16 @@ public class userMetaData  implements Metadata {
         		else //for pre version = 0, then it should be pre local, then be pre
         		{
         			if(pre!=null) //if pre version =0, fi version =0, means pre delete, move fi to pre
-        				pre.fop=FOP.LOCAL_HAS_DELETED;
+        				if(pre.fop!=FOP.MOVE_TO_REF){
+        					pre.fop=FOP.LOCAL_HAS_DELETED;
+        				}
         			pre=fi;
         		}       		
             }
         	if(pre!=null)
-				pre.fop=FOP.LOCAL_HAS_DELETED;
+				if(pre.fop!=FOP.MOVE_TO_REF){
+					pre.fop=FOP.LOCAL_HAS_DELETED;
+				}
         	
         	//clean out the duplicated one for comparison before
         	it = filelist.iterator();
@@ -421,7 +484,11 @@ public class userMetaData  implements Metadata {
             		if(pre==null||pre.filename.compareToIgnoreCase(fi.filename)!=0||pre.type!=fi.type||pre.versionflag!=2)
             		{
             			if(pre==null)
-            				fi.fop=FOP.DOWNLOAD;
+            				if (fi.status==0)
+            					//it.remove();
+            					fi.fop = FOP.REMOTE_NEED_TOBE_DELETED;
+            				else
+            					fi.fop=FOP.DOWNLOAD;
             			else
             			{
             				switch(pre.fop)
@@ -431,6 +498,7 @@ public class userMetaData  implements Metadata {
     	                			pre.fop=FOP.UPLOAD;
     	                			break;
     	                		case ALREADYUPLOAD:
+    	                			//if (pre.versionflag == 3){
     	                			pre.fop=FOP.REMOTE_HAS_DELETED;
     	                			break;
     	                		case REMOTE_NEED_OVERWRITE:	
@@ -462,22 +530,39 @@ public class userMetaData  implements Metadata {
             					}
             					else
             					{
-            						fi.copyTo(pre);
-            						pre.fop=FOP.DOWNLOAD;
+                					if (pre.fop==FOP.ALREADYUPLOAD && fi.status!=0){
+                						pre.fop=FOP.LOCAL_NEED_TOBE_DELETED;
+                					}else{
+	            						fi.copyTo(pre);
+	            						pre.fop=FOP.DOWNLOAD;
+                					}
             					}
  
             				}
             				else if(fi.dt.compareTo(pre.dt)==0)
             				{
-            					if(pre.fop!=FOP.LOCAL_HAS_DELETED&&pre.fop!=FOP.COPY)
-            						pre.fop=FOP.NONE;
+            					if(pre.fop!=FOP.LOCAL_HAS_DELETED&&pre.fop!=FOP.COPY){
+            						
+            						if (pre.fop==FOP.ALREADYUPLOAD && fi.status!=0){
+            							pre.fop=FOP.LOCAL_NEED_TOBE_DELETED;
+            						}else if (pre.fop!=FOP.MOVE_TO_REF){
+            							pre.fop=FOP.NONE; //already upload then it's none
+            						}
+            					}
             				}
             				else
             				{
             					if(pre.fop==FOP.BRANCH)
             						pre.fop=FOP.UPLOAD;
-            					else if(pre.fop!=FOP.LOCAL_HAS_DELETED)
-            						pre.fop=FOP.REMOTE_NEED_OVERWRITE;            						
+            					else if (pre.fop==FOP.ALREADYUPLOAD && fi.status!=0)
+            						pre.fop=FOP.LOCAL_NEED_TOBE_DELETED;
+            					else if(pre.fop==FOP.LOCAL_HAS_DELETED)
+            						pre.fop=FOP.REMOTE_NEED_TOBE_DELETED;
+            					else
+            						if(pre.filename.compareTo(fi.filename)==0 && pre.filehash.compareToIgnoreCase(fi.filehash)!=0)
+            						{
+            							pre.fop=FOP.REMOTE_NEED_OVERWRITE;
+            						}
             				}
             			}
             			it.remove();
@@ -496,8 +581,13 @@ public class userMetaData  implements Metadata {
 	                			pre.fop=FOP.UPLOAD;
 	                			break;
 	                		case ALREADYUPLOAD:
-	                			pre.fop=FOP.REMOTE_HAS_DELETED;
-	                			break;
+	                			if (pre.versionflag == 2 && fi.versionflag == 2){
+		                			pre.fop=FOP.LOCAL_NEED_TOBE_DELETED;
+		                			break;
+	                			}
+	                		case COPY:
+	                			//skip and don't do anything
+	                			break;	                			
 	                		case REMOTE_NEED_OVERWRITE:	
 	                			if(snd.dt.compareTo(this.dt)>0)
 	                				pre.fop=FOP.REMOTE_HAS_DELETED;

@@ -181,15 +181,15 @@ public class SyncV2 implements Runnable {
             }
             else
             {
-            	userMetaData umd = new userMetaData(remotebin);
+            	userMetaData umd = new userMetaData(remotebin); //remote meta data version
                 umd.dt = new Date();
-                if (fi.fop == FOP.UPLOAD || fi.fop==FOP.COPY)
+                if (fi.fop == FOP.UPLOAD || fi.fop==FOP.COPY) // new and copy will insert a new record in file level meta data
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
                 	boolean found=false;
                 	while(it1.hasNext()){
-                		fileInfo tmp=it1.next();
-                		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 )
+                		fileInfo tmp=it1.next(); // for new and copy, as long as file name and hash is the same, which means it's copy
+                		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 && tmp.filehash.compareToIgnoreCase(fi.filehash)==0)
                 		{
                 			if(fi.dt.after(tmp.dt))//local is more latest
                 			{
@@ -201,19 +201,19 @@ public class SyncV2 implements Runnable {
                 			break;
                 		}
                 	}
-                	if(found==false)
+                	if(found==false)//if no found in existing file level metadata, it must be new, then just insert a new record.
                 	{
                 		fi.fop=FOP.NONE;
                 		umd.filelist.add(fi);
                 		RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);
                 	}
                 }
-                else if (fi.fop == FOP.REMOTE_NEED_OVERWRITE)
+                else if (fi.fop == FOP.REMOTE_NEED_OVERWRITE) //remote need to be overwrite when modify
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
                 	while(it1.hasNext()){
-                		fileInfo tmp=it1.next();
-                		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 )
+                		fileInfo tmp=it1.next(); //file name and file guid are the same but file hash might be not because content might be changed
+                		if(tmp.filename.compareToIgnoreCase(fi.filename)==0)
                 		{
                 			if(fi.dt.after(tmp.dt))//local is more latest
                 			{
@@ -225,16 +225,51 @@ public class SyncV2 implements Runnable {
                 		}
                 	}
                 }
-                else if(fi.fop == FOP.LOCAL_HAS_DELETED)
+                else if (fi.fop == FOP.MOVE_FROM_REF) //remote need to be overwrite when move/rename
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
                 	while(it1.hasNext()){
-                		fileInfo tmp=it1.next();
-                		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 )
+                		fileInfo tmp=it1.next(); //file name and file guid are the same but file hash might be not because content might be changed
+                		if(tmp.filename.compareToIgnoreCase(fi.filename)!=0 && tmp.guid.compareToIgnoreCase(fi.guid)==0 && tmp.filehash.compareToIgnoreCase(fi.filehash)==0)
                 		{
-                			umd.filelist.remove(tmp);
-                			RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);              						
+            				fi.fop=FOP.NONE; // clean the flag
+            				tmp.copyfrom(fi);
+            				RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);               						
                 			break;
+                		}
+                	}
+                }//local has deleted = remote need to be deleted
+                else if(fi.fop == FOP.LOCAL_HAS_DELETED || fi.fop == FOP.REMOTE_NEED_TOBE_DELETED || fi.fop == FOP.REMOTE_HAS_DELETED || fi.fop == FOP.LOCAL_NEED_TOBE_DELETED) 
+                {
+                	Iterator<fileInfo> it1 = umd.filelist.iterator();
+                	while(it1.hasNext()){
+                		fileInfo tmp=it1.next(); //filename, fileguid and filehash are all the same
+                		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 && tmp.filehash.compareToIgnoreCase(fi.filehash)==0 && tmp.guid.compareToIgnoreCase(fi.guid)==0)
+                		{
+                			if (tmp.status > 1){
+                				tmp.status = tmp.status -1;
+                    			if(tmp.status == 1){//all the clients removed
+    	                			umd.filelist.remove(tmp);
+    	                			RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);              						
+    	                			break;
+                    			}else{
+                    				RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);
+                    				break;
+                    			}
+                			}else if (tmp.status == 0){
+                				if (Config.clientnum == 1){
+    	                			umd.filelist.remove(tmp);
+    	                			RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);              						
+    	                			break;
+                				}
+                				else{
+                    				fi.status = Config.clientnum;
+                    				fi.fop = FOP.NONE;
+                    				tmp.copyfrom(fi);
+                    				RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);
+                    				break;
+                				}
+                			}
                 		}
                 	}
                 }
@@ -250,6 +285,76 @@ public class SyncV2 implements Runnable {
             return false;
         }
     }
+	
+	private  boolean UpdateRemoteUserMetaFile(fileInfo fito, fileInfo fifrom)
+    {
+        try
+        {
+        	Config.logger.debug("Start to update user meta file for " + fito.filename);
+            RestResult rr= RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE-L", m_pxy);
+            byte[] lockbin=rr.data;
+            while (lockbin != null)//have lock at this time
+            {
+            	Config.logger.debug("find lock when update user meta file for " + fito.filename);
+            	String tmp=new String(lockbin);
+            	Date lockdt=SmallFunctions.String2Date(tmp);
+            	Calendar ca=Calendar.getInstance();
+            	ca.setTime(lockdt);
+            	ca.add(Calendar.MINUTE, 1);
+                if (ca.getTime().after(lockdt))//exceeded 1 minute to be locked
+                {
+                	Config.logger.debug("Remove lock forcely to update user meta file for " + fito.filename);                       
+                    break;
+                }
+				Thread.sleep(1000);
+                rr= RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE-L", m_pxy);
+                lockbin=rr.data;
+
+            }
+            Config.logger.debug("Add lock  to update user meta file for " + fito.filename); 
+            RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE-L", SmallFunctions.Date2String(new Date()).getBytes(), m_pxy);
+            rr = RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
+            byte[] remotebin=rr.data;
+            if (remotebin == null)
+            {
+                userMetaData umd = new userMetaData();
+                umd.user = m_username;
+                umd.filelist = new ArrayList<fileInfo>(); 
+                fito.fop = FOP.NONE;
+                umd.filelist.add(fito);
+                RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);
+            }
+            else
+            {
+            	userMetaData umd = new userMetaData(remotebin); //remote meta data version
+                umd.dt = new Date();
+                if (fito.fop == FOP.MOVE_FROM_REF) //remote need to be overwrite when move/rename
+                {
+                	Iterator<fileInfo> it1 = umd.filelist.iterator();
+                	while(it1.hasNext()){
+                		fileInfo tmp=it1.next(); //file name and file guid are the same but file hash might be not because content might be changed
+                		if(tmp.filename.compareToIgnoreCase(fifrom.filename)==0 && tmp.guid.compareToIgnoreCase(fifrom.guid)==0 && tmp.filehash.compareToIgnoreCase(fifrom.filehash)==0)
+                		{
+            				fito.fop=FOP.NONE; // clean the flag, only none will write local file level metadata
+            				tmp.copyfrom(fito);
+            				RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);               						
+                			break;
+                		}
+                	}
+                }
+            }
+            RestConnector.DeleteFile(m_tkn, m_usercontainer , "USERMETAFILE-L", m_pxy);
+            Config.logger.debug("Remove lock for update user meta file for " + fito.filename);
+            Config.logger.debug("Done to update user meta file for " + fito.filename);
+            return true;
+        }
+        catch (Exception e)
+        {
+        	Config.logger.error("Error to update user meta file for " + fifrom.filename+ ".Error:"+e.getMessage());
+            return false;
+        }
+    }
+	
 	
 	private  boolean ReduceRefCounterAndPurgeFile(fileInfo fi)
     {
@@ -344,6 +449,7 @@ public class SyncV2 implements Runnable {
                 }
                 
                 userMetaData lastlocal = new userMetaData();              
+
                 lastlocal.GenerateFilesStructure(m_syncfolders);
                 Config.logger.debug(lastlocal.ConvertToHTML("Current snapshot"));
                 if (local != null)
@@ -417,10 +523,13 @@ public class SyncV2 implements Runnable {
                             flgchanged = true;
                             Config.logger.info("Create local Folder:"+fi.filename);
                         }
-                        if (fi.fop == FOP.UPLOAD)
+                        if (fi.fop == FOP.UPLOAD || fi.fop == FOP.REMOTE_NEED_TOBE_DELETED)
                         {
                             flgchanged = true;
                             UpdateRemoteUserMetaFile(fi);  
+                        //}else if (fi.top == FOP.REMOTE_NEED_TOBE_DELETED)
+                        //{
+                        	
                         }
                         fi.fop=FOP.NONE;
                         continue;
@@ -438,7 +547,7 @@ public class SyncV2 implements Runnable {
                                     fileInfo f=null;
                                     while(it1.hasNext())
                                     {
-                                    	f=it1.next();
+                                    	f=it1.next(); //find copy but with delete then it's rename or move
                                     	if(f.filehash.compareToIgnoreCase( fi.filehash)==0 && (f.fop==FOP.LOCAL_HAS_DELETED || f.fop==FOP.REMOTE_HAS_DELETED ))
                                     	{
                                     		found=true;
@@ -446,7 +555,7 @@ public class SyncV2 implements Runnable {
                                     	}
                                     }
                                     
-                                    if (found == true) //Move or Rename: it is a move action
+                                    if (found == true) //Move or Rename: it is a move action, since local deleted or remote deleted
                                     {
                                         fi.guid = f.guid;
                                         fi.parentguid = f.parentguid;
@@ -455,7 +564,7 @@ public class SyncV2 implements Runnable {
                                         Config.logger.info("File:Move/Rename----" + fi.filename +" from "+ f.filename);
                                     }
                                     else //COPY: not share the same object for multi-versions purpose. just copy the object in server side.
-                                    {
+                                    {   //desguid (destination) is new, srcguid ( source ) is old, copy chunk metadata from old but give a new CLM
                                         String desguid = SmallFunctions.GenerateGUID();
                                         String srcguid = fi.guid;
                                         fi.guid = desguid;
@@ -816,6 +925,24 @@ public class SyncV2 implements Runnable {
                                 }
                             }
                             break;
+ 	                    case MOVE_FROM_REF:
+		                    {
+		                    	
+		                        //update local metadata
+		                    	flgchanged = true;
+		                    	
+		                        for(fileInfo f: merged.filelist)
+                                {
+		                        	if(f.fop==FOP.MOVE_TO_REF)
+		                        	{
+			                            //update remote metadata
+			                            UpdateRemoteUserMetaFile(fi, f); 
+		                        	}
+                                }
+		                    	
+
+		                    }
+		                    break;
                         case REMOTE_NEED_OVERWRITE:
                             {
                                 try
@@ -955,11 +1082,46 @@ public class SyncV2 implements Runnable {
                     }
                     switch (fi.fop) //Deletion : LOCAL_HAS_DELETED or REMOTE_HAS_DELETED
                     {
-	                    case MOVE_FROM_REF:
-		                    {
-		                        //Do Nothing for Move From Reference
-		                    }
-		                    break;
+	                    case LOCAL_NEED_TOBE_DELETED:
+                        {
+                            try
+                            {
+                            	//local as delete, so don't need to delete local, just need to udpate the remove metadata
+                                flgchanged = true;
+                                if (new File(fi.filename).exists())
+                                    new File(fi.filename).delete();
+                                
+                                Config.logger.info("Delete file " + fi.filename);
+                                
+                                //reduce ref counter
+                        		ReduceRefCounterAndPurgeFile(fi);
+                        			//RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+                                
+                                //update remote metadata
+                                UpdateRemoteUserMetaFile(fi); 
+                                
+                            }
+                            catch (Exception ex)
+                            {
+                                fi.fop = FOP.FAIL;
+                                Config.logger.error("Error to process "+fi.filename+".Error:"+ex.getMessage());
+                            }
+                        }
+                        break; 
+	                    case REMOTE_NEED_TOBE_DELETED:
+                        {
+                            try
+                            {
+                                UpdateRemoteUserMetaFile(fi); 
+                                
+                            }
+                            catch (Exception ex)
+                            {
+                                fi.fop = FOP.FAIL;
+                                Config.logger.error("Error to process "+fi.filename+".Error:"+ex.getMessage());
+                            }
+                        }
+                        break;  
                     	case LOCAL_HAS_DELETED:
                             {
                                 try

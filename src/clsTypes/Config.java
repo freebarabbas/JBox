@@ -58,6 +58,8 @@ public class Config {
     public static int objectpurgetime=600;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
     //public static String defaultrefcounter="9000000001";
     
+    public static int clientnum=1; // clientnum=file level metadata status , default = 0
+    
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
     
