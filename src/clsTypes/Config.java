@@ -42,24 +42,34 @@ public class Config {
     //public static String dbpath=String.format("%s//userdata.db",apppath);
     //public static String loggerfile=String.format("%s\\run.html", apppath);
     //public static String loggerfile=String.format("/home/johnny/JBoxLog/run.html", apppath); 
+    
+    //Logging
     private static String initialtime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
     public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath); 
     //public static String loggerfile=String.format("/home/ubuntu/JBoxLog/run.html", apppath);  
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
-    public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk and NO for no chunk
+
     public static Logger logger=null;
     public static Level loglevel=Level.INFO; //DEBUG show all info or INFO or ERROR
+    
+    //Dedup Algorithm Parameter
+    public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk and NO for no chunk    
     public static int compress=0; // bit 1: compress and 0 is no compress
     public static int divider=64; //divider default is 64 , splite file into 32 ~ 73 chunks 
     public static int refactor=0; //no refactor
-    public static int refcounter=1; //0 default is off, 1 is on
+    
+    //Purge
+    public static int refcounter=0; //0 default is off, 1 is on
     
     public static int containerpurgetime=600;		//wait how long to puge the container, 600 second = 10 min seconds
     public static int objectpurgetime=600;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
     //public static String defaultrefcounter="9000000001";
     
-    public static int clientnum=1; // clientnum=file level metadata status , default = 0
+    public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge
     
+    public static int versionkeep=20; //
+    
+    //Credential
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
     
