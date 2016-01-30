@@ -59,7 +59,7 @@ public class Config {
     public static int refactor=0; //no refactor
     
     //Purge
-    public static int refcounter=0; //0 default is off, 1 is on
+    public static int refcounter=1; //0 default is off, 1 is on
     
     public static int containerpurgetime=600;		//wait how long to puge the container, 600 second = 10 min seconds
     public static int objectpurgetime=600;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
@@ -67,7 +67,7 @@ public class Config {
     
     public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge
     
-    public static int versionkeep=20; //
+    public static int versionkeep=20; //keep last 20 versioin
     
     //Credential
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
