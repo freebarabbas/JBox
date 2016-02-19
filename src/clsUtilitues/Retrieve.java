@@ -1,20 +1,11 @@
 package clsUtilitues;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import clsTypes.*;
 import clsCompExtract.ZipProcess;
 //import clsCompExtract.ZipProcess;
@@ -29,42 +20,25 @@ public class Retrieve {
 	private ebProxy m_pxy;
 	private String m_tkn;
 	private String m_storageurl;
-	private int m_initialtype;
 	private String m_usercontainer;
 	private String m_level;
 	private String m_guid;
 	private String m_name;
+	private int m_version=0;
 	
-	/*
-	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy)
-	{
-		//m_syncfolders=p_syncfolders;
-		//m_metafile=p_metafile;
-		m_url=p_url;
-		m_username=p_username;
-		m_pwd=p_pwd;
-		m_pxy=p_pxy;
-		m_initialtype=1;
-	}
-	*/
 	
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid)
 	{
-		//m_syncfolders=p_syncfolders;
-		//m_metafile=p_metafile;
 		m_url=p_url;
 		m_username=p_username;
 		m_pwd=p_pwd;
 		m_pxy=p_pxy;
 		m_level=p_level;
-		m_initialtype=1;
 		m_guid=p_guid;
 	}
 	
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_name)
 	{
-		//m_syncfolders=p_syncfolders;
-		//m_metafile=p_metafile;
 		m_url=p_url;
 		m_username=p_username;
 		m_pwd=p_pwd;
@@ -72,7 +46,29 @@ public class Retrieve {
 		m_level=p_level;
 		m_guid=p_guid;
 		m_name=p_name;
-		m_initialtype=1;
+	}
+	
+	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version)
+	{
+		m_url=p_url;
+		m_username=p_username;
+		m_pwd=p_pwd;
+		m_pxy=p_pxy;
+		m_level=p_level;
+		m_guid=p_guid;
+		m_version=p_version;
+	}
+	
+	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version, String p_name)
+	{
+		m_url=p_url;
+		m_username=p_username;
+		m_pwd=p_pwd;
+		m_pxy=p_pxy;
+		m_level=p_level;
+		m_guid=p_guid;
+		m_name=p_name;
+		m_version=p_version;
 	}
 	
 	private boolean GetToken()
@@ -108,75 +104,20 @@ public class Retrieve {
 		}
 	}
 	
-	private Set<String> GetCurrentChunk()
-	{
-		Set<String> hs = new HashSet<String>();
-		try
-		{
-			RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer, m_pxy);
-			if(rr.result && rr.data!=null)
-			{
-				String tmp=new String(rr.data);
-				String[] lines = tmp.split("\r\n|\n|\r");
-				for(int i=0;i<lines.length;i++)
-					if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
-						hs.add(lines[i]);
-			}
-		}
-		catch(Exception e)
-		{
-			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
-			hs.clear();
-		}		
-		return hs;
-	}
-	
-	private Set<String> GetBackupChunk()
-	{
-		Set<String> bkhs = new HashSet<String>();
-		try
-		{
-			RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer, m_pxy);
-			if(rr.result && rr.data!=null)
-			{
-				String tmp=new String(rr.data);
-				String[] lines = tmp.split("\r\n|\n|\r");
-				for(int i=0;i<lines.length;i++)
-					if(lines[i].startsWith("backup/c")) // && !lines[i].endsWith("_d"))
-						bkhs.add(lines[i]);
-			}
-		}
-		catch(Exception e)
-		{
-			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
-			bkhs.clear();
-		}		
-		return bkhs;
-	}
-	
 	public  void StartRetrieve() throws Exception
 	{
 		
 		SyncStatus.SetStatus("Connecting to server");
-		if(m_initialtype==1)
-		{
+		RestResult rr=null;
+		if(GetToken()==true)
+        {
 			Config.logger.debug("Receiving token from server");
-			if(GetToken()==false)
-				return;
 			int dotIndex=m_username.lastIndexOf(':');
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
 	        else
 	        	m_usercontainer=m_storageurl+"/"+m_username;
-		}
-		
-		RestResult rr=null;
-		Set<String> gcc=null;
-		Set<String> gbc=null;
-		//GetToken==true;
-        while (true)
-        {
-
+			
         	if (m_level.equalsIgnoreCase("c")){
         		
         		String strFileName="";
@@ -212,7 +153,6 @@ public class Retrieve {
 	                	}
 	                } 
 	            }
-        		
         		if (!m_guid.equalsIgnoreCase("")){
         			int downloadsize=0;
         			
@@ -220,7 +160,12 @@ public class Retrieve {
                 	byte[] filedata = rr.data;
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
                     Collections.sort(fmd.data);
-                    int lastversion=fmd.data.size();
+
+                    
+                    int lastversion=0;
+                    if (m_version==0){lastversion=fmd.data.size();}
+                    else{lastversion=m_version;}
+                    
                     byte[] realdata = new byte[(int) fmd.data.get(lastversion-1).byteslength];
                     fmd.data.get(lastversion-1).data.size();
                     long dsize = 0;
@@ -251,65 +196,30 @@ public class Retrieve {
 	                    FileOutputStream out = new FileOutputStream(m_name);
 	                	out.write(realdata);
 	                	out.close();
-	                	Config.logger.info("Downloaded " + m_name + " with Size(Byte) " + downloadsize);
-	                	System.out.println("Downloaded " + m_name + " with Size(Byte) " + downloadsize);
+	                	Config.logger.info("Downloaded at " + m_name + " with Download Size(Byte) " + downloadsize);
+	                	System.out.println("Downloaded at " + m_name + " with Download Size(Byte) " + downloadsize);
                     }
                     else{
 	                    FileOutputStream out = new FileOutputStream(strFileName);
 	                	out.write(realdata);
 	                	out.close();
-	                	Config.logger.info("Downloaded " + strFileName + " with Size(Byte) " + downloadsize);
-	                	System.out.println("Downloaded " + strFileName + " with Size(Byte) " + downloadsize);                    	
+	                	Config.logger.info("Downloaded at " + strFileName + " with Download Size(Byte) " + downloadsize);
+	                	System.out.println("Downloaded at " + strFileName + " with Download Size(Byte) " + downloadsize);                    	
                     }
-        			/*
-	        		SyncStatus.SetStatus("Getting file information, chunk metadata from server");
-	 	            rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE/f" + m_name, m_pxy);
-	 	            byte[] remotechunkbin=null;
-	 	            if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND)
-	 	            {
-	 	            	//RestConnector.PutContainer(m_tkn, m_usercontainer, m_pxy);
-	 	            	SyncStatus.SetStatus("Can't find chunk information, chunk metadata from server");
-	 	            }
-	 	            else
-	 	            	remotechunkbin=rr.data;
-	 	            
-	 	            if (remotechunkbin == null)
-	 	            {                    
-	 	                Config.logger.debug("NO chunk level metadata file in server at this time.");               
-	 	            }
-	 	            else
-	 	            {                  
-	 	                userMetaData tmpfmd=new userMetaData(remotechunkbin);
-	 	                Config.logger.debug(tmpfmd.ConvertToHTML("Getting remote chunk metadata snapshot"));
-	 	                System.out.println("|File Directory and Name|"+"\t"+"|File GUID|"+"\t"+"|File Content Hash|"+"\t"+"|Create Time|"+"\t"+"|Update Time|"+"\t"+"|Size(Bytes)|");
-	 	                Iterator<fileInfo> itc = tmpfmd.filelist.iterator();
-	 	                while(itc.hasNext())
-	 	                {
-	 	                	fileInfo tmpc=itc.next();
-	 	                	if (tmpc.type==0) {
-	 		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmpc.dt);
-	 		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmpc.lastaction);
-	 		                	System.out.println(tmpc.filename.toString()+"\t"+tmpc.guid.toString()+"\t"+tmpc.filehash.toString()+"\t"+CreateTime+"\t"+UpdateTime+"\t"+tmpc.bytelength);
-	 	                	}
-	 	                }     
-	 	            }
-	 	            */
+                    
         		}else{
         			System.out.println("missing file guid !!!");
+        			return;
         		}
-            	SyncStatus.SetStatus("Getting the chunk list from server");
-        		if(gcc != null) 
-        			gcc.clear();
-        		gcc=GetCurrentChunk(); //get object list under user container from swift
-        		
-        		SyncStatus.SetStatus("Getting the backup chunk list from server");
-        		if(gbc != null) 
-        			gbc.clear();
-        		gbc=GetBackupChunk(); //get object list under user container from swift
-        		
+       
             }else{
-            	System.out.println("missing level !!! < f: file level or c: chunk level >");
+            	System.out.println("missing chunk level !!! < c: chunk level >");
+            	return;
             }
+        }	
+        else{
+        	System.out.println("can't get the tokent");
+        	return;
         }
 		
 	}

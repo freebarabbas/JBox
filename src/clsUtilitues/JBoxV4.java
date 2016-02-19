@@ -8,6 +8,19 @@ import clsTypes.chunkType;
 
 public class JBoxV4 {
 
+	
+	private static boolean isInteger(String s) {
+	    try { 
+	        Integer.parseInt(s); 
+	    } catch(NumberFormatException e) { 
+	        return false; 
+	    } catch(NullPointerException e) {
+	        return false;
+	    }
+	    // only got here if we didn't return false
+	    return true;
+	}
+	
 	public static void main(String[] args) {
 		if(!Config.InitLogger())
 		{
@@ -31,7 +44,7 @@ public class JBoxV4 {
 				
 				switch (args[0].toString()){
 				case "q":
-					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", name or version:" + args[4].toString());
+					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString());
 					if (args[3].toString().equalsIgnoreCase("f")){
 						Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString());
 						q.StartQuery();
@@ -44,15 +57,28 @@ public class JBoxV4 {
 					}
 					break;
 				case "r":
-					if (args[3].toString().equalsIgnoreCase("c") && args.length <= 6){
+					if (args[3].toString().equalsIgnoreCase("c") && args.length == 5){
 						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString());
 						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString());
-						r.StartRetrieve();						
-					}else{
-						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString() + ", output file name:" + args[5].toString());
-						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString(), args[5].toString());
 						r.StartRetrieve();
 					}
+					else if (args[3].toString().equalsIgnoreCase("c") && args.length == 7){
+						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString() + ", version:" + args[5].toString()+ ", output file name:" + args[6].toString());
+						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString(), Integer.parseInt(args[5].toString()), args[6].toString());
+						r.StartRetrieve();						
+					}else{
+						if (args[3].toString().equalsIgnoreCase("c") && args.length == 6 && isInteger(args[5].toString())){
+							System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString() + ", version:" + args[5].toString());
+							Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString(), Integer.parseInt(args[5].toString()));
+							r.StartRetrieve();
+						}else
+						{
+							System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString() + ", output file name:" + args[5].toString());
+							Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString(), args[5].toString());
+							r.StartRetrieve();							
+						}
+					}
+					System.out.println("Download Done !");
 					break;					
 				default: //s
 					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", dedup-alg:" + args[3].toString() + ", divider:" + args[4].toString() + ", refactor:" + args[5].toString() + ", client count:" + args[6].toString());
