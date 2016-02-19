@@ -118,7 +118,23 @@ public class Query {
 	            {                  
 	                userMetaData tmpumd=new userMetaData(remotebin);
 	                Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
-	                System.out.println("|File Directory and Name|"+"\t"+"|File GUID|"+"\t"+"|File Content Hash|"+"\t"+"|Create Time|"+"\t"+"|Update Time|"+"\t"+"|Size(Bytes)|");
+	                
+	                int intCol=0;
+	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
+	                while(itcol.hasNext())
+	                {
+	                	fileInfo tmpcol=itcol.next();
+	                	if (tmpcol.type==0) {
+		                	if (tmpcol.filename.length() > intCol){intCol=tmpcol.filename.length();}
+	                	}
+	                }
+	                
+	                String strDash="-";
+	                for(int i=0; i<(intCol+124+6); i++)
+	                {strDash = strDash + "-";}
+
+	                System.out.println(strDash);
+	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory and Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
 	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
 	                while(it.hasNext())
 	                {
@@ -126,9 +142,12 @@ public class Query {
 	                	if (tmp.type==0) {
 		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
 		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
-		                	System.out.println(tmp.filename.toString()+"\t"+tmp.guid.toString()+"\t"+tmp.filehash.toString()+"\t"+CreateTime+"\t"+UpdateTime+"\t"+tmp.bytelength);
+		                	String ByteLength = String.valueOf(tmp.bytelength);
+		                	System.out.println(strDash);
+			                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
 	                	}
-	                }                  
+	                }
+	                System.out.println(strDash);
 	                //Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
 	            }
         	}else if (m_level.equalsIgnoreCase("c")){
@@ -152,7 +171,25 @@ public class Query {
 	            {                  
 	                userMetaData tmpumd=new userMetaData(remotebin);
 	                Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
-	                System.out.println("|File Directory and Name|"+"\t"+"|File GUID|"+"\t"+"|File Content Hash|"+"\t"+"|Create Time|"+"\t"+"|Update Time|"+"\t"+"|Size(Bytes)|");
+	                
+	                int intCol=0;
+	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
+	                while(itcol.hasNext())
+	                {
+	                	fileInfo tmpcol=itcol.next();
+	                	if (tmpcol.type==0 && tmpcol.guid.equalsIgnoreCase(m_guid)) {
+		                	if (tmpcol.filename.length() > intCol){intCol=tmpcol.filename.length();}
+	                	}
+	                }
+	                
+	                String strDash="-";
+	                for(int i=0; i<(intCol+124+6); i++)
+	                {strDash = strDash + "-";}
+
+	                System.out.println(strDash);
+	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory and Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
+	                
+	                
 	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
 	                while(it.hasNext())
 	                {
@@ -160,9 +197,12 @@ public class Query {
 	                	if (tmp.type==0 && tmp.guid.equalsIgnoreCase(m_guid)) {
 		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
 		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
-		                	System.out.println(tmp.filename.toString()+"\t"+tmp.guid.toString()+"\t"+tmp.filehash.toString()+"\t"+CreateTime+"\t"+UpdateTime+"\t"+tmp.bytelength);
+		                	String ByteLength = String.valueOf(tmp.bytelength);
+		                	System.out.println(strDash);
+			                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
 	                	}
-	                } 
+	                }
+	                System.out.println(strDash);
 	            }
         		
         		if (!m_guid.equalsIgnoreCase("")){
@@ -174,14 +214,23 @@ public class Query {
                     
                     int lastversion=fmd.data.size();
 
+	                String strDash="-";
+	                for(int i=0; i<(30+2); i++)
+	                {strDash = strDash + "-";}
+	                
+	                System.out.print("\n");
+	                System.out.println(strDash);
+	                System.out.println(String.format("|%-10s|%-20s|" , "Version", "TimeStamp" ));
+                    
                     String TimeStamp="";
                     long lngVersion=0;
-                    System.out.println("|Version|" + "\t" + "|TimeStampe|");
                     for (int i=0; i<lastversion; i++){
                     	TimeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(fmd.data.get(i).dt.getTime());
                     	lngVersion=i+1;
-                    	System.out.println("       "+ lngVersion + "\t" + TimeStamp);
+	                	System.out.println(strDash);
+		                System.out.println(String.format("|%-10s|%-20s|" , lngVersion, TimeStamp));
                     }
+                    System.out.println(strDash);
 
         		}else{
         			System.out.println("missing file guid !!!");

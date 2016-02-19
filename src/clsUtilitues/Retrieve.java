@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
+
 import clsTypes.*;
 import clsCompExtract.ZipProcess;
 //import clsCompExtract.ZipProcess;
@@ -140,7 +141,25 @@ public class Retrieve {
 	            {                  
 	                userMetaData tmpumd=new userMetaData(remotebin);
 	                Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
-	                System.out.println("|File Directory and Name|"+"\t"+"|File GUID|"+"\t"+"|File Content Hash|"+"\t"+"|Create Time|"+"\t"+"|Update Time|"+"\t"+"|Size(Bytes)|");
+	                
+	                int intCol=0;
+	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
+	                while(itcol.hasNext())
+	                {
+	                	fileInfo tmpcol=itcol.next();
+	                	if (tmpcol.type==0 && tmpcol.guid.equalsIgnoreCase(m_guid)) {
+		                	if (tmpcol.filename.length() > intCol){intCol=tmpcol.filename.length();}
+	                	}
+	                }
+	                
+	                String strDash="-";
+	                for(int i=0; i<(intCol+124+6); i++)
+	                {strDash = strDash + "-";}
+
+	                System.out.println(strDash);
+	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory and Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
+	                
+	                
 	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
 	                while(it.hasNext())
 	                {
@@ -148,10 +167,12 @@ public class Retrieve {
 	                	if (tmp.type==0 && tmp.guid.equalsIgnoreCase(m_guid)) {
 		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
 		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
-		                	strFileName=tmp.filename.toString();
-		                	System.out.println(tmp.filename.toString()+"\t"+tmp.guid.toString()+"\t"+tmp.filehash.toString()+"\t"+CreateTime+"\t"+UpdateTime+"\t"+tmp.bytelength);
+		                	String ByteLength = String.valueOf(tmp.bytelength);
+		                	System.out.println(strDash);
+			                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
 	                	}
-	                } 
+	                }
+	                System.out.println(strDash);
 	            }
         		if (!m_guid.equalsIgnoreCase("")){
         			int downloadsize=0;
@@ -196,15 +217,15 @@ public class Retrieve {
 	                    FileOutputStream out = new FileOutputStream(m_name);
 	                	out.write(realdata);
 	                	out.close();
-	                	Config.logger.info("Downloaded at " + m_name + " with Download Size(Byte) " + downloadsize);
-	                	System.out.println("Downloaded at " + m_name + " with Download Size(Byte) " + downloadsize);
+	                	Config.logger.info("Downloaded at: " + m_name + " with Download Size:" + downloadsize + " Bytes");
+	                	System.out.println("Downloaded at: " + m_name + " with Download Size:" + downloadsize + " Bytes");
                     }
                     else{
 	                    FileOutputStream out = new FileOutputStream(strFileName);
 	                	out.write(realdata);
 	                	out.close();
-	                	Config.logger.info("Downloaded at " + strFileName + " with Download Size(Byte) " + downloadsize);
-	                	System.out.println("Downloaded at " + strFileName + " with Download Size(Byte) " + downloadsize);                    	
+	                	Config.logger.info("Downloaded at: " + strFileName + " with Download Size:" + downloadsize + " Bytes");
+	                	System.out.println("Downloaded at: " + strFileName + " with Download Size:" + downloadsize + " Bytes");                    	
                     }
                     
         		}else{
