@@ -131,7 +131,7 @@ public class Query {
 	                }                  
 	                //Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
 	            }
-        	}if (m_level.equalsIgnoreCase("c")){
+        	}else if (m_level.equalsIgnoreCase("c")){
 
 	            SyncStatus.SetStatus("Getting user information, file metadata from server");
 	            rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
@@ -193,8 +193,7 @@ public class Query {
             	return;
             }
         	
-        }	
-        else{
+        }else{
         	System.out.println("can't get the tokent");
         	return;
         }

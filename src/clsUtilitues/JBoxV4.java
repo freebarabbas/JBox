@@ -44,17 +44,20 @@ public class JBoxV4 {
 				
 				switch (args[0].toString()){
 				case "q":
-					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString());
 					if (args[3].toString().equalsIgnoreCase("f")){
+						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString());
 						Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString());
 						q.StartQuery();
-					}if (args[3].toString().equalsIgnoreCase("c")){
+					}else if (args[3].toString().equalsIgnoreCase("c")){
+						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString());
 						Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString());
 						q.StartQuery();						
 					}else{
+						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString());
 						Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj);
 						q.StartQuery();
 					}
+					System.out.println("Query Done !");
 					break;
 				case "r":
 					if (args[3].toString().equalsIgnoreCase("c") && args.length == 5){
@@ -78,7 +81,7 @@ public class JBoxV4 {
 							r.StartRetrieve();							
 						}
 					}
-					System.out.println("Download Done !");
+					System.out.println("Retrieve Done !");
 					break;					
 				default: //s
 					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", dedup-alg:" + args[3].toString() + ", divider:" + args[4].toString() + ", refactor:" + args[5].toString() + ", client count:" + args[6].toString());
