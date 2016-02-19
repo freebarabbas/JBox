@@ -44,11 +44,12 @@ public class JBoxV4 {
 					}
 					break;
 				case "r":
-					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", name or version:" + args[4].toString());
-					if (args[3].toString().equalsIgnoreCase("c")){
+					if (args[3].toString().equalsIgnoreCase("c") && args.length <= 6){
+						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString());
 						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString());
 						r.StartRetrieve();						
 					}else{
+						System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", file guid:" + args[4].toString() + ", output file name:" + args[5].toString());
 						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString(), args[5].toString());
 						r.StartRetrieve();
 					}
