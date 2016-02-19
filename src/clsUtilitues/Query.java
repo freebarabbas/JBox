@@ -32,7 +32,7 @@ public class Query {
 	private int m_initialtype;
 	private String m_usercontainer;
 	private String m_level;
-	private String m_name;
+	private String m_guid;
 	
 	
 	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy)
@@ -58,7 +58,7 @@ public class Query {
 		m_initialtype=1;
 	}
 	
-	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_name)
+	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid)
 	{
 		//m_syncfolders=p_syncfolders;
 		//m_metafile=p_metafile;
@@ -67,7 +67,7 @@ public class Query {
 		m_pwd=p_pwd;
 		m_pxy=p_pxy;
 		m_level=p_level;
-		m_name=p_name;
+		m_guid=p_guid;
 		m_initialtype=1;
 	}
 	
@@ -233,7 +233,7 @@ public class Query {
 	                while(it.hasNext())
 	                {
 	                	fileInfo tmp=it.next();
-	                	if (tmp.type==0 && tmp.filename.equalsIgnoreCase(m_name)) {
+	                	if (tmp.type==0 && tmp.guid.equalsIgnoreCase(m_guid)) {
 		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
 		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
 		                	strFileName=tmp.filename.toString();
@@ -242,10 +242,10 @@ public class Query {
 	                } 
 	            }
         		
-        		if (!m_name.equalsIgnoreCase("")){
+        		if (!m_guid.equalsIgnoreCase("")){
         			int downloadsize=0;
         			
-                	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_name, m_pxy);
+                	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
                     Collections.sort(fmd.data);
@@ -279,8 +279,8 @@ public class Query {
                     FileOutputStream out = new FileOutputStream(strFileName);
                 	out.write(realdata);
                 	out.close();
-                	Config.logger.info("Downloaded " + strFileName + " with Size " + dsize);
-        			
+                	Config.logger.info("Downloaded " + strFileName + " with Size(Byte) " + downloadsize);
+                	System.out.println("Downloaded " + strFileName + " with Size(Byte) " + downloadsize);
         			/*
 	        		SyncStatus.SetStatus("Getting file information, chunk metadata from server");
 	 	            rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE/f" + m_name, m_pxy);

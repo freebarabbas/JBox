@@ -45,6 +45,13 @@ public class JBoxV4 {
 					break;
 				case "r":
 					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", level:" + args[3].toString() + ", name or version:" + args[4].toString());
+					if (args[3].toString().equalsIgnoreCase("c")){
+						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString());
+						r.StartRetrieve();						
+					}else{
+						Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[3].toString(), args[4].toString(), args[5].toString());
+						r.StartRetrieve();
+					}
 					break;					
 				default: //s
 					System.out.println("run: " + args[0].toString() + ", username:" + args[1].toString() + ", password:" + args[2].toString() + ", dedup-alg:" + args[3].toString() + ", divider:" + args[4].toString() + ", refactor:" + args[5].toString() + ", client count:" + args[6].toString());
