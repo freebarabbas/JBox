@@ -27,7 +27,7 @@ public class Retrieve {
 	private String m_name;
 	private int m_version=0;
 	
-	
+	/*
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid)
 	{
 		m_url=p_url;
@@ -37,6 +37,7 @@ public class Retrieve {
 		m_level=p_level;
 		m_guid=p_guid;
 	}
+	*/
 	
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_name)
 	{
@@ -49,6 +50,7 @@ public class Retrieve {
 		m_name=p_name;
 	}
 	
+	/*
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version)
 	{
 		m_url=p_url;
@@ -59,6 +61,7 @@ public class Retrieve {
 		m_guid=p_guid;
 		m_version=p_version;
 	}
+	*/
 	
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version, String p_name)
 	{
