@@ -14,10 +14,12 @@ import clsRESTConnector.ebProxy;
 
 public class Config {
 	
-	public static String syncfoler="/home/johnny/JBox";
-	//public static String syncfoler="/home/ubuntu/JBox";
+	//public static String syncfolder="/home/johnny/JBox";
+	public static String syncfolder=System.getProperty("user.dir")+"/JBox";
+	//public static String syncfolder="/home/ubuntu/JBox";
 	
-	public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
+	//public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
+	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
 	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
@@ -38,15 +40,20 @@ public class Config {
     public static String metafileversion = "2.0";
     public static int fixedchunksize = 0;//4 * 1024 * 1024;
     public static String apppath= Paths.get("").toAbsolutePath().toString();   
-    public static String dbpath=String.format("/home/johnny/JBoxLog/userdata.db",apppath);
+    //public static String dbpath=String.format("/home/johnny/JBoxLog/userdata.db",apppath);
+    public static String dbpath=String.format(System.getProperty("user.dir")+"/JBoxLog/userdata.db",apppath);
+       
     //public static String dbpath=String.format("%s//userdata.db",apppath);
     //public static String loggerfile=String.format("%s\\run.html", apppath);
     //public static String loggerfile=String.format("/home/johnny/JBoxLog/run.html", apppath); 
     
     //Logging
     private static String initialtime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
-    public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath); 
-    //public static String loggerfile=String.format("/home/ubuntu/JBoxLog/run.html", apppath);  
+    
+    //public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath);
+    public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run"+initialtime+".html", apppath);
+       
+    //public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run.html", apppath);  
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
 
     public static Logger logger=null;
@@ -82,13 +89,16 @@ public class Config {
     
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
+    
+    
+	public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;	
 	//public String getswiftusr(){ return swiftusr.get();}
 	//public void setswiftusr(String vswiftusr) { swiftusr.set(vswiftusr);}
     
     //private static String sourcedbpath=String.format("%s\\schema.db",apppath);
 	
 	/*
-	public static String syncfoler="c:\\kenstuff\\jboxsync1";
+	public static String syncfolder="c:\\kenstuff\\jboxsync1";
 	public static String usermetafile="c:\\JavaTestUser.txt";
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
@@ -156,7 +166,7 @@ public class Config {
                 if (args[i].equals("-syncfolder"))
                 {
                     i++;
-                    syncfoler = args[i];
+                    syncfolder = args[i];
                 }
                 if (args[i].equals("-user"))
                 {
@@ -204,7 +214,7 @@ public class Config {
             if(restproxy.equals(""))
             	proxyobj.flag=0;
             
-            syncfolders.add(syncfoler);
+            syncfolders.add(syncfolder);
             
             /*
             dbpath=String.format("%s\\%s.db",apppath,swiftusr.replace(':', ' '));
@@ -228,7 +238,7 @@ public class Config {
     	StringBuilder sb=new StringBuilder();
     	sb.append("Config paramters list:").append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "usermetafile").replace(' ', '-')).append(usermetafile).append(System.getProperty("line.separator")).append("<br>");
-    	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "syncfoler").replace(' ', '-')).append(syncfoler).append(System.getProperty("line.separator")).append("<br>");
+    	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "syncfolder").replace(' ', '-')).append(syncfolder).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "swiftusr").replace(' ', '-')).append(swiftusr).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "swiftpwd").replace(' ', '-')).append("********").append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "serverlogin").replace(' ', '-')).append(serverlogin).append(System.getProperty("line.separator")).append("<br>");
