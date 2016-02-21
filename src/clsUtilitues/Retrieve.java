@@ -179,6 +179,7 @@ public class Retrieve {
 	            }
         		if (!m_guid.equalsIgnoreCase("")){
         			int downloadsize=0;
+        			rr=null;
         			
                 	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;
