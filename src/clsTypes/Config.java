@@ -18,6 +18,7 @@ public class Config {
 	public static String syncfolder=System.getProperty("user.dir")+"/JBox";
 	//public static String syncfolder="/home/ubuntu/JBox";
 	
+	public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
 	//public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
 	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
 	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";
@@ -81,7 +82,7 @@ public class Config {
     public static String swiftpwd;//"Wang_634917";
     
     
-    public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; }
+    public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
     public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; }    
     public static void setswiftrefactor(int intswiftrefactor){ refactor = intswiftrefactor; }  
@@ -90,8 +91,7 @@ public class Config {
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
     
-    
-	public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;	
+    public static void setusermetafile(){ usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;	}
 	//public String getswiftusr(){ return swiftusr.get();}
 	//public void setswiftusr(String vswiftusr) { swiftusr.set(vswiftusr);}
     
