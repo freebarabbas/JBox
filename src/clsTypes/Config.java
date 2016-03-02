@@ -14,22 +14,15 @@ import clsRESTConnector.ebProxy;
 
 public class Config {
 	
-	//public static String syncfolder="/home/johnny/JBox";
-	public static String syncfolder=System.getProperty("user.dir")+"/JBox";
-	//public static String syncfolder="/home/ubuntu/JBox";
-	
-	public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
-	//public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
-	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
-	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";
+
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
 
 	//public static String swiftusr = "10846130789747:JavaTestUser";
     //public static String swiftpwd = "!qaz2wsx";    
     
-    //public static String serverlogin = "https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/";
-    public static String serverlogin = "http://svl12-csl-swift-ctl-001/auth/v1.0";
+    public static String serverlogin = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
+    //public static String serverlogin = "http://svl12-csl-swift-ctl-001/auth/v1.0";
     public static String storageurl = "";//https://region-a.geo-1.objects.hpcloudsvc.com/v1/10846130789747";
     
     //public static String restproxy = "web-proxy.corp.hp.com";
@@ -91,7 +84,17 @@ public class Config {
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
     
-    public static void setusermetafile(){ usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;	}
+    
+	public static String syncfolder="/home/johnny/JBox";
+	//public static String syncfolder=System.getProperty("user.dir")+"/JBox";
+	//public static String syncfolder="/home/ubuntu/JBox";
+	
+	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
+	public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
+	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
+	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";    
+    
+	//public static void setusermetafile(){ usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;	}
 	//public String getswiftusr(){ return swiftusr.get();}
 	//public void setswiftusr(String vswiftusr) { swiftusr.set(vswiftusr);}
     
