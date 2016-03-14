@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import pkgCityHashCalc.clsJavaVariableChunk;
+import clsCityHashCalc.clsJavaVariableChunk;
 
 /**
  * The Class include functions to calculate file's chunk information.

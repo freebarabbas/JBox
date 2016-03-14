@@ -1,4 +1,4 @@
-package pkgCityHashCalc;
+package clsCityHashCalc;
 
 public class CityHash {
 

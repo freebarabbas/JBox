@@ -15,8 +15,8 @@ import java.security.MessageDigest;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import pkgCityHashCalc.CityHash;
-import pkgCityHashCalc.clsJavaVariableChunk;
+import clsCityHashCalc.CityHash;
+import clsCityHashCalc.clsJavaVariableChunk;
 
 /**
  * The Class HashCalc to calculate MD5 and CityHash code for byte array/String/File.
