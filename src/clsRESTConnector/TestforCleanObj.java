@@ -11,7 +11,8 @@ public class TestforCleanObj {
 			//ebProxy m_pxy=new ebProxy("web-proxy.corp.hp.com",8080,"","");
 			ebProxy m_pxy=new ebProxy();
 			//RestResult rr = RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:JavaTestUser", "!qaz2wsx", m_pxy);
-			RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
+			RestResult rr = RestConnector.GetToken("http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
+			//RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
 			String tkn=rr.token;
 			String surl=rr.storageurl;//+"/var";
 			//String tkn="AUTH_tke051cb50ffbd45949a31fe1e8c61a2f8";

@@ -18,12 +18,16 @@ public class Config {
 	public static String appname="JBox";
 	public static List<String> syncfolders = new ArrayList<String>();
 
+	public static String usermetafile="/home/johnny/JBoxLog/var";//+swiftusr;
+    
 	//public static String swiftusr = "10846130789747:JavaTestUser";
     //public static String swiftpwd = "!qaz2wsx";    
     
     public static String serverlogin = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     //public static String serverlogin = "http://svl12-csl-swift-ctl-001/auth/v1.0";
     public static String storageurl = "";//https://region-a.geo-1.objects.hpcloudsvc.com/v1/10846130789747";
+    
+	public static String syncfolder="/home/johnny/JBox";    
     
     //public static String restproxy = "web-proxy.corp.hp.com";
     public static String restproxy = "";
@@ -44,8 +48,8 @@ public class Config {
     //Logging
     private static String initialtime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
     
-    //public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath);
-    public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run"+initialtime+".html", apppath);
+    public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath);
+    //public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run"+initialtime+".html", apppath);
        
     //public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run.html", apppath);  
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
@@ -75,7 +79,9 @@ public class Config {
     public static String swiftpwd;//"Wang_634917";
     
     
-    public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
+    public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; }
+    //public static String usermetafile="/home/johnny/JBoxLog/var";//+swiftusr;
+    //public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
     public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; }    
     public static void setswiftrefactor(int intswiftrefactor){ refactor = intswiftrefactor; }  
@@ -85,12 +91,11 @@ public class Config {
     public static void settoken(String strtoken){ token = strtoken; }  
     
     
-	public static String syncfolder="/home/johnny/JBox";
+
 	//public static String syncfolder=System.getProperty("user.dir")+"/JBox";
 	//public static String syncfolder="/home/ubuntu/JBox";
 	
 	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
-	public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
 	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
 	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";    
     
