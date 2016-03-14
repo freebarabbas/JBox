@@ -1,6 +1,5 @@
 package pkgAmazonS3Connector;
 
-import java.io.IOException;
 import java.util.UUID;
 
 public class clsTestAmazonS3Connector {

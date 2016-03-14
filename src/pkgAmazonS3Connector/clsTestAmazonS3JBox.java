@@ -54,7 +54,7 @@ public class clsTestAmazonS3JBox {
 	public static void main(String[] args) throws Exception {
     //public static void main(String[] args) throws IOException {
 
-    	//BasicConfigurator.configure();
+    	BasicConfigurator.configure();
         /*
          * The ProfileCredentialsProvider will return your [default]
          * credential profile by reading from the credentials file located at
