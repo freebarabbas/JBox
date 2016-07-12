@@ -1,11 +1,6 @@
-/clsCityHashCalc
-/clsCompExtract
-/clsRESTConnector
-/clsTypes
-/clsUtilitues
-/pkgAmazonS3Connector
-/pkgUtilitues
-/pkgCityHashCalc
 /pkgCompExtract
 /pkgRESTConnector
 /pkgTypes
+/pkgUtilitues
+/clsCityHashCalc
+/pkgAmazonS3Connector

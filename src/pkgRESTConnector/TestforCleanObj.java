@@ -6,12 +6,13 @@ public class TestforCleanObj {
 
 	public static void main(String[] args) throws Exception {
 		
-		if((args != null) && (args.length != 0) && (args.length <= 2)){
+		if((args != null) && (args.length != 0) && (args.length <= 3)){
 			// TODO Auto-generated method stub
 			//ebProxy m_pxy=new ebProxy("web-proxy.corp.hp.com",8080,"","");
 			ebProxy m_pxy=new ebProxy();
 			//RestResult rr = RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:JavaTestUser", "!qaz2wsx", m_pxy);
-			RestResult rr = RestConnector.GetToken("http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
+			//RestResult rr = RestConnector.GetToken("http://10.203.164.7/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
+			RestResult rr = RestConnector.GetToken(args[0].toString(), args[1].toString(), args[2].toString(), m_pxy);
 			//RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
 			String tkn=rr.token;
 			String surl=rr.storageurl;//+"/var";
@@ -53,6 +54,7 @@ public class TestforCleanObj {
 			System.out.println("OK!");
 	
 		}
+		else{System.out.println("Please input three parameters, 1. auth url, 2. username, 3. password \n java -jar cleanObjByAcct 'https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/' '10846130789747:JavaTestUser' '!qaz2wsx'");}
 	}
 
 }
