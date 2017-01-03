@@ -21,7 +21,6 @@ public class Config {
 	//public static String swiftusr = "10846130789747:JavaTestUser";
     //public static String swiftpwd = "!qaz2wsx";    
     
-    public static String serverlogin = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     //public static String serverlogin = "http://svl12-csl-swift-ctl-001/auth/v1.0";
     public static String storageurl = "";//https://region-a.geo-1.objects.hpcloudsvc.com/v1/10846130789747";
     
@@ -74,7 +73,8 @@ public class Config {
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
     
-    
+    public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
+    public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
     public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
     public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; }    
