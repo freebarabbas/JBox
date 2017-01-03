@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Properties;
 
 public class clsProperties {
@@ -41,9 +40,10 @@ public class clsProperties {
 			} else {
 				throw new FileNotFoundException("property file '" + propFileName + "' not found in the same root path with JBox.jar");
 			}
- 
-			Date time = new Date(System.currentTimeMillis());
 
+			if (prop.getProperty("syncfolders") != null && !prop.getProperty("syncfolders").isEmpty()){Config.setsyncfolder(prop.getProperty("syncfolders"));}
+			//if (prop.getProperty("usermetafile") != null && !prop.getProperty("usermetafile").isEmpty()){Config.setswiftusr(prop.getProperty("usermetafile"));}
+			
 			// get the property value and print it out
 			if (prop.getProperty("authurl") != null && !prop.getProperty("authurl").isEmpty()){Config.setserverlogin(prop.getProperty("authurl"));}
 			if (prop.getProperty("username") != null && !prop.getProperty("username").isEmpty()){Config.setswiftusr(prop.getProperty("username"));}
@@ -55,17 +55,14 @@ public class clsProperties {
 				else {Config.ct = chunkType.VAR;}
 			}
 			if (prop.getProperty("divider") != null && !prop.getProperty("divider").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("divider")));}
-			if (prop.getProperty("refactor") != null && !prop.getProperty("refactor").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("refactor")));}
+			if (prop.getProperty("refactor") != null && !prop.getProperty("refactor").isEmpty()){Config.setswiftrefactor(Integer.parseInt(prop.getProperty("refactor")));}
 			//if (prop.getProperty("min") != null && !prop.getProperty("min").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("min")));}
 			//if (prop.getProperty("max") != null && !prop.getProperty("max").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("max")));}
 			if (prop.getProperty("client") != null && !prop.getProperty("client").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("client")));}
 
 			min = prop.getProperty("min");
 			max = prop.getProperty("max");
-
- 
-			result = "login Credential: authurl= " + authurl + ",  username=" + username + ", password" + password;
-			System.out.println(result + "\nProgram Ran on " + time + " by run mod=" + run + "; type=" + type + "; divider=" + divider + "; refactor=" + refactor + "; min=" + min + "; max=" + max + "\nnumber of client=" + client);
+			
 		} catch (Exception e) {
 			System.out.println("Exception: " + e);
 		} finally {

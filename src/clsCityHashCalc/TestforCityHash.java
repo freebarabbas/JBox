@@ -12,7 +12,7 @@ public class TestforCityHash {
 
 	public static void main(String args[]) throws Exception {
 		
-		String path="//home//ubuntu//Downloads//test.tar.gz";
+		String path="//home//ubuntu//Downloads//ran_610K.0.0";
 		System.out.println(HashCalc.GetFileCityHash(path)); 
 		List<chunk> aaa=ChunkProcess.GetChunk(path,0,8,0,0,chunkType.FIX);
 		System.out.println(aaa);

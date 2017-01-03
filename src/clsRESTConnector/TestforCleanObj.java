@@ -1,17 +1,21 @@
 package clsRESTConnector;
 
+import clsTypes.Config;
+import clsTypes.clsProperties;
+
 
 
 public class TestforCleanObj {
 
 	public static void main(String[] args) throws Exception {
-		
-		if((args != null) && (args.length != 0) && (args.length <= 2)){
+		clsProperties properties = new clsProperties();
+		if (properties.getPropValues()) {
+		//if((args != null) && (args.length != 0) && (args.length <= 2)){
 			// TODO Auto-generated method stub
 			//ebProxy m_pxy=new ebProxy("web-proxy.corp.hp.com",8080,"","");
 			ebProxy m_pxy=new ebProxy();
 			//RestResult rr = RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:JavaTestUser", "!qaz2wsx", m_pxy);
-			RestResult rr = RestConnector.GetToken("http://svl12-csl-swift-ctl-001/auth/v1.0", args[0].toString(), args[1].toString(), m_pxy);
+			RestResult rr = RestConnector.GetToken(Config.serverlogin, Config.swiftusr, Config.swiftpwd, m_pxy);
 			String tkn=rr.token;
 			String surl=rr.storageurl;//+"/var";
 			//String tkn="AUTH_tke051cb50ffbd45949a31fe1e8c61a2f8";

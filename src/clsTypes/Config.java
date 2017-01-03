@@ -42,9 +42,8 @@ public class Config {
     
     //Logging
     private static String initialtime = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
-    
-    //public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath);
     public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run"+initialtime+".html", apppath);
+    //public static String loggerfile=String.format("/home/johnny/JBoxLog/run"+initialtime+".html", apppath);
        
     //public static String loggerfile=String.format(System.getProperty("user.dir")+"/JBoxLog/run.html", apppath);  
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
@@ -61,8 +60,8 @@ public class Config {
     //Purge
     public static int refcounter=1; //0 default is off, 1 is on
     
-    public static int containerpurgetime=600;		//wait how long to puge the container, 600 second = 10 min seconds
-    public static int objectpurgetime=600;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
+    public static int containerpurgetime=300;	//wait how long to purge the container, 600 second = 10 min seconds
+    public static int objectpurgetime=300;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
     //public static String defaultrefcounter="9000000001";
     
     public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge
@@ -75,22 +74,31 @@ public class Config {
     
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
+    public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
     public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
-    public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; }    
+    public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; } 
     public static void setswiftrefactor(int intswiftrefactor){ refactor = intswiftrefactor; }  
     public static void setswiftrefcounter(int intswiftrefcounter){ refcounter = intswiftrefcounter; }  
     
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
     
-    
-	public static String syncfolder="/home/johnny/JBox";
+    public static String syncfolder="/home/johnny/JBox";
+    public static void setsyncfolder(String strsyncfolder){ 
+    	syncfolder = strsyncfolder;
+    	//reassign default syncfolders array list
+    	if (syncfolders.size() != 0) {
+    		syncfolders.clear();
+    		syncfolders.add(syncfolder);
+    	}
+    }  
+	
 	//public static String syncfolder=System.getProperty("user.dir")+"/JBox";
 	//public static String syncfolder="/home/ubuntu/JBox";
 	
 	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
-	public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
+	
 	//public static String usermetafile=System.getProperty("user.dir")+"/JBoxLog/johnnywa";	
 	//public static String usermetafile="/home/ubuntu/JBoxLog/johnnywa";    
     
