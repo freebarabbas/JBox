@@ -11,29 +11,9 @@ public class Helper {
 	private String GetSync(){
 		String strSync=""
 		+ "    Sync[s]:Sync with every 5 second with multiple clients\n"
-		+ "          <Options for s>: s\n"
-		+ "                 username: \n"
-		+ "                 password: \n"
-		+ "          dedup algorithm: \n"
-		+ "                          <parameter:>\n"
-		+ "                                    : no - no deduplication\n"
-		+ "                                    : fix - fix chunking\n"
-		+ "                                    : var - variable chunking\n"
-		+ "                  divider: \n"
-		+ "                          <parameter:>\n"
-		+ "                                    : 32, 64, 128...2^n\n"
-		+ "                 refactor:<Anchor will be refactor if 2^x/2^y > 1,2,3...>\n"
-		+ "						     <parameter:>\n"
-		+ "                                    : 0 : off\n"
-		+ "                                    : 1 : on\n"
-		+ "                                    : 2, 3 ~ \n"
-		+ "               refcounter: \n"
-		+ "                          <parameter:>\n"
-		+ "                                    : 0 : off\n"
-		+ "                                    : 1 : on\n"
-		+ "                                    : 2 ~ more than one client\n"
+		+ "          <Options for s>(mandatory): s\n"
 		+ "    <example>\n"
-		+ "    e.g: java -jar ./JBox.jar s username password var 64 0 0\n"
+		+ "    e.g: java -jar ./JBox.jar s \n"
 		+ "\n";
 		return strSync;
 	}
@@ -42,13 +22,11 @@ public class Helper {
 		String strQuery=""
 		+ "   Query[q]:Query current file level metadata, list all the files and chunk level metadata, list all the versions\n"
 		+ "          <Options for q>: q\n"
-		+ "                 username: \n"
-		+ "                 password: \n"
 		+ "                    levle: f: file level or c: chunk level\n"
 		+ "                file guid: e.g 078ab3e97c284ce9b3efcc5d8d6343a9\n"
 		+ "    <example>\n"
-		+ "    e.g: java -jar ./JBox.jar q username password f \n"
-		+ "    e.g: java -jar ./JBox.jar q username password c guid \n"
+		+ "    e.g: java -jar ./JBox.jar q f \n"
+		+ "    e.g: java -jar ./JBox.jar q c guid \n"
 		+ "\n";		
 		return strQuery;
 	}
@@ -57,15 +35,13 @@ public class Helper {
 		String strRetrieve=""
 		+ "   Retrieve[r]:Retrieve/Download file(Backup)\n"
 		+ "          <Options for r>: r\n"
-		+ "                 username: \n"
-		+ "                 password: \n"
 		+ "                    levle: c - chunk level only\n"
 		+ "                file guid: e.g 078ab3e97c284ce9b3efcc5d8d6343a9\n"
 		+ "                  version: option <if version doesn't specify, it will download lastest version>\n"
-		+ "         output file name: e.g /home/johnny/test (mandatory>\n"
+		+ "         output file name: e.g /home/johnny/test (mandatory)\n"
 		+ "    <example>\n"
-		+ "    e.g: java -jar ./JBox.jar r username password c guild <output file name> \n"
-		+ "    e.g: java -jar ./JBox.jar r username password c level guild <output file name> \n"
+		+ "    e.g: java -jar ./JBox.jar r c guild <output file name> \n"
+		+ "    e.g: java -jar ./JBox.jar r c level guild <output file name> \n"
 		+ "\n";
 		return strRetrieve;
 	}
