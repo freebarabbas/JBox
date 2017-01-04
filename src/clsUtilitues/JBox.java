@@ -5,7 +5,7 @@ import java.util.Calendar;
 import clsTypes.Config;
 import clsTypes.clsProperties;
 
-public class TestforSyncV3 {
+public class JBox {
 
 	public static void main(String[] args) {
 		if(!Config.InitLogger())
@@ -75,7 +75,7 @@ public class TestforSyncV3 {
 					default:	
 						Config.logger.debug(Config.ConvertToHTML());
 									
-						Runnable r=new SyncV3(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,Config.power);
+						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,Config.power);
 						new Thread(r).start();
 						while(true)
 						{

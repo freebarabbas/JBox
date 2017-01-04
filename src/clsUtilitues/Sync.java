@@ -18,7 +18,7 @@ import clsTypes.*;
 import clsCompExtract.ZipProcess;
 import clsRESTConnector.*;
 
-public class SyncV3 implements Runnable {
+public class Sync implements Runnable {
 	private List<String> m_syncfolders;
 	private String m_metafile;
 	private String m_url;
@@ -32,7 +32,7 @@ public class SyncV3 implements Runnable {
 	private int m_mod;
 	
 	
-	public SyncV3(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod)
+	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod)
 	{
 		m_syncfolders=p_syncfolders;
 		m_metafile=p_metafile;
@@ -44,7 +44,7 @@ public class SyncV3 implements Runnable {
 		m_initialtype=1;
 	}
 	
-	public SyncV3(List<String> p_syncfolders,String p_metafile,String p_url, String p_storageurl,String p_username,String p_tkn,ebProxy p_pxy,int p_mod)
+	public Sync(List<String> p_syncfolders,String p_metafile,String p_url, String p_storageurl,String p_username,String p_tkn,ebProxy p_pxy,int p_mod)
 	{
 		m_syncfolders=p_syncfolders;
 		m_metafile=p_metafile;
