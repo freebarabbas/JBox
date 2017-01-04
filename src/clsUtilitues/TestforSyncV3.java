@@ -75,7 +75,7 @@ public class TestforSyncV3 {
 					default:	
 						Config.logger.debug(Config.ConvertToHTML());
 									
-						Runnable r=new SyncV3(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,0);
+						Runnable r=new SyncV3(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj,Config.power);
 						new Thread(r).start();
 						while(true)
 						{

@@ -54,14 +54,13 @@ public class clsProperties {
 				else if (prop.getProperty("type").equals("no")) {Config.ct = chunkType.NO;}
 				else {Config.ct = chunkType.VAR;}
 			}
+			if (prop.getProperty("power") != null && !prop.getProperty("power").isEmpty()){Config.setswiftpwr(Integer.parseInt(prop.getProperty("power")));}
 			if (prop.getProperty("divider") != null && !prop.getProperty("divider").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("divider")));}
 			if (prop.getProperty("refactor") != null && !prop.getProperty("refactor").isEmpty()){Config.setswiftrefactor(Integer.parseInt(prop.getProperty("refactor")));}
 			//if (prop.getProperty("min") != null && !prop.getProperty("min").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("min")));}
 			//if (prop.getProperty("max") != null && !prop.getProperty("max").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("max")));}
 			if (prop.getProperty("client") != null && !prop.getProperty("client").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("client")));}
 
-			min = prop.getProperty("min");
-			max = prop.getProperty("max");
 			
 		} catch (Exception e) {
 			System.out.println("Exception: " + e);

@@ -11,7 +11,7 @@ import clsTypes.chunkType;
 public class TestforCityHash {
 
 	public static void main(String args[]) throws Exception {
-		
+		//int power, int mod, int divide, int refactor
 		String path="//home//ubuntu//Downloads//ran_610K.0.0";
 		System.out.println(HashCalc.GetFileCityHash(path)); 
 		List<chunk> aaa=ChunkProcess.GetChunk(path,0,8,0,0,chunkType.FIX);
@@ -22,6 +22,8 @@ public class TestforCityHash {
 		System.out.println(ccc);		
 		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,0,1,32,0));		
 		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,22,2,8,0));
+		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,0,1,32,0));		
+		System.out.println(clsJavaVariableChunk.GetVariableChunks(path,10,2,64,0));
 		return;
 		
 		//System.out.println("Hello World");

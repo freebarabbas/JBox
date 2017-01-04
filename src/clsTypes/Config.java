@@ -56,6 +56,7 @@ public class Config {
     public static int compress=0; // bit 1: compress and 0 is no compress
     public static int divider=64; //divider default is 64 , splite file into 32 ~ 73 chunks 
     public static int refactor=0; //no refactor
+    public static int power=0;	  //0 is default which is no assigned power which will be get by file size / divider
     
     //Purge
     public static int refcounter=1; //0 default is off, 1 is on
@@ -78,6 +79,7 @@ public class Config {
     public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
     public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; } 
+    public static void setswiftpwr(int intswiftpwr){ power = intswiftpwr; } 
     public static void setswiftrefactor(int intswiftrefactor){ refactor = intswiftrefactor; }  
     public static void setswiftrefcounter(int intswiftrefcounter){ refcounter = intswiftrefcounter; }  
     
