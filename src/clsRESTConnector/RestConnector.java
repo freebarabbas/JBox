@@ -120,6 +120,43 @@ public class RestConnector {
             return new RestResult(responseCode,false,"","","");
         }			
     }
+
+	public static RestResult GetObjectContent(String curtoken, String container, String object, String byterange, ebProxy pxy) throws Exception
+    {
+        
+		//HttpURLConnection conn=GetConnection(container,pxy);
+		HttpURLConnection conn=GetConnection(container+"/"+object,pxy);
+		conn.setRequestMethod("GET");
+
+		conn.setRequestProperty("X-Auth-Token", curtoken);
+		//conn.setRequestProperty("Range", "bytes="+byterange); //Range: bytes=7-15,46-49
+		conn.setRequestProperty("Range", "bytes=1-3650");
+		conn.setRequestProperty("Accept", "*/*");
+		int responseCode = conn.getResponseCode();
+		if (responseCode == HttpURLConnection.HTTP_PARTIAL)
+        {
+            int l=conn.getContentLength();
+            byte[] retval=new byte[l];
+            InputStream in=conn.getInputStream();
+            int rl=0;
+            while(rl<l)
+            {
+            	rl+=in.read(retval,rl,l-rl);
+            }
+            in.close();
+			RestResult rr= new RestResult(responseCode,true,"","","");
+			rr.data=retval;
+			return rr;
+        }
+		else if(responseCode == HttpURLConnection.HTTP_NO_CONTENT)
+		{
+			return new RestResult(responseCode,true,"no any content","","");
+		}
+        else
+        {
+            return new RestResult(responseCode,false,"","","");
+        }			
+    }
 	
 	public static RestResult DeleteContainer(String curtoken, String container, ebProxy pxy) throws Exception
     {

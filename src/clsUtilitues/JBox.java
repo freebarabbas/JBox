@@ -41,10 +41,10 @@ public class JBox {
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString() + ", file guid:" + args[2].toString());
 							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString());
 							q.StartQuery();						
-						//}else if (args[1].toString().equalsIgnoreCase("c")){
-						//	System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd);
-						//	Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj);
-						//	q.StartQuery();
+						}else if (args[1].toString().equalsIgnoreCase("f") && args.length == 3){
+							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString() + ", file guid:" + args[2].toString());
+							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString());
+							q.StartQuery();
 						}else{
 							Helper m = new Helper("q");
 							m.GetMenu();

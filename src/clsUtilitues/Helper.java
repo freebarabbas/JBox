@@ -27,6 +27,7 @@ public class Helper {
 		+ "    <example>\n"
 		+ "    e.g: java -jar ./JBox.jar q f \n"
 		+ "    e.g: java -jar ./JBox.jar q c guid \n"
+		+ "    e.g: java -jar ./JBox.jar q f guid \n"
 		+ "\n";		
 		return strQuery;
 	}

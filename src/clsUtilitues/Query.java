@@ -4,6 +4,7 @@ import java.net.HttpURLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Iterator;
+
 import clsTypes.*;
 //import clsCompExtract.ZipProcess;
 import clsRESTConnector.*;
@@ -149,6 +150,12 @@ public class Query {
 	                }
 	                System.out.println(strDash);
 	                //Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
+	                
+	                if (!m_guid.equalsIgnoreCase("")){
+	                	System.out.print("Display f"+m_guid+ " all the contnet");
+	                	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
+	                	System.out.print(new String(rr.data, "UTF-8"));
+	                }
 	            }
         	}else if (m_level.equalsIgnoreCase("c")){
 
@@ -206,7 +213,7 @@ public class Query {
 	            }
         		
         		if (!m_guid.equalsIgnoreCase("")){
-        			
+        						
                 	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
