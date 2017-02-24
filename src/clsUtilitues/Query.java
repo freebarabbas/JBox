@@ -151,11 +151,14 @@ public class Query {
 	                System.out.println(strDash);
 	                //Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
 	                
-	                if (!m_guid.equalsIgnoreCase("")){
-	                	System.out.print("Display f"+m_guid+ " all the contnet");
-	                	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
-	                	System.out.print(new String(rr.data, "UTF-8"));
+	                if (m_guid != null){
+	                	if (!m_guid.equalsIgnoreCase("") && !m_guid.isEmpty() ){
+	                	    System.out.print("Display f"+m_guid+ " all the contnet");
+	                	    rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
+	                	    System.out.print(new String(rr.data, "UTF-8"));
+	                	}
 	                }
+	                
 	            }
         	}else if (m_level.equalsIgnoreCase("c")){
 
