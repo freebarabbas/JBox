@@ -41,7 +41,7 @@ public class Helper {
 		+ "                  version: option <if version doesn't specify, it will download lastest version>\n"
 		+ "         output file name: e.g /home/johnny/test (mandatory)\n"
 		+ "    <example>\n"
-		+ "    e.g: java -jar ./JBox.jar r c guild <output file name> \n"
+		+ "    e.g: java -jar ./JBox.jar r c guid <output file name> \n"
 		+ "    e.g: java -jar ./JBox.jar r c level guild <output file name> \n"
 		+ "\n";
 		return strRetrieve;

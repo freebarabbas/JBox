@@ -35,6 +35,7 @@ public class JBox {
 						}
 						else if (args[1].toString().equalsIgnoreCase("f") && args.length == 2){
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString());
+							System.out.println(Config.serverlogin +","+ Config.swiftusr + "," + Config.swiftpwd +","+ Config.proxyobj+","+ args[1].toString());
 							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString());
 							q.StartQuery();
 						}else if (args[1].toString().equalsIgnoreCase("c")  && args.length == 3){
