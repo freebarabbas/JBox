@@ -135,6 +135,7 @@ public class Query {
 	                {strDash = strDash + "-";}
 
 	                System.out.println(strDash);
+	                System.out.println("pass before print out data");
 	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory & Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
 	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
 	                while(it.hasNext())
