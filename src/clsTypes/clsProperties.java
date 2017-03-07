@@ -19,7 +19,8 @@ public class clsProperties {
 	String refactor = "";
 	String min = "";
 	String max = "";
-	String client = "";	
+	String client = "";
+	String synctime = "";
 	
 	//@SuppressWarnings("finally")
 	@SuppressWarnings("finally")
@@ -57,8 +58,9 @@ public class clsProperties {
 			if (prop.getProperty("power") != null && !prop.getProperty("power").isEmpty()){Config.setswiftpwr(Integer.parseInt(prop.getProperty("power")));}
 			if (prop.getProperty("divider") != null && !prop.getProperty("divider").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("divider")));}
 			if (prop.getProperty("refactor") != null && !prop.getProperty("refactor").isEmpty()){Config.setswiftrefactor(Integer.parseInt(prop.getProperty("refactor")));}
-			//if (prop.getProperty("min") != null && !prop.getProperty("min").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("min")));}
-			//if (prop.getProperty("max") != null && !prop.getProperty("max").isEmpty()){Config.setswiftdiv(Integer.parseInt(prop.getProperty("max")));}
+			if (prop.getProperty("min") != null && !prop.getProperty("min").isEmpty()){Config.setswiftmin(Double.parseDouble(prop.getProperty("min")));}
+			if (prop.getProperty("max") != null && !prop.getProperty("max").isEmpty()){Config.setswiftmax(Double.parseDouble(prop.getProperty("max")));}
+			if (prop.getProperty("synctime") != null && !prop.getProperty("synctime").isEmpty()){Config.setswiftsynctime(Long.parseLong(prop.getProperty("synctime")));}
 			if (prop.getProperty("client") != null && !prop.getProperty("client").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("client")));}
 
 			

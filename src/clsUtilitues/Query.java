@@ -197,22 +197,25 @@ public class Query {
 	                {strDash = strDash + "-";}
 
 	                System.out.println(strDash);
-	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
-	                
-	                
-	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
-	                while(it.hasNext())
-	                {
-	                	fileInfo tmp=it.next();
-	                	if (tmp.type==0 && tmp.guid.equalsIgnoreCase(m_guid)) {
-		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
-		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
-		                	String ByteLength = String.valueOf(tmp.bytelength);
-		                	System.out.println(strDash);
-			                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
-	                	}
+	                if (intCol==0){
+	                	System.out.println("Find Nothing !");
 	                }
-	                System.out.println(strDash);
+	                else{
+						System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
+						Iterator<fileInfo> it = tmpumd.filelist.iterator();
+						while(it.hasNext())
+						{
+							fileInfo tmp=it.next();
+							if (tmp.type==0 && tmp.guid.equalsIgnoreCase(m_guid)) {
+						    	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
+						    	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
+						    	String ByteLength = String.valueOf(tmp.bytelength);
+						    	System.out.println(strDash);
+						    	System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
+							}
+						}
+						System.out.println(strDash);
+	                }
 	            }
         		
         		if (!m_guid.equalsIgnoreCase("")){

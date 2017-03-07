@@ -58,6 +58,10 @@ public class Config {
     public static int refactor=0; //no refactor
     public static int power=0;	  //0 is default which is no assigned power which will be get by file size / divider
     
+    public static double min=0.85;
+    public static double max=2;
+    public static long synctime=5000;
+    
     //Purge
     public static int refcounter=1; //0 default is off, 1 is on
     
@@ -82,6 +86,9 @@ public class Config {
     public static void setswiftpwr(int intswiftpwr){ power = intswiftpwr; } 
     public static void setswiftrefactor(int intswiftrefactor){ refactor = intswiftrefactor; }  
     public static void setswiftrefcounter(int intswiftrefcounter){ refcounter = intswiftrefcounter; }  
+    public static void setswiftmin(double doubleswiftmin){ min = doubleswiftmin; } 
+    public static void setswiftmax(double doubleswiftmax){ max = doubleswiftmax; } 
+    public static void setswiftsynctime(long longswiftsynctime){ synctime = longswiftsynctime; } 
     
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  

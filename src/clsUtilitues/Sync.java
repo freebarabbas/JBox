@@ -30,9 +30,12 @@ public class Sync implements Runnable {
 	private int m_initialtype;
 	private String m_usercontainer;
 	private int m_mod;
+	private double m_min;
+	private double m_max;
+	private long m_synctime;
 	
 	
-	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod)
+	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, double p_min, double p_max, long p_synctime)
 	{
 		m_syncfolders=p_syncfolders;
 		m_metafile=p_metafile;
@@ -42,9 +45,12 @@ public class Sync implements Runnable {
 		m_pxy=p_pxy;
 		m_mod =p_mod;
 		m_initialtype=1;
+		m_min=p_min;
+		m_max=p_max;
+		m_synctime=p_synctime;
 	}
 	
-	public Sync(List<String> p_syncfolders,String p_metafile,String p_url, String p_storageurl,String p_username,String p_tkn,ebProxy p_pxy,int p_mod)
+	public Sync(List<String> p_syncfolders,String p_metafile,String p_url,String p_storageurl,String p_username,String p_tkn,ebProxy p_pxy,int p_mod, double p_min, double p_max, long p_synctime)
 	{
 		m_syncfolders=p_syncfolders;
 		m_metafile=p_metafile;
@@ -60,6 +66,9 @@ public class Sync implements Runnable {
         	m_usercontainer=m_storageurl+"/"+p_username;
 		m_initialtype=2;
 		m_mod=p_mod;
+		m_min=p_min;
+		m_max=p_max;
+		m_synctime=p_synctime;
 	}
 	
 	private boolean GetToken()
@@ -1187,7 +1196,9 @@ public class Sync implements Runnable {
             	Config.logger.fatal("Error to sync:"+e.getMessage());
                 SyncStatus.SetStatus("Cannot sync with server");
             }
-            Thread.sleep(5000);
+            //Sync Interval is milliseconds = 1/1000 seconds which means 5000 milliseconds = 5 seconds
+            //Thread.sleep(5000);
+            Thread.sleep(m_synctime);
         }
 		
 	}
