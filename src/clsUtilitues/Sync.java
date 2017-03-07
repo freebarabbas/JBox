@@ -363,8 +363,7 @@ public class Sync implements Runnable {
             return false;
         }
     }
-	
-	
+		
 	private  boolean ReduceRefCounterAndPurgeFile(fileInfo fi)
     {
 		  try
@@ -764,7 +763,7 @@ public class Sync implements Runnable {
                                     int uploadsize=0;
                                     if (needupload)
                                     {
-                                        fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.fixedchunksize,Config.ct);                                                                              
+                                        fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
                                         byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
                                         fmd.data.size();
                                         long dsize = 0;
@@ -889,7 +888,7 @@ public class Sync implements Runnable {
                                     }  
                                     
                                     //check local file name and generate most update chunk level base on file metadata
-                                    fileMetadata localfmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.fixedchunksize,Config.ct);
+                                    fileMetadata localfmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);
                                     byte[] localcache = Files.readAllBytes(new File(fi.filename).toPath());
                                     int downloadsize=0;
                                     for (chunk c : localfmd.data)
@@ -967,7 +966,7 @@ public class Sync implements Runnable {
                                     	m_mod=m.mod;
                                     }
                                     //get local metadata but use lasttest mod on server
-                                    fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod, Config.divider,Config.refactor,Config.fixedchunksize,Config.ct);
+                                    fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod, Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);
                                                                      
                                     byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
                                     fmd.data.size();
