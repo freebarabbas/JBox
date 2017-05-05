@@ -75,7 +75,7 @@ public class JBox {
 					default:	
 						Config.logger.debug(Config.ConvertToHTML());
 									
-						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.min,Config.max,Config.synctime);
+						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime);
 						new Thread(r).start();
 						while(true)
 						{
