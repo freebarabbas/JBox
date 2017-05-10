@@ -63,7 +63,7 @@ public class Config {
     public static long synctime=5000;
     
     //Purge
-    public static int refcounter=1; //0 default is off, 1 is on
+    public static int refcounter=0; //0 default is off, 1 is on
     
     public static int containerpurgetime=300;	//wait how long to purge the container, 600 second = 10 min seconds
     public static int objectpurgetime=300;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month
@@ -81,7 +81,7 @@ public class Config {
     
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
-    public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
+    public static String usermetafile;//="/home/johnny/JBoxLog/johnnywa";
     public static void setswiftusr(String strswiftusr){ swiftusr = strswiftusr; usermetafile=System.getProperty("user.dir")+"/JBoxLog/"+swiftusr;}
     public static void setswiftpwd(String strswiftpwd){ swiftpwd = strswiftpwd; }    
     public static void setswiftdiv(int intswiftdiv){ divider = intswiftdiv; } 
@@ -262,6 +262,7 @@ public class Config {
     	sb.append("Config paramters list:").append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "usermetafile").replace(' ', '-')).append(usermetafile).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "syncfolder").replace(' ', '-')).append(syncfolder).append(System.getProperty("line.separator")).append("<br>");
+    	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "containername").replace(' ', '-')).append(containername).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "swiftusr").replace(' ', '-')).append(swiftusr).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "swiftpwd").replace(' ', '-')).append("********").append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "serverlogin").replace(' ', '-')).append(serverlogin).append(System.getProperty("line.separator")).append("<br>");
@@ -277,7 +278,6 @@ public class Config {
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "loggerfile").replace(' ', '-')).append(loggerfile).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "chunktype").replace(' ', '-')).append(ct.toString()).append(System.getProperty("line.separator")).append("<br>");
     	sb.append(String.format("&nbsp;&nbsp;&nbsp;&nbsp;<b>%-25s</b>", "loglevel").replace(' ', '-')).append(loglevel.toString()).append(System.getProperty("line.separator")).append("<br>");
-    	
     	return sb.toString();
     }
 

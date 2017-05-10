@@ -33,9 +33,9 @@ public class Sync implements Runnable {
 	//private double m_min;
 	//private double m_max;
 	private long m_synctime;
+	private String m_containername;
 	
-	
-	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime)
+	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
 		m_syncfolders=p_syncfolders;
 		m_metafile=p_metafile;
@@ -48,9 +48,10 @@ public class Sync implements Runnable {
 		//m_min=p_min;
 		//m_max=p_max;
 		m_synctime=p_synctime;
+		m_containername=p_containername;
 	}
 	
-	public Sync(List<String> p_syncfolders,String p_metafile,String p_url,String p_storageurl,String p_username,String p_tkn,ebProxy p_pxy,int p_mod, long p_synctime)
+	public Sync(List<String> p_syncfolders,String p_metafile,String p_url,String p_storageurl,String p_username,String p_tkn,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
 		m_syncfolders=p_syncfolders;
 		m_metafile=p_metafile;
@@ -59,11 +60,13 @@ public class Sync implements Runnable {
 		m_storageurl=p_storageurl;
 		m_tkn=p_tkn;
 		m_pxy=p_pxy;
+		m_containername=p_containername;
 		int dotIndex=p_username.lastIndexOf(':');
-        if(dotIndex>=0)
-        	m_usercontainer=m_storageurl+"/"+p_username.substring(dotIndex+1);
-        else
-        	m_usercontainer=m_storageurl+"/"+p_username;
+        if(dotIndex>=0){m_usercontainer=m_storageurl+"/"+p_username.substring(dotIndex+1);}
+        else{
+        	if(m_containername.isEmpty()){m_usercontainer=m_storageurl+"/"+p_username;}
+        	else{m_usercontainer=m_storageurl+"/"+m_containername;}
+        }
 		m_initialtype=2;
 		m_mod=p_mod;
 		//m_min=p_min;
@@ -417,14 +420,15 @@ public class Sync implements Runnable {
 		SyncStatus.SetStatus("Connecting to server");
 		if(m_initialtype==1)
 		{
-			Config.logger.debug("Receiving token from server");
+			Config.logger.debug("Receiving token from m_usernameserver");
 			if(GetToken()==false)
 				return;
 			int dotIndex=m_username.lastIndexOf(':');
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
 	        else
-	        	m_usercontainer=m_storageurl+"/"+m_username;
+	        	if(m_containername.isEmpty() && m_containername == null){m_usercontainer=m_storageurl+"/"+m_username;}
+	        	else{m_usercontainer=m_storageurl+"/"+m_containername;}
 		}
 		
 		RestResult rr=null;
@@ -761,9 +765,10 @@ public class Sync implements Runnable {
                                        needupload = false;                                           
                                     }
                                     int uploadsize=0;
+                                    fileMetadataWithVersion fmds = new fileMetadataWithVersion();
                                     if (needupload)
                                     {
-                                        fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
+                                    	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
                                         byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
                                         fmd.data.size();
                                         long dsize = 0;
@@ -845,18 +850,19 @@ public class Sync implements Runnable {
                                             }
                                             dsize = dsize + c.end - c.start + 1;
                                         }
-                                        fileMetadataWithVersion fmds = new fileMetadataWithVersion();
+                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
                                         fmds.data.add(fmd);
+                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
                                         RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.ConvertToByteArray(), m_pxy);
                                     }
-                                    
                                     Config.logger.info("Uploaded " + fi.filename);
-                                    UpdateRemoteUserMetaFile( fi);
+                                    UpdateRemoteUserMetaFile(fi);
                                     Date dte=new Date();
                                     Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + fi.bytelength);
-                                     
+                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, fi.bytelength, fmds.ConvertToByteArray().length))
+                                    {Config.logger.debug("Experiment Dump OK");}
+                                    else{Config.logger.debug("Experiment Dump Fail");}
                                     fi.fop = FOP.NONE;
-
                                 }
                                 catch (Exception ex)
                                 {
@@ -1052,13 +1058,15 @@ public class Sync implements Runnable {
                                         dsize = dsize + c.end - c.start + 1;
                                     } 
                                     fmds.data.add(fmd);
-                                    RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid,  fmds.ConvertToByteArray(), m_pxy);  
-                                    
+                                    Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
+                                    RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid,  fmds.ConvertToByteArray(), m_pxy); 
                                     Config.logger.info("Overwrite remote " + fi.filename);
                                     UpdateRemoteUserMetaFile(fi);
                                     Date dte=new Date();
                                     Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + fi.bytelength);
-                                      
+                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, fi.bytelength, fmds.ConvertToByteArray().length))
+                                    {Config.logger.debug("Experiment Dump OK");}
+                                    else{Config.logger.debug("Experiment Dump Fail");}
                                     fi.fop = FOP.NONE;
                                 }
                                 catch (Exception ex)

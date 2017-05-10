@@ -21,6 +21,7 @@ public class clsProperties {
 	String max = "";
 	String client = "";
 	String synctime = "";
+	String containername = "";
 	
 	//@SuppressWarnings("finally")
 	@SuppressWarnings("finally")
@@ -43,7 +44,7 @@ public class clsProperties {
 			}
 
 			if (prop.getProperty("syncfolders") != null && !prop.getProperty("syncfolders").isEmpty()){Config.setsyncfolder(prop.getProperty("syncfolders"));}
-			if (prop.getProperty("containername") != null && !prop.getProperty("containername").isEmpty()){Config.setsyncfolder(prop.getProperty("containername"));}
+			if (prop.getProperty("containername") != null && !prop.getProperty("containername").isEmpty()){Config.setcontainername(prop.getProperty("containername"));}
 			//if (prop.getProperty("usermetafile") != null && !prop.getProperty("usermetafile").isEmpty()){Config.setswiftusr(prop.getProperty("usermetafile"));}
 			
 			// get the property value and print it out
