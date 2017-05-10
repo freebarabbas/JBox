@@ -46,6 +46,7 @@ public class TestforCleanObj {
 								System.out.println(lines1[j]);
 								RestResult rrDelObj = RestConnector.DeleteFile(tkn, surl+"/"+lines[i], lines1[j], m_pxy);
 								if(!rrDelObj.result){System.out.println("Delete Container:" +lines[i] + " Object: " +  lines1[j] + " Fail !");}
+								if(j==9998){break;}
 							}
 						}
 						RestResult rr2=RestConnector.GetContainer(tkn, surl+"/"+lines[i], m_pxy);

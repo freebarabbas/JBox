@@ -77,6 +77,8 @@ public class Config {
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
     public static String swiftpwd;//"Wang_634917";
     
+    public static String containername; //equal to username or any other customized name
+    
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
     public static String usermetafile="/home/johnny/JBoxLog/johnnywa";
@@ -89,6 +91,7 @@ public class Config {
     public static void setswiftmin(double doubleswiftmin){ min = doubleswiftmin; } 
     public static void setswiftmax(double doubleswiftmax){ max = doubleswiftmax; } 
     public static void setswiftsynctime(long longswiftsynctime){ synctime = longswiftsynctime; } 
+    public static void setcontainername(String strcontainername){ containername = strcontainername; } 
     
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
