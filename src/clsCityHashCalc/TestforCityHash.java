@@ -12,11 +12,11 @@ public class TestforCityHash {
 
 	public static void main(String args[]) throws Exception {
 		//int power, int mod, int divide, int refactor
-		String path="//home//ubuntu//Downloads//ran_610K.0.0";
+		String path="//tmp//JBox//CSV_BACK.csv";
 		System.out.println(HashCalc.GetFileCityHash(path)); 
-		List<chunk> aaa=ChunkProcess.GetChunk(path,0,8,0,0,0,0,chunkType.FIX);
-		System.out.println(aaa);
-		List<chunk> bbb=ChunkProcess.GetChunk(path,0,16,0,0,0.85,2,chunkType.VAR);
+		//List<chunk> aaa=ChunkProcess.GetChunk(path,0,16,0,0,0,0,chunkType.FIX);
+		//System.out.println(aaa);
+		List<chunk> bbb=ChunkProcess.GetChunk(path,16,1,0,0.85,2,0,chunkType.VAR);
 		System.out.println(bbb);
 		List<chunk> ccc=ChunkProcess.GetChunk(path,0,64,0,0,0.85,2,chunkType.NO);
 		System.out.println(ccc);		
