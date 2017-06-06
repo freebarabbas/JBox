@@ -20,12 +20,13 @@ public class ChunkProcess {
 	 * @param mod module
 	 * @return the chunk list
 	 */
-	public static List<chunk> GetVarChunk(String filename, int mod)
+	public static List<chunk> GetVarChunk(String filename, int mod, int divide, int refactor, double min, double max)
     {
 		 List<chunk> ret=new ArrayList<chunk>();
 		 try
 		 {
-			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,2);
+			 //2 = var
+			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,2, divide, refactor, min, max);
 			 String[] lines=varresult.split("\r\n|\n|\r");
 			 for(int i=0;i<lines.length;i++)
 			 {
@@ -90,7 +91,7 @@ public class ChunkProcess {
 	 * @return the chunk list
 	 * @throws Exception the exception
 	 */
-	public static List<chunk> GetFixChunk(String filename, int mod)// int chunksize) throws Exception
+	public static List<chunk> GetFixChunk(String filename, int mod, int divide, int refactor, double min, double max)// int chunksize) throws Exception
     {
 		/*
         List<chunk> ret = new ArrayList<chunk>();
@@ -118,7 +119,7 @@ public class ChunkProcess {
 		 List<chunk> ret=new ArrayList<chunk>();
 		 try
 		 {
-			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,1);
+			 String varresult=clsJavaVariableChunk.GetVariableChunks(filename,mod,1,divide,refactor,min,max);
 			 String[] lines=varresult.split("\r\n|\n|\r");
 			 for(int i=0;i<lines.length;i++)
 			 {
@@ -171,14 +172,14 @@ public class ChunkProcess {
      * @return the chunk list
      * @throws Exception the exception
      */
-    public static List<chunk> GetChunk(String filename,int mod, int chunksize, chunkType ct) throws Exception
+    public static List<chunk> GetChunk(String filename,int mod, int divide,int refactor, double min, double max, int chunksize, chunkType ct) throws Exception
     {
         switch (ct)
         {
             case VAR:
-                return GetVarChunk(filename,mod);
+                return GetVarChunk(filename,mod,divide,refactor,min,max);
             case FIX:
-                return GetFixChunk(filename,mod);
+                return GetFixChunk(filename,mod,divide,refactor,min,max);
             case NO:
                 return GetNoChunk(filename);
             default:
