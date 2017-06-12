@@ -3,7 +3,7 @@ package clsTypes;
 import java.io.FileWriter;
 
 public class clsExperiment {
-    public static boolean ExperimentDump(String strFileName, long lngtime, int intuploadsize, long lngtotalsize, int intmetadata){
+    public static boolean ExperimentDump(String strFileName, long lngtime, long intuploadsize, long lngtotalsize, int intmetadata){
     	String strDumpFile = strFileName.substring(strFileName.length()-3);
     	try {
     		FileWriter fw = new FileWriter("/tmp/"+strDumpFile+".txt", true);
