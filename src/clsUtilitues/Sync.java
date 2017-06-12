@@ -38,6 +38,7 @@ public class Sync implements Runnable {
 	//private double m_max;
 	private long m_synctime;
 	private String m_containername;
+	private static long l_buffer=1*1024*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
@@ -424,8 +425,8 @@ public class Sync implements Runnable {
         FileChannel inChannel = aFile.getChannel();
         long fileSize = inChannel.size();
         System.out.println(fileSize);
-        ByteBuffer buffer = ByteBuffer.allocate(1*1024*1024*1024);
-		byte[] filedata = new byte[1*1024*1024*1024];
+        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
+		byte[] filedata = new byte[(int)l_buffer];
 		int buffercount = 1;
         while(inChannel.read(buffer) > 0)
         {
@@ -804,7 +805,7 @@ public class Sync implements Runnable {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
            
                                         fmd.data.size();
-                                        if (fmd.byteslength > 1*1024*1024*1024){
+                                        if (fmd.byteslength > l_buffer){
      
                                             long dsize = 0;
                                             int dcount = 1;
@@ -858,14 +859,14 @@ public class Sync implements Runnable {
 		                                            	if(tmpf>=0)
 		                                            		continue;
 
-		                                        		int intstart = (int) (c.start - (filedata.length*(dcount-1)));
-		                                        		int intend = (int) (c.end - (filedata.length*(dcount-1)));
+		                                        		int intstart = (int) (c.start - (l_buffer*(dcount-1)));
+		                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
 			                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
 		                                        		byte[] tmp = new byte[(intend - intstart + 1)];
-			                                        	if ( intend > ( filedata.length ) )
+			                                        	if ( intend > ( l_buffer ) )
 			                                        	{
 			                                        		dcount = dcount + 1;
-			                                        		byte[] tmpfront = new byte[filedata.length - intstart];
+			                                        		byte[] tmpfront = new byte[(int)l_buffer - intstart];
 			                                        		System.arraycopy(filedata, intstart, tmpfront, 0, tmpfront.length);
 			                                        		//get next 1G buffer
 			                                        		try {
@@ -873,8 +874,8 @@ public class Sync implements Runnable {
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
 			                                                }
-			                                        		byte[] tmpback = new byte[intend - filedata.length];
-			                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpfront.length);
+			                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+			                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
 			                                        		//comcat tmpfront and tmpback into tmp
 			                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
 			                                        		System.arraycopy(tmpback, 0, tmp, tmpfront.length, tmpback.length);
@@ -903,8 +904,7 @@ public class Sync implements Runnable {
 		                                                	uploadsize+=tmp.length;
 		                                                }
 		                                            	
-
-	                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+		                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
 	                                            
 		                                            }
 		                                            else
