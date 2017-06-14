@@ -19,8 +19,8 @@ public class TestforCityHash {
 		//System.out.println(HashCalc.GetFileCityHash(path1)); 
 		//List<chunk> aaa=ChunkProcess.GetChunk(path,0,16,0,0,0,0,chunkType.FIX);
 		//System.out.println(aaa);
-		//List<chunk> bbb=ChunkProcess.GetChunk(path,16,1,0,0.25,32,0,chunkType.VAR);
-		//System.out.println(bbb);
+		List<chunk> bbb=ChunkProcess.GetChunk(path,16,1,0,0.25,32,0,chunkType.VAR);
+		System.out.println(bbb);
 		List<chunk> ccc=ChunkProcess.GetChunk(path,0,128,0,0.25,32,0,chunkType.VAR);
 		System.out.println(ccc);		
 		//System.out.println(clsJavaVariableChunk.GetVariableChunks(path,0,1,32,0,0.85,2));		
