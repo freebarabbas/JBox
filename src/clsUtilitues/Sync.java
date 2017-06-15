@@ -799,6 +799,7 @@ public class Sync implements Runnable {
                                        needupload = false;                                           
                                     }
                                     long uploadsize=0;
+                                    long dsize = 0;
                                     fileMetadataWithVersion fmds = new fileMetadataWithVersion();
                                     if (needupload)
                                     {
@@ -806,8 +807,7 @@ public class Sync implements Runnable {
            
                                         fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
-     
-                                            long dsize = 0;
+                                            
                                             int dcount = 1;
                                             //File FilePath = new File(fi.filename).toPath();
                                             
@@ -927,7 +927,6 @@ public class Sync implements Runnable {
                                         else {
 	                                    	byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
 	                                        fmd.data.size();
-	                                        long dsize = 0;
 	                                        Hashtable<String, String> ht = new Hashtable<String, String>();
 	                                        for(chunk c : fmd.data)
 	                                        {
@@ -1014,8 +1013,8 @@ public class Sync implements Runnable {
 	                                    Config.logger.info("Uploaded " + fi.filename);
 	                                    UpdateRemoteUserMetaFile(fi);
 	                                    Date dte=new Date();
-	                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + fi.bytelength);
-	                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, fi.bytelength, fmds.ConvertToByteArray().length))
+	                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + dsize + "/" + fi.bytelength);
+	                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize,fi.bytelength, fmds.ConvertToByteArray().length))
 	                                    {Config.logger.debug("Experiment Dump OK");}
 	                                    else{Config.logger.debug("Experiment Dump Fail");}
 	                                    fi.fop = FOP.NONE;
@@ -1132,8 +1131,9 @@ public class Sync implements Runnable {
                                     //get local metadata but use latest mod on server
                                     fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod, Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);
                                     long uploadsize=0;
+                                    long dsize = 0;
                                     if (fmd.byteslength > l_buffer){
-                                        long dsize = 0;
+                                        
                                         int dcount = 1;
                                         //File FilePath = new File(fi.filename).toPath();
                                         
@@ -1253,14 +1253,13 @@ public class Sync implements Runnable {
                                     else {
 	                                    byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
 	                                    fmd.data.size();
-	                                    long dsize = 0;
 	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
-	                                    //long uploadsize=0;
+
 	                                    for(chunk c : fmd.data)
 	                                    {
 	                                    	 if (ht.get(c.hashvalue)==null)
 	                                         {
-	                                    		 int tmpf=-1;
+	                                    		int tmpf=-1;
 	                                         	if(gcc.contains("c1"+c.hashvalue)){
 	                                        		tmpf=1;
 	                                        		if (Config.refcounter == 1) {
@@ -1324,14 +1323,7 @@ public class Sync implements Runnable {
 	                                         	else
 	                                         		c.flag= c.flag & ~1;                                            	                                            	
 	                                         }
-	                                    	/*if (ht.get(c.hashvalue)==null)
-	                                        {
-	                                            byte[] tmp = new byte[(int)(c.end - c.start + 1)];
-	                                            System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
-	                                            RestConnector.PutFile(m_tkn, m_usercontainer, "c"+c.hashvalue,tmp ,m_pxy);
-	                                            ht.put(c.hashvalue,"1");
-	                                            uploadsize+=tmp.length;
-	                                        }*/
+
 	                                        dsize = dsize + c.end - c.start + 1;
 	                                    } 
           
@@ -1342,8 +1334,8 @@ public class Sync implements Runnable {
                                     Config.logger.info("Overwrite remote " + fi.filename);
                                     UpdateRemoteUserMetaFile(fi);
                                     Date dte=new Date();
-                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + fi.bytelength);
-                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, fi.bytelength, fmds.ConvertToByteArray().length))
+                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + dsize + "/" + fi.bytelength);
+                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize, fi.bytelength, fmds.ConvertToByteArray().length))
                                     {Config.logger.debug("Experiment Dump OK");}
                                     else{Config.logger.debug("Experiment Dump Fail");}
                                     fi.fop = FOP.NONE;
