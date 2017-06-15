@@ -1145,7 +1145,8 @@ public class Sync implements Runnable {
                                         {	                                        	
 	                                            if (ht.get(c.hashvalue)==null)
 	                                            {
-	                                               int tmpf=-1;
+	                                                //tmpf = -1 is default can't find the chunk in gcc array
+	                                            	int tmpf=-1;
 	                                               
 	                                               // cc is current object ( hot data ) and ccc is backup object ( cold data )
 	                                            	if(gcc.contains("c1"+c.hashvalue)){
@@ -1215,7 +1216,7 @@ public class Sync implements Runnable {
 		                                        	//}	                                            	
 	                                            	
 	                                            	
-	                                            	
+	                                            	//if tmp = 0 or 1 then means find the chunk in gcc then we can skip this loop ( chunks )
 	                                            	if(tmpf>=0)
 	                                            		continue;
 
@@ -1511,6 +1512,7 @@ public class Sync implements Runnable {
             }
             //Sync Interval is milliseconds = 1/1000 seconds which means 5000 milliseconds = 5 seconds
             //Thread.sleep(5000);
+            System.gc();
             Thread.sleep(m_synctime);
         }
 		
