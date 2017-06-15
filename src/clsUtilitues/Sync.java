@@ -1178,14 +1178,15 @@ public class Sync implements Runnable {
 	                                            		}
 	                                            	}
 	                                            	
+	                                            	
+	                                            	
 
 	                                            	if(tmpf==1)
 	                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
 	                                            	else if(tmpf==0)
 	                                            		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
-	                                            	if(tmpf>=0)
-	                                            		continue;
-
+	                                            	
+	                                            	
 	                                        		int intstart = (int) (c.start - (l_buffer*(dcount-1)));
 	                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
 		                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
@@ -1208,7 +1209,41 @@ public class Sync implements Runnable {
 		                                        		System.arraycopy(tmpback, 0, tmp, tmpfront.length, tmpback.length);
 
 		                                        	}
+		                                        	//else
+		                                        	//{
+		                                        	//	System.arraycopy(filedata, intstart, tmp, 0, tmp.length); 
+		                                        	//}	                                            	
+	                                            	
+	                                            	
+	                                            	
+	                                            	if(tmpf>=0)
+	                                            		continue;
+
+	                                        		//int intstart = (int) (c.start - (l_buffer*(dcount-1)));
+	                                        		//int intend = (int) (c.end - (l_buffer*(dcount-1)));
+		                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
+	                                        		//byte[] tmp = new byte[(intend - intstart + 1)];
+		                                        	if ( intend <= ( l_buffer ) )
+		                                        	/*
+		                                        	{
+		                                        		dcount = dcount + 1;
+		                                        		byte[] tmpfront = new byte[(int)l_buffer - intstart];
+		                                        		System.arraycopy(filedata, intstart, tmpfront, 0, tmpfront.length);
+		                                        		//get next 1G buffer
+		                                        		try {
+		                                        			filedata = GetFileByteArray(fi.filename, dcount);
+		                                        		} catch(IOException ex){
+		                                                	System.out.println(ex.toString());
+		                                                }
+		                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+		                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
+		                                        		//concanate tmpfront and tmpback into tmp
+		                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
+		                                        		System.arraycopy(tmpback, 0, tmp, tmpfront.length, tmpback.length);
+
+		                                        	}
 		                                        	else
+		                                        	*/
 		                                        	{
 		                                        		System.arraycopy(filedata, intstart, tmp, 0, tmp.length); 
 		                                        	}
