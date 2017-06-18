@@ -126,6 +126,37 @@ public class fileMetadata implements Metadata,Comparable<fileMetadata> {
         }
     }
     
+    public fileMetadata(byte[] d, boolean b)
+    {
+    	//this is only use for collect object which need to be purge
+    	if (b){
+	        try
+	        {
+	            String tmp = new String(d);
+	            String[] lines = tmp.split("\r\n|\n");
+	            dt = SmallFunctions.String2Date(lines[0]);
+	            String[] fileinfo = lines[1].trim().split("\\s+");
+	            byteslength = Long.parseLong(fileinfo[2]);
+	            mod=Integer.parseInt(fileinfo[3]);
+	            hashcode = fileinfo[4];
+	            data = new ArrayList<chunk>();
+	            for (int i = 2; i < lines.length; i++)
+	            {
+	                //if (lines[i].startsWith("----"))
+	                //    continue;
+	                String[] tmp2 = lines[i].trim().split("\\s+");
+	                if(tmp2.length==5)
+	                	//data.add(new chunk(i - 1, Long.parseLong(tmp2[1]), Long.parseLong(tmp2[2]), tmp2[3]));
+	                //else
+	                	data.add(new chunk(i - 1, Integer.parseInt(tmp2[3]) ,Long.parseLong(tmp2[1]), Long.parseLong(tmp2[2]), tmp2[4]));
+	            }
+	            Collections.sort(data);
+	        }
+	        catch (Exception e)
+	        {
+	        }
+    	}
+    }
 
 	/**
 	 * Write to disk.
@@ -197,7 +228,7 @@ public class fileMetadata implements Metadata,Comparable<fileMetadata> {
 			return -1;
 	}
     
-	public static fileMetadata GetMetadata(String filename,int mod, int chunksize, chunkType ct) throws Exception
+	public static fileMetadata GetMetadata(String filename,int mod, int divide, int refactor, double min, double max, int chunksize, chunkType ct) throws Exception
     {
         try
         {
@@ -208,7 +239,7 @@ public class fileMetadata implements Metadata,Comparable<fileMetadata> {
         	FileTime sublw=subattrs.lastModifiedTime();
             fmd.dt = new Date(sublw.to(TimeUnit.SECONDS)*1000);
             fmd.byteslength = file.length();
-            fmd.data = ChunkProcess.GetChunk(filename, mod, chunksize, ct);
+            fmd.data = ChunkProcess.GetChunk(filename, mod, divide, refactor, min, max, chunksize, ct);
             chunk tmp=null;
             for(chunk c :  fmd.data)
             {
@@ -235,9 +266,9 @@ public class fileMetadata implements Metadata,Comparable<fileMetadata> {
         }
     }
 
-	public static fileMetadata GetMetadata(String filename, int chunksize, chunkType ct) throws Exception
-    {
-        return GetMetadata(filename,0,chunksize,ct);
-    }
+	//public static fileMetadata GetMetadata(String filename, int chunksize, chunkType ct) throws Exception
+    //{
+    //   return GetMetadata(filename,0,0,chunksize,ct);
+    //}
 
 }
