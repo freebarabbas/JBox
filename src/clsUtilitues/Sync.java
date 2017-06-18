@@ -2,7 +2,11 @@ package clsUtilitues;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -34,6 +38,7 @@ public class Sync implements Runnable {
 	//private double m_max;
 	private long m_synctime;
 	private String m_containername;
+	private static long l_buffer=1*1024*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
@@ -414,6 +419,35 @@ public class Sync implements Runnable {
 	        }
     }
 	
+	
+	private static byte[] GetFileByteArray(String filepath, int dcount) throws IOException{
+		RandomAccessFile aFile = new RandomAccessFile(filepath, "r");
+        FileChannel inChannel = aFile.getChannel();
+        long fileSize = inChannel.size();
+        System.out.println(fileSize);
+        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
+		byte[] filedata = new byte[(int)l_buffer];
+		int buffercount = 1;
+        while(inChannel.read(buffer) > 0)
+        {
+            System.out.println(buffercount);
+        	buffer.flip();
+            
+            if (dcount == buffercount){
+            	filedata = new byte[buffer.remaining()];
+                int intsize = filedata.length;
+                System.out.println(intsize);
+            	buffer.clear();
+            	break;
+            }
+            buffer.clear(); // do something with the data and clear/compact it.
+            buffercount = buffercount + 1;
+        }
+        inChannel.close();
+        aFile.close();
+		return filedata;
+	}
+	
 	private  void StartSync() throws Exception
 	{
 		Config.logger.info("Starting sync process");
@@ -764,105 +798,227 @@ public class Sync implements Runnable {
                                        fi.guid = tmp2.guid; 
                                        needupload = false;                                           
                                     }
-                                    int uploadsize=0;
+                                    long uploadsize=0;
+                                    long dsize = 0;
                                     fileMetadataWithVersion fmds = new fileMetadataWithVersion();
                                     if (needupload)
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
-                                        byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
+           
                                         fmd.data.size();
-                                        long dsize = 0;
-                                        Hashtable<String, String> ht = new Hashtable<String, String>();
-                                        for(chunk c : fmd.data)
-                                        {
-                                            if (ht.get(c.hashvalue)==null)
-                                            {
-                                               int tmpf=-1;
-                                               
-                                               // cc is current object ( hot data ) and ccc is backup object ( cold data )
-                                            	if(gcc.contains("c1"+c.hashvalue)){
-                                            		tmpf=1;
-                                            		if (Config.refcounter == 1) {
-                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
-                                            		}
-                                            	}
-                                            	else if (gcc.contains("c0"+c.hashvalue)){
-                                            		tmpf=0;
-                                            		if (Config.refcounter == 1){
-                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
-                                            		}
-                                            	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
-                                            		tmpf=1;
-                                            		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
-                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/" + "c1"+c.hashvalue, m_pxy);
-                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
-                                            			gcc.add("c1" + c.hashvalue);
-                                            			gbc.remove("backup/" + "c1"+c.hashvalue);
-                                            		}
-                                            	}
-                                            	else if (gbc.contains("backup/" + "c0"+c.hashvalue)){
-                                            		tmpf=0;
-                                            		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
-                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/" + "c0"+c.hashvalue, m_pxy);                                           			
-                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
-                                            			gcc.add("c0" + c.hashvalue);
-                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
-                                            		}
-                                            	}
-                                            	
-                                            	if(tmpf==1)
-                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
-                                            	else if(tmpf==0)
-                                            		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
-                                            	if(tmpf>=0)
-                                            		continue;
-                                            		
-                                            		
-                                            	byte[] tmp = new byte[(int)(c.end - c.start + 1)];                                            
-                                                System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
-                                                byte[] ztmp=ZipProcess.zip(tmp);
-                                                
-                                                if(ztmp.length < tmp.length)
-                                                {
-                                                	c.flag= c.flag | 1;
-                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
-                                                	ht.put(c.hashvalue,"1");
-                                                	uploadsize+=ztmp.length;
-                                                	
-                                                }
-                                                else
-                                                {
-                                                	c.flag= c.flag & ~1;
-                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
-                                                	ht.put(c.hashvalue,"0");
-                                                	uploadsize+=tmp.length;
-                                                }
-                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
-                                                
-                                                
-                                            }
-                                            else
-                                            {
-                                            	if(Integer.parseInt(ht.get(c.hashvalue))==1)
-                                            		c.flag=c.flag|1;
-                                            	else
-                                            		c.flag= c.flag & ~1;                                            	                                            	
-                                            }
-                                            dsize = dsize + c.end - c.start + 1;
+                                        if (fmd.byteslength > l_buffer){
+                                            
+                                            int dcount = 1;
+                                            //File FilePath = new File(fi.filename).toPath();
+                                            
+                                            byte[] filedata = GetFileByteArray(fi.filename, dcount);
+                                  
+                                            Hashtable<String, String> ht = new Hashtable<String, String>();
+                               
+	                                        for(chunk c : fmd.data)
+	                                        {	                                        	
+		                                            if (ht.get(c.hashvalue)==null)
+		                                            {
+		                                               int tmpf=-1;
+		                                               
+		                                               // cc is current object ( hot data ) and ccc is backup object ( cold data )
+		                                            	if(gcc.contains("c1"+c.hashvalue)){
+		                                            		tmpf=1;
+		                                            		if (Config.refcounter == 1) {
+		                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+		                                            		}
+		                                            	}
+		                                            	else if (gcc.contains("c0"+c.hashvalue)){
+		                                            		tmpf=0;
+		                                            		if (Config.refcounter == 1){
+		                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+		                                            		}
+		                                            	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
+		                                            		tmpf=1;
+		                                            		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+		                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/" + "c1"+c.hashvalue, m_pxy);
+		                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+		                                            			gcc.add("c1" + c.hashvalue);
+		                                            			gbc.remove("backup/" + "c1"+c.hashvalue);
+		                                            		}
+		                                            	}
+		                                            	else if (gbc.contains("backup/" + "c0"+c.hashvalue)){
+		                                            		tmpf=0;
+		                                            		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+		                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/" + "c0"+c.hashvalue, m_pxy);                                           			
+		                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+		                                            			gcc.add("c0" + c.hashvalue);
+		                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
+		                                            		}
+		                                            	}
+		                                            	
+		                                            	if(tmpf==1)
+		                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
+		                                            	else if(tmpf==0)
+		                                            		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
+		                                            	if(tmpf>=0)
+		                                            		continue;
+
+		                                        		int intstart = (int) (c.start - (l_buffer*(dcount-1)));
+		                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
+			                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
+		                                        		byte[] tmp = new byte[(intend - intstart + 1)];
+			                                        	if ( intend > ( l_buffer ) )
+			                                        	{
+			                                        		dcount = dcount + 1;
+			                                        		byte[] tmpfront = new byte[(int)l_buffer - intstart];
+			                                        		System.arraycopy(filedata, intstart, tmpfront, 0, tmpfront.length);
+			                                        		//get next 1G buffer
+			                                        		try {
+			                                        			filedata = GetFileByteArray(fi.filename, dcount);
+			                                        		} catch(IOException ex){
+			                                                	System.out.println(ex.toString());
+			                                                }
+			                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+			                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
+			                                        		//comcat tmpfront and tmpback into tmp
+			                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
+			                                        		System.arraycopy(tmpback, 0, tmp, tmpfront.length, tmpback.length);
+
+			                                        	}
+			                                        	else
+			                                        	{
+			                                        		System.arraycopy(filedata, intstart, tmp, 0, tmp.length); 
+			                                        	}
+			                                        	
+			                                        	byte[] ztmp=ZipProcess.zip(tmp);
+			                                        	
+		                                                if(ztmp.length < tmp.length)
+		                                                {
+		                                                	c.flag= c.flag | 1;
+		                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+		                                                	ht.put(c.hashvalue,"1");
+		                                                	uploadsize+=ztmp.length;
+		                                                	
+		                                                }
+		                                                else
+		                                                {
+		                                                	c.flag= c.flag & ~1;
+		                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+		                                                	ht.put(c.hashvalue,"0");
+		                                                	uploadsize+=tmp.length;
+		                                                }
+		                                            	
+		                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+	                                            
+		                                            }
+		                                            else
+		                                            {
+		                                            	if(Integer.parseInt(ht.get(c.hashvalue))==1)
+		                                            		c.flag=c.flag|1;
+		                                            	else
+		                                            		c.flag= c.flag & ~1;                                            	                                            	
+		                                            }
+
+	                                            dsize = dsize + c.end - c.start + 1;
+	                                        }    
+		                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
+	                                        fmds.data.add(fmd);
+	                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
+	                                        RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.ConvertToByteArray(), m_pxy);
+	                                                 
+
                                         }
-                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
-                                        fmds.data.add(fmd);
-                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
-                                        RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.ConvertToByteArray(), m_pxy);
-                                    }
-                                    Config.logger.info("Uploaded " + fi.filename);
-                                    UpdateRemoteUserMetaFile(fi);
-                                    Date dte=new Date();
-                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + fi.bytelength);
-                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, fi.bytelength, fmds.ConvertToByteArray().length))
-                                    {Config.logger.debug("Experiment Dump OK");}
-                                    else{Config.logger.debug("Experiment Dump Fail");}
-                                    fi.fop = FOP.NONE;
+                                        else {
+	                                    	byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
+	                                        fmd.data.size();
+	                                        Hashtable<String, String> ht = new Hashtable<String, String>();
+	                                        for(chunk c : fmd.data)
+	                                        {
+	                                            if (ht.get(c.hashvalue)==null)
+	                                            {
+	                                               int tmpf=-1;
+	                                               
+	                                               // cc is current object ( hot data ) and ccc is backup object ( cold data )
+	                                            	if(gcc.contains("c1"+c.hashvalue)){
+	                                            		tmpf=1;
+	                                            		if (Config.refcounter == 1) {
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+	                                            		}
+	                                            	}
+	                                            	else if (gcc.contains("c0"+c.hashvalue)){
+	                                            		tmpf=0;
+	                                            		if (Config.refcounter == 1){
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+	                                            		}
+	                                            	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
+	                                            		tmpf=1;
+	                                            		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+	                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/" + "c1"+c.hashvalue, m_pxy);
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+	                                            			gcc.add("c1" + c.hashvalue);
+	                                            			gbc.remove("backup/" + "c1"+c.hashvalue);
+	                                            		}
+	                                            	}
+	                                            	else if (gbc.contains("backup/" + "c0"+c.hashvalue)){
+	                                            		tmpf=0;
+	                                            		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+	                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/" + "c0"+c.hashvalue, m_pxy);                                           			
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+	                                            			gcc.add("c0" + c.hashvalue);
+	                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
+	                                            		}
+	                                            	}
+	                                            	
+	                                            	if(tmpf==1)
+	                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
+	                                            	else if(tmpf==0)
+	                                            		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
+	                                            	if(tmpf>=0)
+	                                            		continue;
+	                                            		
+	                                            		
+	                                            	byte[] tmp = new byte[(int)(c.end - c.start + 1)];                                            
+	                                                System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
+	                                                byte[] ztmp=ZipProcess.zip(tmp);
+	                                                
+	                                                if(ztmp.length < tmp.length)
+	                                                {
+	                                                	c.flag= c.flag | 1;
+	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                                	ht.put(c.hashvalue,"1");
+	                                                	uploadsize+=ztmp.length;
+	                                                	
+	                                                }
+	                                                else
+	                                                {
+	                                                	c.flag= c.flag & ~1;
+	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                                	ht.put(c.hashvalue,"0");
+	                                                	uploadsize+=tmp.length;
+	                                                }
+	                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+	                                                
+	                                                
+	                                            }
+	                                            else
+	                                            {
+	                                            	if(Integer.parseInt(ht.get(c.hashvalue))==1)
+	                                            		c.flag=c.flag|1;
+	                                            	else
+	                                            		c.flag= c.flag & ~1;                                            	                                            	
+	                                            }
+	                                            dsize = dsize + c.end - c.start + 1;
+	                                        }
+	                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
+	                                        fmds.data.add(fmd);
+	                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
+	                                        RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.ConvertToByteArray(), m_pxy);
+	                                    }
+	                                    Config.logger.info("Uploaded " + fi.filename);
+	                                    UpdateRemoteUserMetaFile(fi);
+	                                    Date dte=new Date();
+	                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + dsize + "/" + fi.bytelength);
+	                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize,fi.bytelength, fmds.ConvertToByteArray().length))
+	                                    {Config.logger.debug("Experiment Dump OK");}
+	                                    else{Config.logger.debug("Experiment Dump Fail");}
+	                                    fi.fop = FOP.NONE;
+	                                }
                                 }
                                 catch (Exception ex)
                                 {
@@ -970,101 +1126,252 @@ public class Sync implements Runnable {
                                     for(fileMetadata m : fmds.data)
                                     {
                                     	m_mod=m.mod;
+                                    	break;
                                     }
-                                    //get local metadata but use lasttest mod on server
+                                    //get local metadata but use latest mod on server
                                     fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod, Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);
-                                                                     
-                                    byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
-                                    fmd.data.size();
+                                    long uploadsize=0;
                                     long dsize = 0;
-                                    Hashtable<String, String> ht = new Hashtable<String, String>();
-                                    int uploadsize=0;
-                                    for(chunk c : fmd.data)
-                                    {
-                                    	 if (ht.get(c.hashvalue)==null)
-                                         {
-                                    		 int tmpf=-1;
-                                         	if(gcc.contains("c1"+c.hashvalue)){
-                                        		tmpf=1;
-                                        		if (Config.refcounter == 1) {
-                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
-                                        		}
-                                        	}
-                                        	else if (gcc.contains("c0"+c.hashvalue)){
-                                        		tmpf=0;
-                                        		if (Config.refcounter == 1){
-                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
-                                        		}
-                                        	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
-                                        		tmpf=1;
-                                        		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
-                                        			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/"+"c1"+c.hashvalue, m_pxy);                                           			
-                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
-                                        			gcc.add("c1" + c.hashvalue);
-                                        			gbc.remove("backup/" + "c1"+c.hashvalue);
-                                        		}
-                                        	}
-                                        	else if (gcc.contains("backup/" + "c0"+c.hashvalue)){
-                                        		tmpf=0;
-                                        		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
-                                        			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/"+"c0"+c.hashvalue, m_pxy);                                           			
-                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
-                                        			gcc.add("c1" + c.hashvalue);
-                                        			gbc.remove("backup/" + "c0"+c.hashvalue);
-                                        		}
-                                        	}
+                                    if (fmd.byteslength > l_buffer){
+                                        
+                                        int dcount = 1;
+                                        //File FilePath = new File(fi.filename).toPath();
+                                        
+                                        byte[] filedata = GetFileByteArray(fi.filename, dcount);
+                              
+                                        Hashtable<String, String> ht = new Hashtable<String, String>();
+                           
+                                        for(chunk c : fmd.data)
+                                        {	                                        	
+	                                            if (ht.get(c.hashvalue)==null)
+	                                            {
+	                                                //tmpf = -1 is default can't find the chunk in gcc array
+	                                            	int tmpf=-1;
+	                                               
+	                                               // cc is current object ( hot data ) and ccc is backup object ( cold data )
+	                                            	if(gcc.contains("c1"+c.hashvalue)){
+	                                            		tmpf=1;
+	                                            		if (Config.refcounter == 1) {
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+	                                            		}
+	                                            	}
+	                                            	else if (gcc.contains("c0"+c.hashvalue)){
+	                                            		tmpf=0;
+	                                            		if (Config.refcounter == 1){
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+	                                            		}
+	                                            	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
+	                                            		tmpf=1;
+	                                            		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+	                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/" + "c1"+c.hashvalue, m_pxy);
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+	                                            			gcc.add("c1" + c.hashvalue);
+	                                            			gbc.remove("backup/" + "c1"+c.hashvalue);
+	                                            		}
+	                                            	}
+	                                            	else if (gbc.contains("backup/" + "c0"+c.hashvalue)){
+	                                            		tmpf=0;
+	                                            		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+	                                            			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/" + "c0"+c.hashvalue, m_pxy);                                           			
+	                                            			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+	                                            			gcc.add("c0" + c.hashvalue);
+	                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
+	                                            		}
+	                                            	}
+	                                            	
+	                                            	
+	                                            	
 
-                                         	if(tmpf==1)
-                                         		c.flag= c.flag | 1;
-                                         	else if(tmpf==0)
-                                         		c.flag= c.flag & ~1;
-                                         	if(tmpf>=0)
-                                         		continue;
-                                    		 
-                                    		 byte[] tmp = new byte[(int)(c.end - c.start + 1)];                                            
-                                             System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
-                                             byte[] ztmp=ZipProcess.zip(tmp);
-                                             if(ztmp.length < tmp.length)
-                                             {
-                                             	c.flag= c.flag | 1;
-                                             	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
-                                             	ht.put(c.hashvalue,"1");
-                                             	uploadsize+=ztmp.length;
-                                             }
-                                             else
-                                             {
-                                             	c.flag= c.flag & ~1;
-                                             	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
-                                             	ht.put(c.hashvalue,"0");
-                                             	uploadsize+=tmp.length;
-                                             }
-                                             gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
-                                         }
-                                         else
-                                         {
-                                         	if(Integer.parseInt(ht.get(c.hashvalue))==1)
-                                         		c.flag=c.flag|1;
-                                         	else
-                                         		c.flag= c.flag & ~1;                                            	                                            	
-                                         }
-                                    	/*if (ht.get(c.hashvalue)==null)
-                                        {
-                                            byte[] tmp = new byte[(int)(c.end - c.start + 1)];
-                                            System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
-                                            RestConnector.PutFile(m_tkn, m_usercontainer, "c"+c.hashvalue,tmp ,m_pxy);
-                                            ht.put(c.hashvalue,"1");
-                                            uploadsize+=tmp.length;
-                                        }*/
-                                        dsize = dsize + c.end - c.start + 1;
-                                    } 
-                                    fmds.data.add(fmd);
-                                    Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
-                                    RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid,  fmds.ConvertToByteArray(), m_pxy); 
+	                                            	if(tmpf==1)
+	                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
+	                                            	else if(tmpf==0)
+	                                            		c.flag= c.flag & ~1; //real size is smaller than zip , c0+cityhash
+	                                            	
+	                                            	
+	                                        		int intstart = (int) (c.start - (l_buffer*(dcount-1)));
+	                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
+		                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
+	                                        		byte[] tmp = new byte[(intend - intstart + 1)];
+		                                        	if ( intend > ( l_buffer ) )
+		                                        	{
+		                                        		dcount = dcount + 1;
+		                                        		byte[] tmpfront = new byte[(int)l_buffer - intstart];
+		                                        		System.arraycopy(filedata, intstart, tmpfront, 0, tmpfront.length);
+		                                        		//get next 1G buffer
+		                                        		try {
+		                                        			filedata = GetFileByteArray(fi.filename, dcount);
+		                                        		} catch(IOException ex){
+		                                                	System.out.println(ex.toString());
+		                                                }
+		                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+		                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
+		                                        		//concanate tmpfront and tmpback into tmp
+		                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
+		                                        		System.arraycopy(tmpback, 0, tmp, tmpfront.length, tmpback.length);
+
+		                                        	}
+		                                        	//else
+		                                        	//{
+		                                        	//	System.arraycopy(filedata, intstart, tmp, 0, tmp.length); 
+		                                        	//}	                                            	
+	                                            	
+	                                            	
+	                                            	//if tmp = 0 or 1 then means find the chunk in gcc then we can skip this loop ( chunks )
+	                                            	if(tmpf>=0)
+	                                            		continue;
+
+	                                        		//int intstart = (int) (c.start - (l_buffer*(dcount-1)));
+	                                        		//int intend = (int) (c.end - (l_buffer*(dcount-1)));
+		                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
+	                                        		//byte[] tmp = new byte[(intend - intstart + 1)];
+		                                        	if ( intend <= ( l_buffer ) )
+		                                        	/*
+		                                        	{
+		                                        		dcount = dcount + 1;
+		                                        		byte[] tmpfront = new byte[(int)l_buffer - intstart];
+		                                        		System.arraycopy(filedata, intstart, tmpfront, 0, tmpfront.length);
+		                                        		//get next 1G buffer
+		                                        		try {
+		                                        			filedata = GetFileByteArray(fi.filename, dcount);
+		                                        		} catch(IOException ex){
+		                                                	System.out.println(ex.toString());
+		                                                }
+		                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+		                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
+		                                        		//concanate tmpfront and tmpback into tmp
+		                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
+		                                        		System.arraycopy(tmpback, 0, tmp, tmpfront.length, tmpback.length);
+
+		                                        	}
+		                                        	else
+		                                        	*/
+		                                        	{
+		                                        		System.arraycopy(filedata, intstart, tmp, 0, tmp.length); 
+		                                        	}
+		                                        	
+		                                        	byte[] ztmp=ZipProcess.zip(tmp);
+		                                        	
+	                                                if(ztmp.length < tmp.length)
+	                                                {
+	                                                	c.flag= c.flag | 1;
+	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                                	ht.put(c.hashvalue,"1");
+	                                                	uploadsize+=ztmp.length;
+	                                                	
+	                                                }
+	                                                else
+	                                                {
+	                                                	c.flag= c.flag & ~1;
+	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                                	ht.put(c.hashvalue,"0");
+	                                                	uploadsize+=tmp.length;
+	                                                }
+	                                            	
+	                                                gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+                                            
+	                                            }
+	                                            else
+	                                            {
+	                                            	if(Integer.parseInt(ht.get(c.hashvalue))==1)
+	                                            		c.flag=c.flag|1;
+	                                            	else
+	                                            		c.flag= c.flag & ~1;                                            	                                            	
+	                                            }
+
+                                            dsize = dsize + c.end - c.start + 1;
+                                        }    
+	                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
+                                        fmds.data.add(fmd);
+                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
+                                        RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid, fmds.ConvertToByteArray(), m_pxy);
+                                    	
+                                    }
+                                    else {
+	                                    byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
+	                                    fmd.data.size();
+	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
+
+	                                    for(chunk c : fmd.data)
+	                                    {
+	                                    	 if (ht.get(c.hashvalue)==null)
+	                                         {
+	                                    		int tmpf=-1;
+	                                         	if(gcc.contains("c1"+c.hashvalue)){
+	                                        		tmpf=1;
+	                                        		if (Config.refcounter == 1) {
+	                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+	                                        		}
+	                                        	}
+	                                        	else if (gcc.contains("c0"+c.hashvalue)){
+	                                        		tmpf=0;
+	                                        		if (Config.refcounter == 1){
+	                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+	                                        		}
+	                                        	}else if(gbc.contains("backup/" + "c1"+c.hashvalue)){
+	                                        		tmpf=1;
+	                                        		if (Config.refcounter == 1) {//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+	                                        			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c1"+c.hashvalue, m_usercontainer, "/"+"c1"+c.hashvalue, m_pxy);                                           			
+	                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c1"+c.hashvalue, m_pxy);
+	                                        			gcc.add("c1" + c.hashvalue);
+	                                        			gbc.remove("backup/" + "c1"+c.hashvalue);
+	                                        		}
+	                                        	}
+	                                        	else if (gcc.contains("backup/" + "c0"+c.hashvalue)){
+	                                        		tmpf=0;
+	                                        		if (Config.refcounter == 1){//Retrive object back to normal: rename from /backup/ to /, and add default reference counter 90000001
+	                                        			RestConnector.RenameOrMoveFile(m_tkn, m_usercontainer, "backup/" + "c0"+c.hashvalue, m_usercontainer, "/"+"c0"+c.hashvalue, m_pxy);                                           			
+	                                        			RestConnector.AddObjectRefCount(m_tkn, m_usercontainer, "c0"+c.hashvalue, m_pxy);
+	                                        			gcc.add("c1" + c.hashvalue);
+	                                        			gbc.remove("backup/" + "c0"+c.hashvalue);
+	                                        		}
+	                                        	}
+	
+	                                         	if(tmpf==1)
+	                                         		c.flag= c.flag | 1;
+	                                         	else if(tmpf==0)
+	                                         		c.flag= c.flag & ~1;
+	                                         	if(tmpf>=0)
+	                                         		continue;
+	                                    		 
+	                                    		 byte[] tmp = new byte[(int)(c.end - c.start + 1)];                                            
+	                                             System.arraycopy(filedata, (int)c.start, tmp, 0, tmp.length);
+	                                             byte[] ztmp=ZipProcess.zip(tmp);
+	                                             if(ztmp.length < tmp.length)
+	                                             {
+	                                             	c.flag= c.flag | 1;
+	                                             	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                             	ht.put(c.hashvalue,"1");
+	                                             	uploadsize+=ztmp.length;
+	                                             }
+	                                             else
+	                                             {
+	                                             	c.flag= c.flag & ~1;
+	                                             	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                             	ht.put(c.hashvalue,"0");
+	                                             	uploadsize+=tmp.length;
+	                                             }
+	                                             gcc.add("c"+ Integer.toString(c.flag) + c.hashvalue);
+	                                         }
+	                                         else
+	                                         {
+	                                         	if(Integer.parseInt(ht.get(c.hashvalue))==1)
+	                                         		c.flag=c.flag|1;
+	                                         	else
+	                                         		c.flag= c.flag & ~1;                                            	                                            	
+	                                         }
+
+	                                        dsize = dsize + c.end - c.start + 1;
+	                                    } 
+          
+	                                    fmds.data.add(fmd);
+	                                    Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
+	                                    RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid,  fmds.ConvertToByteArray(), m_pxy); 
+                                    }
                                     Config.logger.info("Overwrite remote " + fi.filename);
                                     UpdateRemoteUserMetaFile(fi);
                                     Date dte=new Date();
-                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + fi.bytelength);
-                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, fi.bytelength, fmds.ConvertToByteArray().length))
+                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + dsize + "/" + fi.bytelength);
+                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize, fi.bytelength, fmds.ConvertToByteArray().length))
                                     {Config.logger.debug("Experiment Dump OK");}
                                     else{Config.logger.debug("Experiment Dump Fail");}
                                     fi.fop = FOP.NONE;
@@ -1205,10 +1512,16 @@ public class Sync implements Runnable {
             }
             //Sync Interval is milliseconds = 1/1000 seconds which means 5000 milliseconds = 5 seconds
             //Thread.sleep(5000);
+            System.gc();
             Thread.sleep(m_synctime);
         }
 		
 	}
+
+	//private File File(String filename) {
+		// TODO Auto-generated method stub
+	//	return null;
+	//}
 
 	@Override
 	public void run() {

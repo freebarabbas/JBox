@@ -92,6 +92,7 @@ public class Config {
     public static void setswiftmax(double doubleswiftmax){ max = doubleswiftmax; } 
     public static void setswiftsynctime(long longswiftsynctime){ synctime = longswiftsynctime; } 
     public static void setcontainername(String strcontainername){ containername = strcontainername; } 
+    public static void setswiftclientnum(int intswiftclientnum){ clientnum = intswiftclientnum; }  
     
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  

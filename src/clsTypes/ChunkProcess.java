@@ -34,9 +34,9 @@ public class ChunkProcess {
 				 //if (i==0 && tmp[0].equals("file")){
 				//	 mod = Integer.parseInt(tmp[3]);
 				 //}
-				 int s=Integer.parseInt(tmp[1]);
-				 int l=Integer.parseInt(tmp[2]);
-				 int e=s+l-1;
+				 long s=Long.parseLong(tmp[1]);
+				 long l=Long.parseLong(tmp[2]);
+				 long e=s+l-1;
 				 //if i = 0 means file level record, then end = length
 				 if(i==0)
 					 e=l;
