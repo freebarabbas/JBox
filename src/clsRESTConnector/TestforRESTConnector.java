@@ -51,11 +51,13 @@ public class TestforRESTConnector {
 		//ebProxy pxy=new ebProxy();
 		//ebProxy pxy=new ebProxy("web-proxy.corp.hp.com", 8080, "", "");
 		ebProxy pxy=new ebProxy();
-		RestResult rr = RestConnector.GetToken("https://cloud.swiftstack.com/auth/v1.0", "jb", "jb", pxy);
+		RestResult rr = RestConnector.GetToken("https://cloud.swiftstack.com/auth/v1.0", "dedup", "dedup", pxy);
 		//RestResult rr=RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:johnny.wang2@hp.com", "Johnny634917", pxy);
 		System.out.println(rr.token);
 		System.out.println(rr.storageurl);
 		
+		RestResult rraoc = RestConnector.AddObjectRefCount(rr.token, rr.storageurl+"/GenDB48DaysR2", "c1038df42702af269099857b5539db99dd", pxy);
+		System.out.println(rraoc.httpcode);
 		//RestResult rrcontainer=RestConnector.GetContainer(rr.token, rr.storageurl, pxy);
 		//String aaaaaa=new String(rrcontainer.data);
 		//System.out.println(aaaaaa);
