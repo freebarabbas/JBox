@@ -84,6 +84,7 @@ public class JBox {
 							String strStatus = "";
 							if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
 							System.out.println(timeStamp+": "+ strStatus);
+							System.gc(); //garbage collection
 							Thread.sleep(1000);
 						}
 					}

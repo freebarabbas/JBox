@@ -63,7 +63,8 @@ public class clsProperties {
 			if (prop.getProperty("min") != null && !prop.getProperty("min").isEmpty()){Config.setswiftmin(Double.parseDouble(prop.getProperty("min")));}
 			if (prop.getProperty("max") != null && !prop.getProperty("max").isEmpty()){Config.setswiftmax(Double.parseDouble(prop.getProperty("max")));}
 			if (prop.getProperty("synctime") != null && !prop.getProperty("synctime").isEmpty()){Config.setswiftsynctime(Long.parseLong(prop.getProperty("synctime")));}
-			if (prop.getProperty("client") != null && !prop.getProperty("client").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("client")));}
+			if (prop.getProperty("refcounter") != null && !prop.getProperty("refcounter").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("refcounter")));}
+			if (prop.getProperty("clientnum") != null && !prop.getProperty("clientnum").isEmpty()){Config.setswiftclientnum(Integer.parseInt(prop.getProperty("clientnum")));}
 
 			
 		} catch (Exception e) {
