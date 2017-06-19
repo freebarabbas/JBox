@@ -805,7 +805,7 @@ public class Sync implements Runnable {
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
            
-                                        fmd.data.size();
+                                        //fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
                                             
                                             int dcount = 1;
