@@ -39,6 +39,7 @@ public class Sync implements Runnable {
 	private long m_synctime;
 	private String m_containername;
 	private static long l_buffer=1*1024*1024*1024;
+	//private static long l_buffer=1*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
@@ -435,6 +436,7 @@ public class Sync implements Runnable {
             
             if (dcount == buffercount){
             	filedata = new byte[buffer.remaining()];
+            	buffer.get(filedata);
                 int intsize = filedata.length;
                 System.out.println(intsize);
             	buffer.clear();
@@ -805,7 +807,7 @@ public class Sync implements Runnable {
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
            
-                                        fmd.data.size();
+                                        //fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
                                             
                                             int dcount = 1;
@@ -874,7 +876,7 @@ public class Sync implements Runnable {
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
 			                                                }
-			                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+			                                        		byte[] tmpback = new byte[intend - (int)l_buffer+1];
 			                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
 			                                        		//comcat tmpfront and tmpback into tmp
 			                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
@@ -1203,7 +1205,7 @@ public class Sync implements Runnable {
 		                                        		} catch(IOException ex){
 		                                                	System.out.println(ex.toString());
 		                                                }
-		                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+		                                        		byte[] tmpback = new byte[intend - (int)l_buffer+1];
 		                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
 		                                        		//concanate tmpfront and tmpback into tmp
 		                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
