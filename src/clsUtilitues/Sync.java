@@ -38,8 +38,8 @@ public class Sync implements Runnable {
 	//private double m_max;
 	private long m_synctime;
 	private String m_containername;
-	//private static long l_buffer=1*1024*1024*1024;
-	private static long l_buffer=1*1024*1024;
+	private static long l_buffer=1*1024*1024*1024;
+	//private static long l_buffer=1*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
