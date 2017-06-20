@@ -39,6 +39,7 @@ public class Sync implements Runnable {
 	private long m_synctime;
 	private String m_containername;
 	private static long l_buffer=1*1024*1024*1024;
+	//private static long l_buffer=10*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
@@ -114,6 +115,8 @@ public class Sync implements Runnable {
 	
 	private Set<String> GetCurrentChunk()
 	{
+		int counter=0;
+		String strmarker="";
 		Set<String> hs = new HashSet<String>();
 		try
 		{
@@ -122,9 +125,30 @@ public class Sync implements Runnable {
 			{
 				String tmp=new String(rr.data);
 				String[] lines = tmp.split("\r\n|\n|\r");
-				for(int i=0;i<lines.length;i++)
+				for(int i=0;i<lines.length;i++){
 					if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
 						hs.add(lines[i]);
+						strmarker = lines[i];
+						counter++;
+				}
+				//System.out.println(counter);
+				//System.out.println(strmarker);
+			}
+			while ( counter !=0 && ( counter % 10000 ) == 0){
+				RestResult rrmore=RestConnector.GetContainer(m_tkn, m_usercontainer + "?marker=" + strmarker, m_pxy);
+				if(rrmore.result && rrmore.data!=null)
+				{
+					String tmp=new String(rrmore.data);
+					String[] lines = tmp.split("\r\n|\n|\r");
+					for(int i=0;i<lines.length;i++){
+						if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+							hs.add(lines[i]);
+						    strmarker = lines[i];
+							counter++;
+					}
+					//System.out.println(counter);
+					//System.out.println(strmarker);
+				}
 			}
 		}
 		catch(Exception e)
@@ -132,11 +156,14 @@ public class Sync implements Runnable {
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
 			hs.clear();
 		}		
+		System.out.println(counter);
 		return hs;
 	}
 	
 	private Set<String> GetBackupChunk()
 	{
+		int counter=0;
+		String strmarker="";
 		Set<String> bkhs = new HashSet<String>();
 		try
 		{
@@ -149,12 +176,27 @@ public class Sync implements Runnable {
 					if(lines[i].startsWith("backup/c")) // && !lines[i].endsWith("_d"))
 						bkhs.add(lines[i]);
 			}
+			while ( counter !=0 && ( counter % 10000 ) == 0){
+				RestResult rrmore=RestConnector.GetContainer(m_tkn, m_usercontainer + "?marker=" + strmarker, m_pxy);
+				if(rrmore.result && rrmore.data!=null)
+				{
+					String tmp=new String(rrmore.data);
+					String[] lines = tmp.split("\r\n|\n|\r");
+					for(int i=0;i<lines.length;i++){
+						if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+							bkhs.add(lines[i]);
+						    strmarker = lines[i];
+							counter++;
+					}
+				}
+			}
 		}
 		catch(Exception e)
 		{
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
 			bkhs.clear();
 		}		
+		System.out.println(counter);
 		return bkhs;
 	}
 	
@@ -435,6 +477,7 @@ public class Sync implements Runnable {
             
             if (dcount == buffercount){
             	filedata = new byte[buffer.remaining()];
+            	buffer.get(filedata);
                 int intsize = filedata.length;
                 System.out.println(intsize);
             	buffer.clear();
@@ -805,7 +848,7 @@ public class Sync implements Runnable {
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
            
-                                        fmd.data.size();
+                                        //fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
                                             
                                             int dcount = 1;
@@ -874,7 +917,7 @@ public class Sync implements Runnable {
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
 			                                                }
-			                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+			                                        		byte[] tmpback = new byte[intend - (int)l_buffer+1];
 			                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
 			                                        		//comcat tmpfront and tmpback into tmp
 			                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
@@ -1203,7 +1246,7 @@ public class Sync implements Runnable {
 		                                        		} catch(IOException ex){
 		                                                	System.out.println(ex.toString());
 		                                                }
-		                                        		byte[] tmpback = new byte[intend - (int)l_buffer];
+		                                        		byte[] tmpback = new byte[intend - (int)l_buffer+1];
 		                                        		System.arraycopy(filedata, 0, tmpback, 0, tmpback.length);
 		                                        		//concanate tmpfront and tmpback into tmp
 		                                        		System.arraycopy(tmpfront, 0, tmp, 0, tmpfront.length);
