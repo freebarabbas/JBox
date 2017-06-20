@@ -183,7 +183,7 @@ public class Sync implements Runnable {
 					String tmp=new String(rrmore.data);
 					String[] lines = tmp.split("\r\n|\n|\r");
 					for(int i=0;i<lines.length;i++){
-						if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+						if(lines[i].startsWith("backup/c")) // && !lines[i].endsWith("_d"))
 							bkhs.add(lines[i]);
 						    strmarker = lines[i];
 							counter++;
