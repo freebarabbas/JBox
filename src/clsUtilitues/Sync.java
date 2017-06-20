@@ -39,7 +39,7 @@ public class Sync implements Runnable {
 	private long m_synctime;
 	private String m_containername;
 	private static long l_buffer=1*1024*1024*1024;
-	//private static long l_buffer=1*1024*1024;
+	//private static long l_buffer=10*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
@@ -115,6 +115,8 @@ public class Sync implements Runnable {
 	
 	private Set<String> GetCurrentChunk()
 	{
+		int counter=0;
+		String strmarker="";
 		Set<String> hs = new HashSet<String>();
 		try
 		{
@@ -123,9 +125,30 @@ public class Sync implements Runnable {
 			{
 				String tmp=new String(rr.data);
 				String[] lines = tmp.split("\r\n|\n|\r");
-				for(int i=0;i<lines.length;i++)
+				for(int i=0;i<lines.length;i++){
 					if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
 						hs.add(lines[i]);
+						strmarker = lines[i];
+						counter++;
+				}
+				//System.out.println(counter);
+				//System.out.println(strmarker);
+			}
+			while ( ( counter % 10000 ) == 0){
+				RestResult rrmore=RestConnector.GetContainer(m_tkn, m_usercontainer + "?marker=" + strmarker, m_pxy);
+				if(rrmore.result && rrmore.data!=null)
+				{
+					String tmp=new String(rrmore.data);
+					String[] lines = tmp.split("\r\n|\n|\r");
+					for(int i=0;i<lines.length;i++){
+						if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+							hs.add(lines[i]);
+						    strmarker = lines[i];
+							counter++;
+					}
+					//System.out.println(counter);
+					//System.out.println(strmarker);
+				}
 			}
 		}
 		catch(Exception e)
@@ -133,6 +156,7 @@ public class Sync implements Runnable {
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
 			hs.clear();
 		}		
+		System.out.println(counter);
 		return hs;
 	}
 	
