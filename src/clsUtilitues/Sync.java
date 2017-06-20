@@ -134,7 +134,7 @@ public class Sync implements Runnable {
 				//System.out.println(counter);
 				//System.out.println(strmarker);
 			}
-			while ( ( counter % 10000 ) == 0){
+			while ( counter !=0 && ( counter % 10000 ) == 0){
 				RestResult rrmore=RestConnector.GetContainer(m_tkn, m_usercontainer + "?marker=" + strmarker, m_pxy);
 				if(rrmore.result && rrmore.data!=null)
 				{
@@ -162,6 +162,8 @@ public class Sync implements Runnable {
 	
 	private Set<String> GetBackupChunk()
 	{
+		int counter=0;
+		String strmarker="";
 		Set<String> bkhs = new HashSet<String>();
 		try
 		{
@@ -174,12 +176,27 @@ public class Sync implements Runnable {
 					if(lines[i].startsWith("backup/c")) // && !lines[i].endsWith("_d"))
 						bkhs.add(lines[i]);
 			}
+			while ( counter !=0 && ( counter % 10000 ) == 0){
+				RestResult rrmore=RestConnector.GetContainer(m_tkn, m_usercontainer + "?marker=" + strmarker, m_pxy);
+				if(rrmore.result && rrmore.data!=null)
+				{
+					String tmp=new String(rrmore.data);
+					String[] lines = tmp.split("\r\n|\n|\r");
+					for(int i=0;i<lines.length;i++){
+						if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+							bkhs.add(lines[i]);
+						    strmarker = lines[i];
+							counter++;
+					}
+				}
+			}
 		}
 		catch(Exception e)
 		{
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
 			bkhs.clear();
 		}		
+		System.out.println(counter);
 		return bkhs;
 	}
 	
