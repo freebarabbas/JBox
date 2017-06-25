@@ -131,8 +131,6 @@ public class Sync implements Runnable {
 						strmarker = lines[i];
 						counter++;
 				}
-				//System.out.println(counter);
-				//System.out.println(strmarker);
 			}
 			while ( counter !=0 && ( counter % 10000 ) == 0){
 				RestResult rrmore=RestConnector.GetContainer(m_tkn, m_usercontainer + "?marker=" + strmarker, m_pxy);
@@ -146,8 +144,6 @@ public class Sync implements Runnable {
 						    strmarker = lines[i];
 							counter++;
 					}
-					//System.out.println(counter);
-					//System.out.println(strmarker);
 				}
 			}
 		}
@@ -183,7 +179,7 @@ public class Sync implements Runnable {
 					String tmp=new String(rrmore.data);
 					String[] lines = tmp.split("\r\n|\n|\r");
 					for(int i=0;i<lines.length;i++){
-						if(lines[i].startsWith("c")) // && !lines[i].endsWith("_d"))
+						if(lines[i].startsWith("backup/c")) // && !lines[i].endsWith("_d"))
 							bkhs.add(lines[i]);
 						    strmarker = lines[i];
 							counter++;
