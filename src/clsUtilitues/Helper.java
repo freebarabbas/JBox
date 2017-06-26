@@ -25,9 +25,9 @@ public class Helper {
 		+ "                    levle: f: file level or c: chunk level\n"
 		+ "                file guid: e.g 078ab3e97c284ce9b3efcc5d8d6343a9\n"
 		+ "    <example>\n"
-		+ "    e.g: java -jar ./JBox.jar q f \n"
-		+ "    e.g: java -jar ./JBox.jar q c guid \n"
-		+ "    e.g: java -jar ./JBox.jar q f guid \n"
+		+ "    e.g: java -jar ./JBox.jar q f - display file level metadata contnent \n"
+		+ "    e.g: java -jar ./JBox.jar q c <file guid> - display all versions w/ Version. No. \n"
+		+ "    e.g: java -jar ./JBox.jar q f <file guid> - display whole chunk level metadata content. \n"
 		+ "\n";		
 		return strQuery;
 	}
@@ -41,8 +41,8 @@ public class Helper {
 		+ "                  version: option <if version doesn't specify, it will download lastest version>\n"
 		+ "         output file name: e.g /home/johnny/test (mandatory)\n"
 		+ "    <example>\n"
-		+ "    e.g: java -jar ./JBox.jar r c guid <output file name> \n"
-		+ "    e.g: java -jar ./JBox.jar r c level guild <output file name> \n"
+		+ "    e.g: java -jar ./JBox.jar r <level:c> <file guid> <output file name> - download lastest version to local. \n"
+		+ "    e.g: java -jar ./JBox.jar r <level:c> <file guild> <version no> <output file name> - download specific version to local. \n"
 		+ "\n";
 		return strRetrieve;
 	}
