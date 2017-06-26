@@ -72,9 +72,9 @@ public class JBox {
 						}
 						break;		
 	                    //mod = 64, 32KB ~ 128KB
-					default:	
+					case "s":
 						Config.logger.debug(Config.ConvertToHTML());
-									
+						
 						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
 						new Thread(r).start();
 						while(true)
@@ -87,6 +87,9 @@ public class JBox {
 							System.gc(); //garbage collection
 							Thread.sleep(1000);
 						}
+					default:
+						Helper m = new Helper("r");
+						m.GetMenu();
 					}
 				}
 				else{
