@@ -35,15 +35,15 @@ public class JBox {
 						}
 						else if (args[1].toString().equalsIgnoreCase("f") && args.length == 2){
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString());
-							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString());
+							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(),Config.containername);
 							q.StartQuery();
 						}else if (args[1].toString().equalsIgnoreCase("c")  && args.length == 3){
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString() + ", file guid:" + args[2].toString());
-							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString());
+							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString(),Config.containername);
 							q.StartQuery();						
 						}else if (args[1].toString().equalsIgnoreCase("f") && args.length == 3){
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString() + ", file guid:" + args[2].toString());
-							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString());
+							Query q = new Query(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString(),Config.containername);
 							q.StartQuery();
 						}else{
 							Helper m = new Helper("q");
@@ -58,11 +58,11 @@ public class JBox {
 						}
 						else if (args[1].toString().equalsIgnoreCase("c") && args.length == 5){
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString() + ", file guid:" + args[2].toString() + ", version:" + args[3].toString()+ ", output file name:" + args[4].toString());
-							Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString(), Integer.parseInt(args[3].toString()), args[4].toString());
+							Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString(), Integer.parseInt(args[3].toString()), args[4].toString(),Config.containername);
 							r.StartRetrieve();						
 						}else if (args[1].toString().equalsIgnoreCase("c") && args.length == 4){
 							System.out.println("run: " + args[0].toString() + ", username:" + Config.swiftusr + ", password:" + Config.swiftpwd + ", level:" + args[1].toString() + ", file guid:" + args[2].toString() + ", output file name:" + args[3].toString());
-							Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString(), args[3].toString());
+							Retrieve r = new Retrieve(Config.serverlogin, Config.swiftusr, Config.swiftpwd, Config.proxyobj, args[1].toString(), args[2].toString(), args[3].toString(),Config.containername);
 							r.StartRetrieve();
 						}else{
 							if (args.length > 5){System.out.println("Too Many Input Arguments");}

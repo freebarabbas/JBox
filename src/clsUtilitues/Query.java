@@ -22,26 +22,29 @@ public class Query {
 	private String m_usercontainer;
 	private String m_level;
 	private String m_guid;
+	private String m_containername;
 	
-	
-	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy)
+	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
 		m_pwd=p_pwd;
 		m_pxy=p_pxy;
+		m_containername=p_containername;
 	}
 	
-	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level)
+	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
 		m_pwd=p_pwd;
 		m_pxy=p_pxy;
 		m_level=p_level;
+		m_containername=p_containername;
+		
 	}
 	
-	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid)
+	public Query(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
@@ -49,6 +52,7 @@ public class Query {
 		m_pxy=p_pxy;
 		m_level=p_level;
 		m_guid=p_guid;
+		m_containername=p_containername;
 	}
 	
 	private boolean GetToken()
@@ -92,11 +96,14 @@ public class Query {
 		if(GetToken()==true)
         {
 			Config.logger.debug("Receiving token from server");
+			
 			int dotIndex=m_username.lastIndexOf(':');
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
 	        else
-	        	m_usercontainer=m_storageurl+"/"+m_username;
+	        	if(m_containername.isEmpty() && m_containername == null){m_usercontainer=m_storageurl+"/"+m_username;}
+	        	else{m_usercontainer=m_storageurl+"/"+m_containername;}
+			
 			
 
         	if (m_level.equalsIgnoreCase("f")){

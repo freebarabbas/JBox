@@ -26,6 +26,7 @@ public class Retrieve {
 	private String m_guid;
 	private String m_name;
 	private int m_version=0;
+	private String m_containername;
 	
 	/*
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid)
@@ -39,7 +40,7 @@ public class Retrieve {
 	}
 	*/
 	
-	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_name)
+	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_name, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
@@ -48,6 +49,7 @@ public class Retrieve {
 		m_level=p_level;
 		m_guid=p_guid;
 		m_name=p_name;
+		m_containername=p_containername;
 	}
 	
 	/*
@@ -63,7 +65,7 @@ public class Retrieve {
 	}
 	*/
 	
-	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version, String p_name)
+	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version, String p_name, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
@@ -73,6 +75,7 @@ public class Retrieve {
 		m_guid=p_guid;
 		m_name=p_name;
 		m_version=p_version;
+		m_containername=p_containername;
 	}
 	
 	private boolean GetToken()
@@ -120,7 +123,9 @@ public class Retrieve {
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
 	        else
-	        	m_usercontainer=m_storageurl+"/"+m_username;
+	        	if(m_containername.isEmpty() && m_containername == null){m_usercontainer=m_storageurl+"/"+m_username;}
+	        	else{m_usercontainer=m_storageurl+"/"+m_containername;}
+			
 			
         	if (m_level.equalsIgnoreCase("c")){
         		
