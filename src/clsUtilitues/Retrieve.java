@@ -234,7 +234,8 @@ public class Retrieve {
 		                        dsize =dsize + c.end - c.start + 1;
 		                        double dbpercentage = (double)dsize / (double)fmd.data.get(lastversion-1).byteslength;
 		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
-		                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " -- Just Download/Original(Chunk Size):"+ lngtemp + "/" + (c.end - c.start + 1) + ", and Downloaded/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "");
+		                        
+		                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " -- Just Download/Original(Chunk Size):"+ lngtemp + "/" + (c.end - c.start + 1) + ", and Downloaded/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "          ");
 		                    }
 		                    System.out.print("\n");
 			                ht.clear();     
