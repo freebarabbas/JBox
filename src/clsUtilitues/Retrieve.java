@@ -206,8 +206,58 @@ public class Retrieve {
                     
                     if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {    
                     	System.out.println("Will download file size:" + fmd.data.get(lastversion-1).byteslength);
-                    //}else{
+                    	FileOutputStream out = new FileOutputStream(m_name, true);
+                    	try{
+		                    for (chunk c : fmd.data.get(lastversion-1).data)
+		                    {
+		                        long lngtemp = 0;
+		                    	if (ht.get(c.hashvalue)!=null)
+		                        {
+		                        	System.arraycopy((byte[])ht.get(c.hashvalue), 0, realdata, (int)c.start, ((byte[])ht.get(c.hashvalue)).length);
+		                        }
+		                        else
+		                        {
+		                            byte[]  temp=RestConnector.GetContainer(m_tkn, m_usercontainer+"/c"+ Integer.toString(c.flag) +c.hashvalue, m_pxy).data;
+		                        	lngtemp = temp.length;
+		                            downloadsize +=temp.length;
+		                            if( (c.flag & 1) == 1) //compressed chunk
+		                            {
+		                            	temp=ZipProcess.unzip(temp);
+		                            }
+		                            
+		                            out.write(temp);
+		                            //ht.put(c.hashvalue, temp.clone());
+		                            //System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);   
+		                        }
+		                        dsize =dsize + c.end - c.start + 1;
+		                        System.out.print("\r" + "Just Download/Original Chunk Size:"+ lngtemp + "/" + (c.end - c.start + 1) + " Now Download/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "");
+		                    }
+			                ht.clear();     
+                         }finally {
+                            out.close();
+		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                         }
+                    	/*
+	                    if (!m_name.equalsIgnoreCase("")){
+		                    FileOutputStream out = new FileOutputStream(m_name);
+		                	out.write(realdata);
+		                	out.close();
+		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+	                    }
+	                    else{
+		                    FileOutputStream out = new FileOutputStream(strFileName);
+		                	out.write(realdata);
+		                	out.close();
+		                	Config.logger.info("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+		                	System.out.println("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");                    	
+	                    }
+	                    */
                     }
+                    else
+                    {
+                    
 	                    for (chunk c : fmd.data.get(lastversion-1).data)
 	                    {
 	                        if (ht.get(c.hashvalue)!=null)
@@ -244,6 +294,7 @@ public class Retrieve {
 		                	System.out.println("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");                    	
 	                    }
 
+                    }
                     
         		}else{
         			System.out.println("missing file guid !!!");
