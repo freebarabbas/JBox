@@ -2,6 +2,7 @@ package clsUtilitues;
 
 import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -26,6 +27,8 @@ public class Retrieve {
 	private String m_guid;
 	private String m_name;
 	private int m_version=0;
+	private String m_containername;
+	private static long l_buffer=1*1024*1024*1024;
 	
 	/*
 	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid)
@@ -39,7 +42,7 @@ public class Retrieve {
 	}
 	*/
 	
-	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_name)
+	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, String p_name, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
@@ -48,6 +51,7 @@ public class Retrieve {
 		m_level=p_level;
 		m_guid=p_guid;
 		m_name=p_name;
+		m_containername=p_containername;
 	}
 	
 	/*
@@ -63,7 +67,7 @@ public class Retrieve {
 	}
 	*/
 	
-	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version, String p_name)
+	public Retrieve(String p_url,String p_username,String p_pwd,ebProxy p_pxy, String p_level, String p_guid, int p_version, String p_name, String p_containername)
 	{
 		m_url=p_url;
 		m_username=p_username;
@@ -73,6 +77,7 @@ public class Retrieve {
 		m_guid=p_guid;
 		m_name=p_name;
 		m_version=p_version;
+		m_containername=p_containername;
 	}
 	
 	private boolean GetToken()
@@ -120,7 +125,9 @@ public class Retrieve {
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
 	        else
-	        	m_usercontainer=m_storageurl+"/"+m_username;
+	        	if(m_containername.isEmpty() && m_containername == null){m_usercontainer=m_storageurl+"/"+m_username;}
+	        	else{m_usercontainer=m_storageurl+"/"+m_containername;}
+			
 			
         	if (m_level.equalsIgnoreCase("c")){
         		
@@ -186,6 +193,7 @@ public class Retrieve {
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
                     Collections.sort(fmd.data);
 
+                    //fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);
                     
                     int lastversion=0;
                     if (m_version==0){lastversion=fmd.data.size();}
@@ -193,43 +201,88 @@ public class Retrieve {
                     
                     byte[] realdata = new byte[(int) fmd.data.get(lastversion-1).byteslength];
                     fmd.data.get(lastversion-1).data.size();
+                   
                     long dsize = 0;
                     Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
                     
-                    for (chunk c : fmd.data.get(lastversion-1).data)
+                    if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {    
+                    	System.out.println("Will download file size:" + fmd.data.get(lastversion-1).byteslength);
+                    	FileOutputStream out = new FileOutputStream(m_name, true);
+                    	try{
+		                    for (chunk c : fmd.data.get(lastversion-1).data)
+		                    {
+		                        long lngtemp = 0;
+		                    	if (ht.get(c.hashvalue)!=null)
+		                        {
+		                        	System.arraycopy((byte[])ht.get(c.hashvalue), 0, realdata, (int)c.start, ((byte[])ht.get(c.hashvalue)).length);
+		                        }
+		                        else
+		                        {
+		                            byte[]  temp=RestConnector.GetContainer(m_tkn, m_usercontainer+"/c"+ Integer.toString(c.flag) +c.hashvalue, m_pxy).data;
+		                        	lngtemp = temp.length;
+		                            downloadsize +=temp.length;
+		                            if( (c.flag & 1) == 1) //compressed chunk
+		                            {
+		                            	temp=ZipProcess.unzip(temp);
+		                            }
+		                            
+		                            out.write(temp);
+		                            //ht.put(c.hashvalue, temp.clone());
+		                            //System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);   
+		                        }
+		                        dsize =dsize + c.end - c.start + 1;
+		                        double dbpercentage = (double)dsize / (double)fmd.data.get(lastversion-1).byteslength;
+		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+		                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " -- Just Download/Original(Chunk Size):"+ lngtemp + "/" + (c.end - c.start + 1) + ", and Downloaded/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "");
+		                    }
+		                    System.out.print("\n");
+			                ht.clear();     
+                         }finally {
+                            out.close();
+		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                         }
+
+                    }
+                    else
                     {
-                        if (ht.get(c.hashvalue)!=null)
-                        {
-                        	System.arraycopy((byte[])ht.get(c.hashvalue), 0, realdata, (int)c.start, ((byte[])ht.get(c.hashvalue)).length);
-                        }
-                        else
-                        {
-                            byte[]  temp=RestConnector.GetContainer(m_tkn, m_usercontainer+"/c"+ Integer.toString(c.flag) +c.hashvalue, m_pxy).data;
-                        	downloadsize +=temp.length;
-                            if( (c.flag & 1) == 1) //compressed chunk
-                            {
-                            	temp=ZipProcess.unzip(temp);
-                            }
-                            ht.put(c.hashvalue, temp.clone());
-                            System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);
-                            
-                        }
-                        dsize =dsize + c.end - c.start + 1;
-                    }
-                    ht.clear();
-                    if (!m_name.equalsIgnoreCase("")){
-	                    FileOutputStream out = new FileOutputStream(m_name);
-	                	out.write(realdata);
-	                	out.close();
-	                	Config.logger.info("Downloaded at: " + m_name + " with Download Size:" + downloadsize + " Bytes");
-	                	System.out.println("Downloaded at: " + m_name + " with Download Size:" + downloadsize + " Bytes");
-                    }
-                    else{
-	                    FileOutputStream out = new FileOutputStream(strFileName);
-	                	out.write(realdata);
-	                	out.close();
-	                	Config.logger.info("Downloaded at: " + strFileName + " with Download Size:" + downloadsize + " Bytes");
-	                	System.out.println("Downloaded at: " + strFileName + " with Download Size:" + downloadsize + " Bytes");                    	
+                    
+	                    for (chunk c : fmd.data.get(lastversion-1).data)
+	                    {
+	                        if (ht.get(c.hashvalue)!=null)
+	                        {
+	                        	System.arraycopy((byte[])ht.get(c.hashvalue), 0, realdata, (int)c.start, ((byte[])ht.get(c.hashvalue)).length);
+	                        }
+	                        else
+	                        {
+	                            byte[]  temp=RestConnector.GetContainer(m_tkn, m_usercontainer+"/c"+ Integer.toString(c.flag) +c.hashvalue, m_pxy).data;
+	                        	downloadsize +=temp.length;
+	                            if( (c.flag & 1) == 1) //compressed chunk
+	                            {
+	                            	temp=ZipProcess.unzip(temp);
+	                            }
+	                            ht.put(c.hashvalue, temp.clone());
+	                            System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);
+	                            
+	                        }
+	                        dsize =dsize + c.end - c.start + 1;
+	                    }
+	                    ht.clear();
+	                    if (!m_name.equalsIgnoreCase("")){
+		                    FileOutputStream out = new FileOutputStream(m_name);
+		                	out.write(realdata);
+		                	out.close();
+		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+	                    }
+	                    else{
+		                    FileOutputStream out = new FileOutputStream(strFileName);
+		                	out.write(realdata);
+		                	out.close();
+		                	Config.logger.info("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+		                	System.out.println("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");                    	
+	                    }
+
                     }
                     
         		}else{
