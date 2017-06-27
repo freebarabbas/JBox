@@ -2,6 +2,7 @@ package clsUtilitues;
 
 import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -230,30 +231,18 @@ public class Retrieve {
 		                            //System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);   
 		                        }
 		                        dsize =dsize + c.end - c.start + 1;
-		                        System.out.print("\r" + "Just Download/Original Chunk Size:"+ lngtemp + "/" + (c.end - c.start + 1) + " Now Download/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "");
+		                        double dbpercentage = (double)dsize / (double)fmd.data.get(lastversion-1).byteslength;
+		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+		                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " -- Just Download/Original(Chunk Size):"+ lngtemp + "/" + (c.end - c.start + 1) + ", and Downloaded/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "");
 		                    }
+		                    System.out.print("\n");
 			                ht.clear();     
                          }finally {
                             out.close();
 		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
 		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
                          }
-                    	/*
-	                    if (!m_name.equalsIgnoreCase("")){
-		                    FileOutputStream out = new FileOutputStream(m_name);
-		                	out.write(realdata);
-		                	out.close();
-		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-	                    }
-	                    else{
-		                    FileOutputStream out = new FileOutputStream(strFileName);
-		                	out.write(realdata);
-		                	out.close();
-		                	Config.logger.info("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-		                	System.out.println("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");                    	
-	                    }
-	                    */
+
                     }
                     else
                     {
