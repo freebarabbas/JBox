@@ -458,7 +458,7 @@ public class Sync implements Runnable {
     }
 	
 	
-	private static byte[] GetFileByteArray(String filepath, int dcount) throws IOException{
+	public static byte[] GetFileByteArray(String filepath, int dcount) throws IOException{
 		RandomAccessFile aFile = new RandomAccessFile(filepath, "r");
         FileChannel inChannel = aFile.getChannel();
         long fileSize = inChannel.size();
