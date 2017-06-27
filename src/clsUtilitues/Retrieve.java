@@ -187,7 +187,7 @@ public class Retrieve {
         		if (!m_guid.equalsIgnoreCase("")){
         			int downloadsize=0;
         			rr=null;
-        			
+        			System.out.print("Getting chunk level metadata ... ");
                 	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
@@ -204,7 +204,8 @@ public class Retrieve {
                    
                     long dsize = 0;
                     Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
-                    
+                    System.out.print("Done !");
+                    System.out.print("\n");
                     if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {    
                     	System.out.println("Will download file size:" + fmd.data.get(lastversion-1).byteslength);
                     	FileOutputStream out = new FileOutputStream(m_name, true);
@@ -262,16 +263,20 @@ public class Retrieve {
 	                            	temp=ZipProcess.unzip(temp);
 	                            }
 	                            ht.put(c.hashvalue, temp.clone());
-	                            System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);
-	                            
+	                            System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);                    
 	                        }
 	                        dsize =dsize + c.end - c.start + 1;
+	                        double dbpercentage = (double)dsize / (double)fmd.data.get(lastversion-1).byteslength;
+	                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+	                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " to the memory (ByteArray) ");
 	                    }
+	                    
 	                    ht.clear();
 	                    if (!m_name.equalsIgnoreCase("")){
 		                    FileOutputStream out = new FileOutputStream(m_name);
 		                	out.write(realdata);
 		                	out.close();
+		                	System.out.println("and Write out file: " + m_name + " from memory (ByteArray) !" );
 		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
 		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
 	                    }
