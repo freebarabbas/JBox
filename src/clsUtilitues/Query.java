@@ -235,12 +235,12 @@ public class Query {
                     int lastversion=fmd.data.size();
 
 	                String strDash="-";
-	                for(int i=0; i<(30+2); i++)
+	                for(int i=0; i<(102+2); i++)
 	                {strDash = strDash + "-";}
 	                
 	                System.out.print("\n");
 	                System.out.println(strDash);
-	                System.out.println(String.format("|%-10s|%-20s|" , "Version", "TimeStamp" ));
+	                System.out.println(String.format("|%-10s|%-20s|%-30s|%-40s|" , "Version", "TimeStamp", "Size", "File Hash" ));
                     
                     String TimeStamp="";
                     long lngVersion=0;
@@ -248,7 +248,7 @@ public class Query {
                     	TimeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(fmd.data.get(i).dt.getTime());
                     	lngVersion=i+1;
 	                	System.out.println(strDash);
-		                System.out.println(String.format("|%-10s|%-20s|" , lngVersion, TimeStamp));
+		                System.out.println(String.format("|%-10s|%-20s|%-30s|%-40s|" , lngVersion, TimeStamp, fmd.data.get(i).byteslength, fmd.data.get(i).hashcode));
                     }
                     System.out.println(strDash);
 
