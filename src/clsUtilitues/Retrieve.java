@@ -187,7 +187,7 @@ public class Retrieve {
         		if (!m_guid.equalsIgnoreCase("")){
         			int downloadsize=0;
         			rr=null;
-        			System.out.println("\rGetting chunk level metadata ...");
+        			System.out.print("Getting chunk level metadata ... ");
                 	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
@@ -204,7 +204,8 @@ public class Retrieve {
                    
                     long dsize = 0;
                     Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
-                    
+                    System.out.print("Done !");
+                    System.out.print("\n");
                     if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {    
                     	System.out.println("Will download file size:" + fmd.data.get(lastversion-1).byteslength);
                     	FileOutputStream out = new FileOutputStream(m_name, true);
