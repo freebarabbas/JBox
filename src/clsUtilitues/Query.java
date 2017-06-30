@@ -129,14 +129,16 @@ public class Query {
 	                
 	                int intCol=0;
 	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
-	                if (intCol != 0){
-		                while(itcol.hasNext())
-		                {
-		                	fileInfo tmpcol=itcol.next();
-		                	if (tmpcol.type==0) {
-			                	if (tmpcol.filename.length() > intCol){intCol=tmpcol.filename.length();}
-		                	}
-		                }
+	                
+	                while(itcol.hasNext())
+	                {
+	                	fileInfo tmpcol=itcol.next();
+	                	if (tmpcol.type==0) {
+		                	if (tmpcol.filename.length() > intCol){intCol=tmpcol.filename.length();}
+	                	}
+	                }
+		                
+		            if (intCol != 0){
 		                
 		                String strDash="-";
 		                for(int i=0; i<(intCol+124+6); i++)
