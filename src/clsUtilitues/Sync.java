@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -843,7 +844,12 @@ public class Sync implements Runnable {
                                     if (needupload)
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
-           
+                                    	Date dtm=new Date();
+
+	                                    if(clsExperiment.ExperimentMetaDataDump(fi.filename, (dtm.getTime() - dts.getTime()), fmd.data.toString()))
+	                                    {Config.logger.debug("Experiment Dump Meta OK");}
+	                                    else{Config.logger.debug("Experiment Dump Meta Fail");}
+                                    	
                                         //fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
                                             
@@ -851,8 +857,12 @@ public class Sync implements Runnable {
                                             //File FilePath = new File(fi.filename).toPath();
                                             
                                             byte[] filedata = GetFileByteArray(fi.filename, dcount);
-                                  
-                                            Hashtable<String, String> ht = new Hashtable<String, String>();
+                                        	Date dti=new Date();
+    	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
+    	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
+    	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
+                                            
+    	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
                                
 	                                        for(chunk c : fmd.data)
 	                                        {	                                        	
@@ -910,6 +920,16 @@ public class Sync implements Runnable {
 			                                        		//get next 1G buffer
 			                                        		try {
 			                                        			filedata = GetFileByteArray(fi.filename, dcount);
+			                                        			
+			                                                	Date dtj=new Date();
+			                                                	
+			                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
+			                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+			                    		                        
+			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dts.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+			            	                                    
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
 			                                                }
@@ -1178,6 +1198,11 @@ public class Sync implements Runnable {
                                         
                                         byte[] filedata = GetFileByteArray(fi.filename, dcount);
                               
+                                    	Date dti=new Date();
+	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
+	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
+	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
+	                                    
                                         Hashtable<String, String> ht = new Hashtable<String, String>();
                            
                                         for(chunk c : fmd.data)
@@ -1239,6 +1264,16 @@ public class Sync implements Runnable {
 		                                        		//get next 1G buffer
 		                                        		try {
 		                                        			filedata = GetFileByteArray(fi.filename, dcount);
+		                                        			
+		                                                	Date dtj=new Date();
+		                                                	
+		                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
+		                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+		                    		                        
+		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dts.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+		            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+		            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}
+		            	                                    
 		                                        		} catch(IOException ex){
 		                                                	System.out.println(ex.toString());
 		                                                }
