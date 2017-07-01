@@ -926,9 +926,13 @@ public class Sync implements Runnable {
 			                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
 			                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
 			                    		                        
-			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dts.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
 			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
 			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+			            	                                    
+			            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
+			            	                        			if(GetToken()==false)
+			            	                        				return;
 			            	                                    
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
@@ -1242,9 +1246,7 @@ public class Sync implements Runnable {
 	                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
 	                                            		}
 	                                            	}
-	                                            	
-	                                            	
-	                                            	
+	                                            		
 
 	                                            	if(tmpf==1)
 	                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
@@ -1270,9 +1272,13 @@ public class Sync implements Runnable {
 		                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
 		                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
 		                    		                        
-		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dts.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
 		            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
 		            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}
+		            	                                    
+		            	                        			Config.logger.debug("Renew token from m_usernameserver when remote_need_overwrite upload");
+		            	                        			if(GetToken()==false)
+		            	                        				return;
 		            	                                    
 		                                        		} catch(IOException ex){
 		                                                	System.out.println(ex.toString());
