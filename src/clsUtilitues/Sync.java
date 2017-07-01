@@ -497,6 +497,8 @@ public class Sync implements Runnable {
 			Config.logger.debug("Receiving token from m_usernameserver");
 			if(GetToken()==false)
 				return;
+			else
+				Config.logger.debug("Got token: " + m_tkn);
 			int dotIndex=m_username.lastIndexOf(':');
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
@@ -933,6 +935,8 @@ public class Sync implements Runnable {
 			            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
 			            	                        			if(GetToken()==false)
 			            	                        				return;
+			            	                        			else
+			            	                        				Config.logger.debug("Got token: " + m_tkn);
 			            	                                    
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
@@ -1279,6 +1283,8 @@ public class Sync implements Runnable {
 		            	                        			Config.logger.debug("Renew token from m_usernameserver when remote_need_overwrite upload");
 		            	                        			if(GetToken()==false)
 		            	                        				return;
+		            	                        			else
+		            	                        				Config.logger.debug("Got token: " + m_tkn);
 		            	                                    
 		                                        		} catch(IOException ex){
 		                                                	System.out.println(ex.toString());
