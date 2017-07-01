@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -496,6 +497,8 @@ public class Sync implements Runnable {
 			Config.logger.debug("Receiving token from m_usernameserver");
 			if(GetToken()==false)
 				return;
+			else
+				Config.logger.debug("Got token: " + m_tkn);
 			int dotIndex=m_username.lastIndexOf(':');
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);
@@ -843,7 +846,12 @@ public class Sync implements Runnable {
                                     if (needupload)
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
-           
+                                    	Date dtm=new Date();
+
+	                                    if(clsExperiment.ExperimentMetaDataDump(fi.filename, (dtm.getTime() - dts.getTime()), fmd.data.toString()))
+	                                    {Config.logger.debug("Experiment Dump Meta OK");}
+	                                    else{Config.logger.debug("Experiment Dump Meta Fail");}
+                                    	
                                         //fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
                                             
@@ -851,8 +859,12 @@ public class Sync implements Runnable {
                                             //File FilePath = new File(fi.filename).toPath();
                                             
                                             byte[] filedata = GetFileByteArray(fi.filename, dcount);
-                                  
-                                            Hashtable<String, String> ht = new Hashtable<String, String>();
+                                        	Date dti=new Date();
+    	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
+    	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
+    	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
+                                            
+    	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
                                
 	                                        for(chunk c : fmd.data)
 	                                        {	                                        	
@@ -910,6 +922,22 @@ public class Sync implements Runnable {
 			                                        		//get next 1G buffer
 			                                        		try {
 			                                        			filedata = GetFileByteArray(fi.filename, dcount);
+			                                        			
+			                                                	Date dtj=new Date();
+			                                                	
+			                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
+			                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+			                    		                        
+			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+			            	                                    
+			            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
+			            	                        			if(GetToken()==false)
+			            	                        				return;
+			            	                        			else
+			            	                        				Config.logger.debug("Got token: " + m_tkn);
+			            	                                    
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
 			                                                }
@@ -1178,6 +1206,11 @@ public class Sync implements Runnable {
                                         
                                         byte[] filedata = GetFileByteArray(fi.filename, dcount);
                               
+                                    	Date dti=new Date();
+	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
+	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
+	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
+	                                    
                                         Hashtable<String, String> ht = new Hashtable<String, String>();
                            
                                         for(chunk c : fmd.data)
@@ -1217,9 +1250,7 @@ public class Sync implements Runnable {
 	                                            			gbc.remove("backup/" + "c0"+c.hashvalue);
 	                                            		}
 	                                            	}
-	                                            	
-	                                            	
-	                                            	
+	                                            		
 
 	                                            	if(tmpf==1)
 	                                            		c.flag= c.flag | 1; //zip size is smaller than real size, c1+cityhash                                           	
@@ -1239,6 +1270,22 @@ public class Sync implements Runnable {
 		                                        		//get next 1G buffer
 		                                        		try {
 		                                        			filedata = GetFileByteArray(fi.filename, dcount);
+		                                        			
+		                                                	Date dtj=new Date();
+		                                                	
+		                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
+		                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+		                    		                        
+		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+		            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+		            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}
+		            	                                    
+		            	                        			Config.logger.debug("Renew token from m_usernameserver when remote_need_overwrite upload");
+		            	                        			if(GetToken()==false)
+		            	                        				return;
+		            	                        			else
+		            	                        				Config.logger.debug("Got token: " + m_tkn);
+		            	                                    
 		                                        		} catch(IOException ex){
 		                                                	System.out.println(ex.toString());
 		                                                }
