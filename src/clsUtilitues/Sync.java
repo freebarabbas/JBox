@@ -498,7 +498,7 @@ public class Sync implements Runnable {
 			if(GetToken()==false)
 				return;
 			else
-				Config.logger.debug("Got token: " + m_tkn);
+				Config.logger.debug("Got 1st token: " + m_tkn);
 			int dotIndex=m_username.lastIndexOf(':');
 	        if(dotIndex>=0)
 	        	m_usercontainer=m_storageurl+"/"+m_username.substring(dotIndex+1);

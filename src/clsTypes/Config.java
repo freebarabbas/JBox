@@ -49,7 +49,8 @@ public class Config {
     public static String userkey = "ABCHPHPHPCLOUDXYZ";
 
     public static Logger logger=null;
-    public static Level loglevel=Level.INFO; //DEBUG show all info or INFO or ERROR
+    //public static Level loglevel=Level.INFO; //DEBUG show all info or INFO or ERROR
+    public static Level loglevel=Level.DEBUG; //DEBUG show all info or INFO or ERROR
     
     //Dedup Algorithm Parameter
     public static chunkType ct = chunkType.VAR; //FIX for fix chunk and VAR for variable chunk and NO for no chunk    
