@@ -859,7 +859,9 @@ public class Sync implements Runnable {
                                             //File FilePath = new File(fi.filename).toPath();
                                             
                                             byte[] filedata = GetFileByteArray(fi.filename, dcount);
+                                            
                                         	Date dti=new Date();
+                                        	
     	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
     	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
     	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
@@ -937,6 +939,8 @@ public class Sync implements Runnable {
 			            	                        				return;
 			            	                        			else
 			            	                        				Config.logger.debug("Got token: " + m_tkn);
+			            	                        			
+			            	                        			dti = dtj;
 			            	                                    
 			                                        		} catch(IOException ex){
 			                                                	System.out.println(ex.toString());
