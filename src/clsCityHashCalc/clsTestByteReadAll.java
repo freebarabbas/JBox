@@ -1,15 +1,17 @@
 package clsCityHashCalc;
 
 import java.nio.ByteBuffer;
-import java.io.File;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+
+
 public class clsTestByteReadAll {
+	
+	private static long l_buffer=1*1024*1024*1024;
 	/*
 	public static void main(String args[]) throws Exception {
 	//Path path = Paths.get("//tmp/JBox/CSV_ALL.csv");
@@ -71,8 +73,8 @@ public class clsTestByteReadAll {
 		//FileChannel inChannel = fis.getChannel();
         long fileSize = inChannel.size();
         System.out.println(fileSize);
-        ByteBuffer buffer = ByteBuffer.allocate(1*1024*1024*1024);
-		byte[] filedata = new byte[1*1024*1024*1024];
+        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
+		byte[] filedata = new byte[(int)l_buffer];
 		int buffercount = 1;
         while(inChannel.read(buffer) > 0)
         {
@@ -104,21 +106,81 @@ public class clsTestByteReadAll {
 		return filedata;
 	}
 
+	private static byte[] getFileByteArraybySeek(String filepath, int dcount) throws IOException{
+		RandomAccessFile aFile = new RandomAccessFile(filepath, "r");
+		
+		//read startPosition ~ endPosition or end of file to byteArray[]
+		long startPosition = (dcount-1) * l_buffer;
+		//long endPosition = dcount * l_buffer;
+		
+		//if (endPosition < aFile.length())
+			// set the file pointer at startPosition position
+		aFile.seek(startPosition);
+		//else
+			//
+		//FileInputStream fis = new FileInputStream(filepath);
+		//FileOutputStream fos = new FileOutputStream("//tmp//o3.csv");
+		//FileChannel fco = fos.getChannel();
+        FileChannel inChannel = aFile.getChannel();
+		//FileChannel inChannel = fis.getChannel();
+        long fileSize = inChannel.size();
+        System.out.println(fileSize);
+        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
+		byte[] filedata = new byte[(int)l_buffer];
+		//int buffercount = 1;
+        if (inChannel.read(buffer) > 0)
+        {
+            //System.out.println(buffercount);
+        	buffer.flip();
+        	filedata = new byte[buffer.remaining()];
+        	buffer.get(filedata);
+            int intsize = filedata.length;
+            System.out.println(intsize);
+            //Files.write(Paths.get("//tmp//o3.csv"), filedata);
+        	//fco.write(buffer);
+            //if (dcount == buffercount){
+            	//filedata = new byte[buffer.remaining()];
+                //int intsize = filedata.length;
+                //System.out.println(intsize);
+                //Files.write(Paths.get("//tmp//o3.csv"), filedata);
+            	//buffer.clear();
+            //	byte[] tmp2 = new byte[(int)(31842 - 0 + 1)];                                            
+            //    System.arraycopy(filedata, (int)0, tmp2, 0, tmp2.length);
+            //    Files.write(Paths.get("//tmp//o2.csv"), tmp2);
+            //	buffer.clear();
+            //	break;
+            //}
+            buffer.clear(); // do something with the data and clear/compact it.
+            //buffercount = buffercount + 1;
+        }
+        inChannel.close();
+        aFile.close();
+		return filedata;
+	}
+	
+	
 	public static void main(String[] args) throws IOException 
     {
-		byte[] filedatareturn = getFileByteArray("//tmp/JBox/CSV_ALL.csv", 1);
+		byte[] filedatareturn = getFileByteArraybySeek("//tmp/JBox/CSV_ALL.csv", 2);
 		System.out.println("return byte array size: "+filedatareturn.length);
+        Files.write(Paths.get("//tmp//o.csv"), filedatareturn);
+		
+		byte[] filedatareturnfinal = getFileByteArraybySeek("//tmp/JBox/CSV_ALL.csv", 3);
+		System.out.println("return byte array size: "+filedatareturnfinal.length);
+        Files.write(Paths.get("//tmp//final.csv"), filedatareturnfinal);
+       
+		byte[] filedatareturncount = getFileByteArray("//tmp/JBox/CSV_ALL.csv", 1);
+		System.out.println("return byte array size: "+filedatareturncount.length);
 		byte[] tmp = new byte[(int)(31842 - 0 + 1)];                                            
-        System.arraycopy(filedatareturn, (int)0, tmp, 0, tmp.length);
+        System.arraycopy(filedatareturncount, (int)0, tmp, 0, tmp.length);
         Files.write(Paths.get("//tmp//o.csv"), tmp);
-        
+        /*
 		byte[] filedata = Files.readAllBytes(new File("//tmp/JBox/CSV_ALL.csv").toPath());
 		byte[] tmp1 = new byte[(int)(31842 - 0 + 1)];                                            
         System.arraycopy(filedata, (int)0, tmp1, 0, tmp1.length);
         Files.write(Paths.get("//tmp//o1.csv"), tmp1);		
 		System.gc();
 		
-		/*
 		filedatareturn = getFileByteArray("//tmp/JBox/CSV_ALL.csv", 2);
 		System.out.println("return byte array size: "+filedatareturn.length);
 		System.gc();

@@ -461,6 +461,7 @@ public class Sync implements Runnable {
 	
 	public static byte[] GetFileByteArray(String filepath, int dcount) throws IOException{
 		RandomAccessFile aFile = new RandomAccessFile(filepath, "r");
+		/*
         FileChannel inChannel = aFile.getChannel();
         long fileSize = inChannel.size();
         System.out.println(fileSize);
@@ -486,6 +487,32 @@ public class Sync implements Runnable {
         inChannel.close();
         aFile.close();
 		return filedata;
+		*/
+		
+		//read startPosition ~ endPosition or end of file to byteArray[]
+		long startPosition = (dcount-1) * l_buffer;
+		//move filepointer to startPosition
+		aFile.seek(startPosition);
+
+        FileChannel inChannel = aFile.getChannel();
+
+        long fileSize = inChannel.size();
+        System.out.println(fileSize);
+        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
+		byte[] filedata = new byte[(int)l_buffer];
+
+        if (inChannel.read(buffer) > 0)
+        {
+        	buffer.flip();
+        	filedata = new byte[buffer.remaining()];
+        	buffer.get(filedata);
+            int intsize = filedata.length;
+            System.out.println(intsize);
+            buffer.clear(); 
+        }
+        inChannel.close();
+        aFile.close();
+        return filedata;
 	}
 	
 	private  void StartSync() throws Exception
@@ -867,7 +894,8 @@ public class Sync implements Runnable {
     	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
                                
 	                                        for(chunk c : fmd.data)
-	                                        {	                                        	
+	                                        {	    
+	                                        		//if hash table can't find it
 		                                            if (ht.get(c.hashvalue)==null)
 		                                            {
 		                                               int tmpf=-1;
@@ -914,7 +942,7 @@ public class Sync implements Runnable {
 		                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
 			                                        	/**if ( (dsize + c.end - c.start + 1) > 1*1024*1024*1024*dcount ) **/
 		                                        		byte[] tmp = new byte[(intend - intstart + 1)];
-			                                        	if ( intend > ( l_buffer ) )
+			                                        	if ( intend > ( l_buffer ))
 			                                        	{
 			                                        		dcount = dcount + 1;
 			                                        		byte[] tmpfront = new byte[(int)l_buffer - intstart];
@@ -976,10 +1004,42 @@ public class Sync implements Runnable {
 		                                            }
 		                                            else
 		                                            {
+		                                            	//when has table can get the has ( inter dedup )
 		                                            	if(Integer.parseInt(ht.get(c.hashvalue))==1)
 		                                            		c.flag=c.flag|1;
 		                                            	else
-		                                            		c.flag= c.flag & ~1;                                            	                                            	
+		                                            		c.flag= c.flag & ~1;     
+		                                            	
+		                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
+
+			                                        	if ( intend > ( l_buffer ))
+			                                        	{
+			                                        		dcount = dcount + 1;
+
+			                                        		try {
+			                                        			filedata = GetFileByteArray(fi.filename, dcount);
+			                                        			
+			                                                	Date dtj=new Date();
+			                                                	
+			                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
+			                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+			                    		                        
+			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+			            	                                    
+			            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
+			            	                        			if(GetToken()==false)
+			            	                        				return;
+			            	                        			else
+			            	                        				Config.logger.debug("Got token: " + m_tkn);
+			            	                                    
+			                                        		} catch(IOException ex){
+			                                                	System.out.println(ex.toString());
+			                                                }
+
+			                                        	}
+		                                            	
 		                                            }
 
 	                                            dsize = dsize + c.end - c.start + 1;
@@ -1361,7 +1421,38 @@ public class Sync implements Runnable {
 	                                            	if(Integer.parseInt(ht.get(c.hashvalue))==1)
 	                                            		c.flag=c.flag|1;
 	                                            	else
-	                                            		c.flag= c.flag & ~1;                                            	                                            	
+	                                            		c.flag= c.flag & ~1;   
+	                                            	
+	                                        		int intend = (int) (c.end - (l_buffer*(dcount-1)));
+
+		                                        	if ( intend > ( l_buffer ))
+		                                        	{
+		                                        		dcount = dcount + 1;
+
+		                                        		try {
+		                                        			filedata = GetFileByteArray(fi.filename, dcount);
+		                                        			
+		                                                	Date dtj=new Date();
+		                                                	
+		                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
+		                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
+		                    		                        
+		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+		            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+		            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+		            	                                    
+		            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
+		            	                        			if(GetToken()==false)
+		            	                        				return;
+		            	                        			else
+		            	                        				Config.logger.debug("Got token: " + m_tkn);
+		            	                                    
+		                                        		} catch(IOException ex){
+		                                                	System.out.println(ex.toString());
+		                                                }
+
+		                                        	}
+	                                            	
 	                                            }
 
                                             dsize = dsize + c.end - c.start + 1;
