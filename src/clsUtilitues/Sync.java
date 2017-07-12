@@ -18,6 +18,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import clsTypes.*;
 import clsCompExtract.ZipProcess;
@@ -40,6 +45,8 @@ public class Sync implements Runnable {
 	private long m_synctime;
 	private String m_containername;
 	private static long l_buffer=1*1024*1024*1024;
+	private static int l_worker=20;
+	private boolean fthread = true;
 	//private static long l_buffer=10*1024*1024;
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
@@ -892,7 +899,13 @@ public class Sync implements Runnable {
     	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
                                             
     	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
-                               
+                                	        
+	                                        
+    	                                    //Get ExecutorService from Executors utility class, thread pool size is 10
+    	                                    ExecutorService executor = Executors.newFixedThreadPool(l_worker);
+    	                                    //create a list to hold the Future object associated with Callable
+    	                                    List<Future<String>> list = new ArrayList<Future<String>>();
+    	                                    
 	                                        for(chunk c : fmd.data)
 	                                        {	    
 	                                        		//if hash table can't find it
@@ -986,7 +999,19 @@ public class Sync implements Runnable {
 		                                                if(ztmp.length < tmp.length)
 		                                                {
 		                                                	c.flag= c.flag | 1;
-		                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+		                                                	
+		                                                	if (fthread){
+			                                                	//multithreading sub start
+			        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, ztmp);
+			        	                                        //submit Callable tasks to be executed by thread pool
+			        	                                        Future<String> future = executor.submit(callable);
+			        	                                        //add Future to the list, we can get return value using Future
+			        	                                        list.add(future);
+			                                                	//multithreading sub end	                                                		
+		                                                	}else{
+		                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+		                                                	}
+		                                                	
 		                                                	ht.put(c.hashvalue,"1");
 		                                                	uploadsize+=ztmp.length;
 		                                                	
@@ -994,7 +1019,19 @@ public class Sync implements Runnable {
 		                                                else
 		                                                {
 		                                                	c.flag= c.flag & ~1;
-		                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+		                                                	
+		                                                	if (fthread){
+			                                                	//multithreading sub start
+			        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, tmp);
+			        	                                        //submit Callable tasks to be executed by thread pool
+			        	                                        Future<String> future = executor.submit(callable);
+			        	                                        //add Future to the list, we can get return value using Future
+			        	                                        list.add(future);
+			                                                	//multithreading sub end	                                                		
+		                                                	}else{
+		                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+		                                                	}
+	                                                			                                                	
 		                                                	ht.put(c.hashvalue,"0");
 		                                                	uploadsize+=tmp.length;
 		                                                }
@@ -1043,8 +1080,21 @@ public class Sync implements Runnable {
 		                                            }
 
 	                                            dsize = dsize + c.end - c.start + 1;
-	                                        }    
-		                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
+	                                        }
+	                                        //Collect future list
+    	                                    for(Future<String> fut : list){
+    	                                        try {
+    	                                            //print the return value of Future, notice the output delay in console
+    	                                            // because Future.get() waits for task to get completed
+    	                                            System.out.println(new Date()+ "::"+fut.get());
+    	                                        } catch (InterruptedException | ExecutionException e) {
+    	                                            e.printStackTrace();
+    	                                        }
+    	                                    }
+    	                                    //shut down the executor service (thread pool) now, you must shutdown thread pool in order to terminate all the threads of the pools
+    	                                    executor.shutdown();
+		                                    
+    	                                    //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
 	                                        fmds.data.add(fmd);
 	                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
 	                                        RestConnector.PutFile(m_tkn, m_usercontainer, "f"+fi.guid, fmds.ConvertToByteArray(), m_pxy);
@@ -1055,6 +1105,13 @@ public class Sync implements Runnable {
 	                                    	byte[] filedata = Files.readAllBytes(new File(fi.filename).toPath());
 	                                        fmd.data.size();
 	                                        Hashtable<String, String> ht = new Hashtable<String, String>();
+	                                        
+    	                                    //Get ExecutorService from Executors utility class, thread pool size is 10
+    	                                    ExecutorService executor = Executors.newFixedThreadPool(l_worker);
+    	                                    //create a list to hold the Future object associated with Callable
+    	                                    List<Future<String>> list = new ArrayList<Future<String>>();
+
+	                                        
 	                                        for(chunk c : fmd.data)
 	                                        {
 	                                            if (ht.get(c.hashvalue)==null)
@@ -1107,7 +1164,19 @@ public class Sync implements Runnable {
 	                                                if(ztmp.length < tmp.length)
 	                                                {
 	                                                	c.flag= c.flag | 1;
-	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                                	
+	                                                	if (fthread){
+		                                                	//multithreading sub start
+		        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, ztmp);
+		        	                                        //submit Callable tasks to be executed by thread pool
+		        	                                        Future<String> future = executor.submit(callable);
+		        	                                        //add Future to the list, we can get return value using Future
+		        	                                        list.add(future);
+		                                                	//multithreading sub end	                                                		
+	                                                	}else{
+	                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                                	}
+
 	                                                	ht.put(c.hashvalue,"1");
 	                                                	uploadsize+=ztmp.length;
 	                                                	
@@ -1115,7 +1184,19 @@ public class Sync implements Runnable {
 	                                                else
 	                                                {
 	                                                	c.flag= c.flag & ~1;
-	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                                	
+	                                                	if (fthread){
+		                                                	//multithreading sub start
+		        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, tmp);
+		        	                                        //submit Callable tasks to be executed by thread pool
+		        	                                        Future<String> future = executor.submit(callable);
+		        	                                        //add Future to the list, we can get return value using Future
+		        	                                        list.add(future);
+		                                                	//multithreading sub end	                                                		
+	                                                	}else{
+	                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                                	}
+
 	                                                	ht.put(c.hashvalue,"0");
 	                                                	uploadsize+=tmp.length;
 	                                                }
@@ -1132,6 +1213,19 @@ public class Sync implements Runnable {
 	                                            }
 	                                            dsize = dsize + c.end - c.start + 1;
 	                                        }
+	                                        //Collect future list
+    	                                    for(Future<String> fut : list){
+    	                                        try {
+    	                                            //print the return value of Future, notice the output delay in console
+    	                                            // because Future.get() waits for task to get completed
+    	                                            System.out.println(new Date()+ "::"+fut.get());
+    	                                        } catch (InterruptedException | ExecutionException e) {
+    	                                            e.printStackTrace();
+    	                                        }
+    	                                    }
+    	                                    //shut down the executor service (thread pool) now, you must shutdown thread pool in order to terminate all the threads of the pools
+    	                                    executor.shutdown();
+	                                        
 	                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
 	                                        fmds.data.add(fmd);
 	                                        Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
@@ -1273,6 +1367,12 @@ public class Sync implements Runnable {
 	                                    
                                         Hashtable<String, String> ht = new Hashtable<String, String>();
                            
+	                                    //Get ExecutorService from Executors utility class, thread pool size is 10
+	                                    ExecutorService executor = Executors.newFixedThreadPool(l_worker);
+	                                    //create a list to hold the Future object associated with Callable
+	                                    List<Future<String>> list = new ArrayList<Future<String>>();
+
+                                        
                                         for(chunk c : fmd.data)
                                         {	                                        	
 	                                            if (ht.get(c.hashvalue)==null)
@@ -1400,7 +1500,19 @@ public class Sync implements Runnable {
 	                                                if(ztmp.length < tmp.length)
 	                                                {
 	                                                	c.flag= c.flag | 1;
-	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                                	
+	                                                	if (fthread){
+		                                                	//multithreading sub start
+		        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, ztmp);
+		        	                                        //submit Callable tasks to be executed by thread pool
+		        	                                        Future<String> future = executor.submit(callable);
+		        	                                        //add Future to the list, we can get return value using Future
+		        	                                        list.add(future);
+		                                                	//multithreading sub end	                                                		
+	                                                	}else{
+	                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                                	}
+	                                                	//RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
 	                                                	ht.put(c.hashvalue,"1");
 	                                                	uploadsize+=ztmp.length;
 	                                                	
@@ -1408,7 +1520,19 @@ public class Sync implements Runnable {
 	                                                else
 	                                                {
 	                                                	c.flag= c.flag & ~1;
-	                                                	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                                	
+	                                                	if (fthread){
+		                                                	//multithreading sub start
+		        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, tmp);
+		        	                                        //submit Callable tasks to be executed by thread pool
+		        	                                        Future<String> future = executor.submit(callable);
+		        	                                        //add Future to the list, we can get return value using Future
+		        	                                        list.add(future);
+		                                                	//multithreading sub end	                                                		
+	                                                	}else{
+	                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                                	}
+	                                                	//RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
 	                                                	ht.put(c.hashvalue,"0");
 	                                                	uploadsize+=tmp.length;
 	                                                }
@@ -1456,8 +1580,21 @@ public class Sync implements Runnable {
 	                                            }
 
                                             dsize = dsize + c.end - c.start + 1;
-                                        }    
-	                                        //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
+                                        }
+                                        //Collect future list
+	                                    for(Future<String> fut : list){
+	                                        try {
+	                                            //print the return value of Future, notice the output delay in console
+	                                            // because Future.get() waits for task to get completed
+	                                            System.out.println(new Date()+ "::"+fut.get());
+	                                        } catch (InterruptedException | ExecutionException e) {
+	                                            e.printStackTrace();
+	                                        }
+	                                    }
+	                                    //shut down the executor service (thread pool) now, you must shutdown thread pool in order to terminate all the threads of the pools
+	                                    executor.shutdown();
+	                                    
+	                                    //fileMetadataWithVersion fmds = new fileMetadataWithVersion();
                                         fmds.data.add(fmd);
                                         Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
                                         RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid, fmds.ConvertToByteArray(), m_pxy);
@@ -1468,6 +1605,12 @@ public class Sync implements Runnable {
 	                                    fmd.data.size();
 	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
 
+	                                    //Get ExecutorService from Executors utility class, thread pool size is 10
+	                                    ExecutorService executor = Executors.newFixedThreadPool(l_worker);
+	                                    //create a list to hold the Future object associated with Callable
+	                                    List<Future<String>> list = new ArrayList<Future<String>>();
+
+	                                    
 	                                    for(chunk c : fmd.data)
 	                                    {
 	                                    	 if (ht.get(c.hashvalue)==null)
@@ -1516,14 +1659,38 @@ public class Sync implements Runnable {
 	                                             if(ztmp.length < tmp.length)
 	                                             {
 	                                             	c.flag= c.flag | 1;
-	                                             	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+	                                             	
+                                                	if (fthread){
+	                                                	//multithreading sub start
+	        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, ztmp);
+	        	                                        //submit Callable tasks to be executed by thread pool
+	        	                                        Future<String> future = executor.submit(callable);
+	        	                                        //add Future to the list, we can get return value using Future
+	        	                                        list.add(future);
+	                                                	//multithreading sub end	                                                		
+                                                	}else{
+                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
+                                                	}
+	                                             	//RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,ztmp ,m_pxy);
 	                                             	ht.put(c.hashvalue,"1");
 	                                             	uploadsize+=ztmp.length;
 	                                             }
 	                                             else
 	                                             {
 	                                             	c.flag= c.flag & ~1;
-	                                             	RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+	                                             	
+                                                	if (fthread){
+	                                                	//multithreading sub start
+	        	                                        Callable<String> callable = new ObjUploaderRunnable(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, tmp);
+	        	                                        //submit Callable tasks to be executed by thread pool
+	        	                                        Future<String> future = executor.submit(callable);
+	        	                                        //add Future to the list, we can get return value using Future
+	        	                                        list.add(future);
+	                                                	//multithreading sub end	                                                		
+                                                	}else{
+                                                		RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
+                                                	}
+	                                             	//RestConnector.PutFile(m_tkn, m_usercontainer ,"c"+ Integer.toString(c.flag) + c.hashvalue,tmp ,m_pxy);
 	                                             	ht.put(c.hashvalue,"0");
 	                                             	uploadsize+=tmp.length;
 	                                             }
@@ -1539,7 +1706,19 @@ public class Sync implements Runnable {
 
 	                                        dsize = dsize + c.end - c.start + 1;
 	                                    } 
-          
+                                        //Collect future list
+	                                    for(Future<String> fut : list){
+	                                        try {
+	                                            //print the return value of Future, notice the output delay in console
+	                                            // because Future.get() waits for task to get completed
+	                                            System.out.println(new Date()+ "::"+fut.get());
+	                                        } catch (InterruptedException | ExecutionException e) {
+	                                            e.printStackTrace();
+	                                        }
+	                                    }
+	                                    //shut down the executor service (thread pool) now, you must shutdown thread pool in order to terminate all the threads of the pools
+	                                    executor.shutdown();
+	                                    
 	                                    fmds.data.add(fmd);
 	                                    Config.logger.info("Put file: " + fi.filename + " (chunks level index) metadata: " + "f" + fi.guid + " with size: " + fmds.ConvertToByteArray().length);
 	                                    RestConnector.PutFile(m_tkn, m_usercontainer , "f" + fi.guid,  fmds.ConvertToByteArray(), m_pxy); 
