@@ -23,7 +23,7 @@ public class TestforCityHash {
 		//System.out.println(aaa);
 		//List<chunk> bbb=ChunkProcess.GetChunk(path,16,1,0,0.25,32,0,chunkType.VAR);
 		//System.out.println(bbb.toString());
-		List<chunk> ccc=ChunkProcess.GetChunk(path,18,1,0,0.25,32,0,chunkType.VAR);
+		List<chunk> ccc=ChunkProcess.GetChunk(path,0,128,0,0.25,32,0,chunkType.VAR);
 		System.out.println(ccc.toString());	
 		BufferedWriter o = new BufferedWriter(new FileWriter("//tmp/test.txt"));
 		o.write(ccc.toString());

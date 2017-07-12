@@ -129,6 +129,7 @@ public class Query {
 	                
 	                int intCol=0;
 	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
+	                
 	                while(itcol.hasNext())
 	                {
 	                	fileInfo tmpcol=itcol.next();
@@ -136,39 +137,46 @@ public class Query {
 		                	if (tmpcol.filename.length() > intCol){intCol=tmpcol.filename.length();}
 	                	}
 	                }
-	                
-	                String strDash="-";
-	                for(int i=0; i<(intCol+124+6); i++)
-	                {strDash = strDash + "-";}
-
-	                System.out.println(strDash);
-	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
-	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
-	                while(it.hasNext())
-	                {
-	                	fileInfo tmp=it.next();
-	                	if (tmp.type==0) {
-		                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
-		                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
-		                	String ByteLength = String.valueOf(tmp.bytelength);
-		                	System.out.println(strDash);
-			                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
-	                	}
+		                
+		            if (intCol != 0){
+		                
+		                String strDash="-";
+		                for(int i=0; i<(intCol+124+6); i++)
+		                {strDash = strDash + "-";}
+	
+		                System.out.println(strDash);
+		                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
+		                Iterator<fileInfo> it = tmpumd.filelist.iterator();
+		                while(it.hasNext())
+		                {
+		                	fileInfo tmp=it.next();
+		                	if (tmp.type==0) {
+			                	String CreateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.dt);
+			                	String UpdateTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(tmp.lastaction);
+			                	String ByteLength = String.valueOf(tmp.bytelength);
+			                	System.out.println(strDash);
+				                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , tmp.filename.toString(), tmp.guid.toString(), tmp.filehash.toString(), CreateTime, UpdateTime, ByteLength));
+		                	}
+		                }
+		                System.out.println(strDash);
+		                //Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
+		                
+		                if (m_guid != null){
+		                	if (!m_guid.equalsIgnoreCase("") && !m_guid.isEmpty() ){
+		                	    System.out.print("Display f"+m_guid+ " all the contnet");
+		                	    rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
+		                	    System.out.print(new String(rr.data, "UTF-8"));
+		                	}
+		                }
 	                }
-	                System.out.println(strDash);
-	                //Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
-	                
-	                if (m_guid != null){
-	                	if (!m_guid.equalsIgnoreCase("") && !m_guid.isEmpty() ){
-	                	    System.out.print("Display f"+m_guid+ " all the contnet");
-	                	    rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
-	                	    System.out.print(new String(rr.data, "UTF-8"));
-	                	}
+	                else{
+	                	System.out.println("File Level Metadata - USERMETAFILE got no record !");
 	                }
 	                
 	            }
         	}else if (m_level.equalsIgnoreCase("c")){
 
+        		int intCol=0;
 	            SyncStatus.SetStatus("Getting user information, file metadata from server");
 	            rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
 	            byte[] remotebin=null;
@@ -189,7 +197,7 @@ public class Query {
 	                userMetaData tmpumd=new userMetaData(remotebin);
 	                Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
 	                
-	                int intCol=0;
+	                //int intCol=0;
 	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
 	                while(itcol.hasNext())
 	                {
@@ -205,7 +213,7 @@ public class Query {
 
 	                System.out.println(strDash);
 	                if (intCol==0){
-	                	System.out.println("Find Nothing !");
+	                	System.out.println("Find Nothing about this "+ m_guid +" !");
 	                }
 	                else{
 						System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
@@ -225,7 +233,7 @@ public class Query {
 	                }
 	            }
         		
-        		if (!m_guid.equalsIgnoreCase("")){
+        		if (!m_guid.equalsIgnoreCase("")&&(intCol!=0)){
         						
                 	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;

@@ -130,7 +130,7 @@ public class Retrieve {
 			
 			
         	if (m_level.equalsIgnoreCase("c")){
-        		
+        		int intCol=0;
         		String strFileName="";
 	            SyncStatus.SetStatus("Getting user information, file metadata from server");
 	            rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
@@ -152,7 +152,7 @@ public class Retrieve {
 	                userMetaData tmpumd=new userMetaData(remotebin);
 	                Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
 	                
-	                int intCol=0;
+	                
 	                Iterator<fileInfo> itcol = tmpumd.filelist.iterator();
 	                while(itcol.hasNext())
 	                {
@@ -184,7 +184,7 @@ public class Retrieve {
 	                }
 	                System.out.println(strDash);
 	            }
-        		if (!m_guid.equalsIgnoreCase("")){
+        		if (!m_guid.equalsIgnoreCase("")&&(intCol!=0)){
         			int downloadsize=0;
         			rr=null;
         			System.out.print("Getting chunk level metadata ... ");
