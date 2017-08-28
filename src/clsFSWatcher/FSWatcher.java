@@ -24,11 +24,12 @@ import java.util.Map;
 public class FSWatcher {
     private final WatchService watcher;
     private final Map<WatchKey, Path> keys;
+    private final static Map<String, String> fs  =new HashMap<String, String>();
+    
     
     /**
      * Creates a WatchService and registers the given directory
      */
-    
     FSWatcher(Path dir) throws IOException {
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey, Path>();
@@ -63,10 +64,10 @@ public class FSWatcher {
     
     /**
      * Process all events for keys queued to the watcher
+     * @return 
      * @throws IOException 
      */
-    
-    void processEvents() throws IOException {
+    Boolean processEvents() throws IOException {
         for (;;) {
  
             // wait for key to be signalled
@@ -74,7 +75,7 @@ public class FSWatcher {
             try {
                 key = watcher.take();
             } catch (InterruptedException x) {
-                return;
+                return false;
             }
  
             Path dir = keys.get(key);
@@ -99,15 +100,21 @@ public class FSWatcher {
                 if (kind != ENTRY_DELETE){
 	                if (FolderOrFileIndentifier(child)){
 	                	// print out event
-	                	System.out.format("%s: %s in time: %s\n", event.kind().name(), child, getTimeStamp());
-	                	TesttDump(event.kind().name(),child.toString(),getTimeStamp());
+	                	//System.out.format("%s: %s in time: %s\n", event.kind().name(), child, getTimeStamp());
+	                	TestDump(event.kind().name(),child.toString(),getTimeStamp());
+	                	if(!fs.containsKey(child.toString())){
+	                		fs.put(child.toString(), event.kind().name());
+	                	}
 	                }
                 }
                 else
                 {
                 	if (CheckFileNameStartWPeriod(child)){
-                		System.out.format("%s: %s in time: %s\n", event.kind().name(), child, getTimeStamp());
-                		TesttDump(event.kind().name(),child.toString(),getTimeStamp());
+                		//System.out.format("%s: %s in time: %s\n", event.kind().name(), child, getTimeStamp());
+                		TestDump(event.kind().name(),child.toString(),getTimeStamp());
+	                	if(!fs.containsKey(child.toString())){
+	                		fs.put(child.toString(), event.kind().name());
+	                	}
                 	}
                 }
             
@@ -120,6 +127,10 @@ public class FSWatcher {
                     } catch (IOException x) {
                         // do something useful
                     }
+                }
+                
+                if (!fs.isEmpty()){
+                
                 }
             }
  
@@ -134,7 +145,29 @@ public class FSWatcher {
                 }
             }
         }
+		return null;
     }
+    
+    public Map<String, String> getfs() {
+        return fs;
+    }
+    
+    public static boolean getfsDump(){
+    	String strDumpFile = "fsmap";
+    	try {
+    		FileWriter fw = new FileWriter("/tmp/"+strDumpFile+".log", true);
+    		for (Map.Entry<String,String> entry : fs.entrySet()) {
+    			  String key = entry.getKey();
+    			  String value = entry.getValue();
+    			  fw.write(key +"\t"+ value + "\t" + getTimeStamp() + System.getProperty("line.separator"));
+    			  System.out.println(key +"\t"+ value + "\t" + getTimeStamp());
+    			}
+    		fw.close();
+    		fs.clear();
+    		return true;
+    	}catch(Exception e){System.out.println(e);return false;}
+    }
+
     
     private boolean CheckFileNameStartWPeriod(Path dir) throws IOException {
     	File f = new File(dir.toString());
@@ -175,9 +208,23 @@ public class FSWatcher {
         String formattedDate = sdf.format(date);
         return formattedDate;
     }
-
     
-    public static boolean TesttDump(String strKey, String strFile, String strTimeStamp){
+    public static boolean fsDump(Map<String, String> in){
+    	String strDumpFile = "fsmap";
+    	try {
+    		FileWriter fw = new FileWriter("/tmp/"+strDumpFile+".log", true);
+    		for (Map.Entry<String,String> entry : in.entrySet()) {
+    			  String key = entry.getKey();
+    			  String value = entry.getValue();
+    			  fw.write(key +"\t"+ value + "\t" + getTimeStamp() + System.getProperty("line.separator"));
+    			}
+    		fw.close();
+    		in.clear();
+    		return true;
+    	}catch(Exception e){System.out.println(e);return false;}
+    }
+
+    public static boolean TestDump(String strKey, String strFile, String strTimeStamp){
     	String strDumpFile = "test";
     	try {
     		FileWriter fw = new FileWriter("/tmp/"+strDumpFile+".log", true);
