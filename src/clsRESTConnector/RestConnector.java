@@ -63,6 +63,30 @@ public class RestConnector {
         }
 		
 	}
+	
+	public static RestResult GetETag(String curtoken, String container, ebProxy pxy) throws Exception
+    {
+        
+		HttpURLConnection conn=GetConnection(container,pxy);
+		conn.setRequestMethod("GET");
+
+		conn.setRequestProperty("X-Auth-Token", curtoken);
+		conn.setRequestProperty("Accept", "*/*");
+		int responseCode = conn.getResponseCode();
+		if (responseCode == HttpURLConnection.HTTP_OK)
+        {
+			String msg=conn.getHeaderField("ETag");
+			return new RestResult(responseCode,true,msg,"","");
+        }
+		else if(responseCode == HttpURLConnection.HTTP_NO_CONTENT)
+		{
+			return new RestResult(responseCode,true,"can not find ETag","","");
+		}
+        else
+        {
+            return new RestResult(responseCode,false,Integer.toString(responseCode),"","");
+        }			
+    }
 
 	public static RestResult PutContainer(String curtoken, String container, ebProxy pxy) throws Exception
     {

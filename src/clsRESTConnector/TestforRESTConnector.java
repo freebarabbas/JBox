@@ -3,6 +3,13 @@ package clsRESTConnector;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+
+import javax.xml.bind.DatatypeConverter;
+
+import clsTypes.Config;
 
 
 //import JBox.RestConnector;
@@ -38,6 +45,28 @@ delete container JOHNNY
 
 
 public class TestforRESTConnector {
+	
+	private static boolean checkUSERMETAFILEETag(String strtoken, String strstorageurl) throws Exception {
+	// TODO Auto-generated method stub
+		String filename = "/tmp/USERMETAFILE";
+		String strETag = "";
+		ebProxy pxy=new ebProxy();
+		RestResult rr = RestConnector.GetETag(strtoken, strstorageurl + "/dedup/USERMETAFILE", pxy);
+		if(rr.result==true)
+		{
+			//Config.logger.debug("Get ETag:"+rr.msg);
+			strETag=rr.msg.toUpperCase();
+		         
+		    MessageDigest md = MessageDigest.getInstance("MD5");
+		    md.update(Files.readAllBytes(Paths.get(filename)));
+		    byte[] digest = md.digest();
+		    String strMD5sum = DatatypeConverter
+		      .printHexBinary(digest).toUpperCase();
+		         
+		    if(strMD5sum.equals(strETag)){return true;}else{return false;}
+		}
+		else{return true;}
+    }
 
 	//@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
@@ -57,6 +86,10 @@ public class TestforRESTConnector {
 		//RestResult rr=RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:johnny.wang2@hp.com", "Johnny634917", pxy);
 		System.out.println(rr.token);
 		System.out.println(rr.storageurl);
+		
+		System.out.println(checkUSERMETAFILEETag(rr.token, rr.storageurl));
+		
+		
 		
 		RestResult rraoc = RestConnector.AddObjectRefCount(rr.token, rr.storageurl+"/GenDB48DaysR2", "c1038df42702af269099857b5539db99dd", pxy);
 		System.out.println(rraoc.httpcode);

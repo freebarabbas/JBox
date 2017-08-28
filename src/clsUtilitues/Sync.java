@@ -8,6 +8,9 @@ import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,6 +26,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.xml.bind.DatatypeConverter;
 
 import clsTypes.*;
 import clsCompExtract.ZipProcess;
@@ -465,36 +470,8 @@ public class Sync implements Runnable {
 	        }
     }
 	
-	
 	public static byte[] GetFileByteArray(String filepath, int dcount) throws IOException{
 		RandomAccessFile aFile = new RandomAccessFile(filepath, "r");
-		/*
-        FileChannel inChannel = aFile.getChannel();
-        long fileSize = inChannel.size();
-        System.out.println(fileSize);
-        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
-		byte[] filedata = new byte[(int)l_buffer];
-		int buffercount = 1;
-        while(inChannel.read(buffer) > 0)
-        {
-            System.out.println(buffercount);
-        	buffer.flip();
-            
-            if (dcount == buffercount){
-            	filedata = new byte[buffer.remaining()];
-            	buffer.get(filedata);
-                int intsize = filedata.length;
-                System.out.println(intsize);
-            	buffer.clear();
-            	break;
-            }
-            buffer.clear(); // do something with the data and clear/compact it.
-            buffercount = buffercount + 1;
-        }
-        inChannel.close();
-        aFile.close();
-		return filedata;
-		*/
 		
 		//read startPosition ~ endPosition or end of file to byteArray[]
 		long startPosition = (dcount-1) * l_buffer;
@@ -521,6 +498,29 @@ public class Sync implements Runnable {
         aFile.close();
         return filedata;
 	}
+	
+	//private File File(String filename) {
+	// TODO Auto-generated method stub
+//	return null;
+//}
+
+	private boolean checkUSERMETAFILEETag() throws Exception {
+		RestResult rr = RestConnector.GetETag(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
+		if(rr.result==true)
+		{
+			String strETag=rr.msg.toUpperCase();
+			//Config.logger.debug("Get ETag for USERMETAFile:"+strETag);
+		    MessageDigest md = MessageDigest.getInstance("MD5");
+		    md.update(Files.readAllBytes(Paths.get(m_metafile)));
+		    byte[] digest = md.digest();
+		    String strMD5sum = DatatypeConverter
+		      .printHexBinary(digest).toUpperCase();
+		         
+		    if(strMD5sum.equals(strETag)){return true;}else{return false;}
+		}
+		else{return true;}
+    }
+	
 	
 	private  void StartSync() throws Exception
 	{
@@ -549,6 +549,7 @@ public class Sync implements Runnable {
         {
             try
             {
+            	/*get chunks and backup chunks(has been deleted) from server*/
             	SyncStatus.SetStatus("Getting the chunk list from server");
         		if(gcc != null) 
         			gcc.clear();
@@ -558,8 +559,14 @@ public class Sync implements Runnable {
         		if(gbc != null)
         			gbc.clear();
         		gbc=GetBackupChunk(); //get cold storage layer , backup chunk
-        		//gbc=GetCurrentChunk();
         		
+        		/*identify sync status: compare 
+        		 * 1. current snapshot in File System
+        		 * 2. local - USERMETAFILE
+        		 * 3. remote (server) - USERMETAFILE
+        		 * */
+        		
+        		/*comparing (merge) current snapshot and local into local*/
         		SyncStatus.SetStatus("Identitying the changes between current snapshot and local");
             	userMetaData local = null;
             	
@@ -580,28 +587,21 @@ public class Sync implements Runnable {
                     Config.logger.debug(lastlocal.ConvertToHTML("Merged with last snapshot"));                          	
                 }
 
-                boolean flgchanged = false; // default set flgchanged into false , don't delete any object
-        		//if (Config.refcounter == 1) {
-        		//	flgchanged = true;
-        		//}
                 
 
-                
-
+                /*comparing (merge) local and remote: start ==========================================start*/
                 SyncStatus.SetStatus("Getting user information, file metadata from server");
                 rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
                 byte[] remotebin=null;
-                if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND)
-                {
-                	RestConnector.PutContainer(m_tkn, m_usercontainer, m_pxy);
-                }
-                else
-                	remotebin=rr.data;
+                if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND) //ifUSERMETAFILE not found , then remotebin = still null
+                {RestConnector.PutContainer(m_tkn, m_usercontainer, m_pxy);}
+                else{remotebin=rr.data;}
                 
                 SyncStatus.SetStatus("Identitying the changes between local merge and remote");
+                /* if remotebin == null which means can't find USERMETAFILE, then use local directly */
                 if (remotebin == null)
                 {                    
-                    Config.logger.debug("NO user metadata file in server at this time.");
+                    Config.logger.debug("NO USERMETAFILE in server at this time.");
                 	Iterator<fileInfo> it = lastlocal.filelist.iterator();
                     while(it.hasNext())
                     {
@@ -615,19 +615,34 @@ public class Sync implements Runnable {
                     }                   
                 }
                 else
-                {                  
-                    userMetaData tmpumd=new userMetaData(remotebin);
-                    Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
-                    lastlocal.Merge(tmpumd);
-                    Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
+                {   if (checkUSERMETAFILEETag()) { 
+	                    Config.logger.debug("NO Change USERMETAFILE between local and server at this time.");
+	                	Iterator<fileInfo> it = lastlocal.filelist.iterator();
+	                    while(it.hasNext())
+	                    {
+	                    	fileInfo tmp=it.next();
+	                    	if(tmp.fop != FOP.LOCAL_HAS_DELETED)
+	                    	{
+	                    		tmp.fop=FOP.UPLOAD;
+	                    		if(tmp.type ==0 && tmp.filehash=="")
+	                    			tmp.filehash= HashCalc.GetFileCityHash(tmp.filename);
+	                    	}
+	                    }  
+                	}else{
+	                    userMetaData tmpumd=new userMetaData(remotebin);
+	                    Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
+	                    lastlocal.Merge(tmpumd);
+	                    Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
+                	}
                 }
+                /*comparing (merge) local and remote: end ==========================================end*/
                 
+                /* transfer lastlocal ==> merged then ==> it*/
                 userMetaData merged;
-                merged = lastlocal;
-                               
+                merged = lastlocal;               
                 Iterator<fileInfo> it = merged.filelist.iterator();
-                
                 SyncStatus.SetStatus("Identitying done and start to processsing objects");
+                boolean flgchanged = false; // default set flgchanged into false , don't delete any object
                 
                 while(it.hasNext())
                 {
@@ -1878,10 +1893,6 @@ public class Sync implements Runnable {
 		
 	}
 
-	//private File File(String filename) {
-		// TODO Auto-generated method stub
-	//	return null;
-	//}
 
 	@Override
 	public void run() {
