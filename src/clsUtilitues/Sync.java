@@ -511,14 +511,18 @@ public class Sync implements Runnable {
 		{
 			String strETag=rr.msg.toUpperCase();
 			Config.logger.debug("Get ETag for USERMETAFile:"+strETag);
-		    MessageDigest md = MessageDigest.getInstance("MD5");
-		    md.update(Files.readAllBytes(Paths.get(m_metafile)));
-		    byte[] digest = md.digest();
-		    String strMD5sum = DatatypeConverter
-		      .printHexBinary(digest).toUpperCase();
-		         
-		    Config.logger.debug("Get MD5 for /JBoxLog/local metadata:"+strMD5sum);
-		    if(strMD5sum.equals(strETag)){return true;}else{return false;}
+			File f = new File(m_metafile);
+			if(f.exists() && !f.isDirectory()) { 
+			    MessageDigest md = MessageDigest.getInstance("MD5");
+			    md.update(Files.readAllBytes(Paths.get(m_metafile)));
+			    byte[] digest = md.digest();
+			    String strMD5sum = DatatypeConverter
+			      .printHexBinary(digest).toUpperCase();
+			         
+			    Config.logger.debug("Get MD5 for /JBoxLog/local metadata:"+strMD5sum);
+			    if(strMD5sum.equals(strETag)){return true;}else{return false;}
+			}
+			else{return false;}
 		}
 		else{return true;}
     }
