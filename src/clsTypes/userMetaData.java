@@ -99,7 +99,7 @@ public class userMetaData  implements Metadata {
     }
     public userMetaData()
     {
-        dt = new Date();
+        dt = Config.datetimeRun;
         user = "";
         version = "2.0";
         filelist = null;

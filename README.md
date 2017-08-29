@@ -62,6 +62,8 @@ For run JBox, you need to have a OpenStack Environement, Swfit All In One aka (S
 - (2) Find the code localtion and copy c++ *.so ( shared object ) under /usr/lib/
 ```bash
 $ sudo cp ./dll/libclsJavaVariableChunk.so ./usr/lib/*
+or 
+$ cp ./dll/libclsJavaVariableChunk.so /tmp/*
 ```
 if you have question about reference the *.so in java you can reference this post. 
   - [how to reference c lib in java via jni](http://chianingwang.blogspot.com/2015/09/how-to-reference-c-lib-in-java-via-jni.html "how to reference c lib in java via jni").

@@ -218,27 +218,28 @@ public class Sync implements Runnable {
             byte[] lockbin=rr.data;
             while (lockbin != null)//have lock at this time
             {
-            	Config.logger.debug("find lock when update user meta file for " + fi.filename);
+            	Config.logger.debug("found lock file /USERMETAFILE-L when update user meta file for " + fi.filename);
             	String tmp=new String(lockbin);
             	Date lockdt=SmallFunctions.String2Date(tmp);
             	Calendar ca=Calendar.getInstance();
             	ca.setTime(lockdt);
             	ca.add(Calendar.MINUTE, 1);
-                if (ca.getTime().after(lockdt))//exceeded 1 minute to be locked
+                if (ca.getTime().after(lockdt))//exceeded 1 minute to be locked, then just pass , doens't need to add locer file since it has locker file already
                 {
                 	Config.logger.debug("Remove lock forcely to update user meta file for " + fi.filename);                       
                     break;
                 }
-				Thread.sleep(1000);
+				Thread.sleep(5000); //wait 5 seconds
+				/*try to get locker file again*/
                 rr= RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE-L", m_pxy);
                 lockbin=rr.data;
 
             }
-            Config.logger.debug("Add lock  to update user meta file for " + fi.filename); 
+            Config.logger.debug("Add locker to update user meta file for " + fi.filename); 
             RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE-L", SmallFunctions.Date2String(new Date()).getBytes(), m_pxy);
             rr = RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
             byte[] remotebin=rr.data;
-            if (remotebin == null)
+            if (remotebin == null)//first time upload
             {
                 userMetaData umd = new userMetaData();
                 umd.user = m_username;
@@ -247,10 +248,10 @@ public class Sync implements Runnable {
                 umd.filelist.add(fi);
                 RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);
             }
-            else
+            else //not first time upload
             {
             	userMetaData umd = new userMetaData(remotebin); //remote meta data version
-                umd.dt = new Date();
+                //umd.dt = new Date();
                 if (fi.fop == FOP.UPLOAD || fi.fop==FOP.COPY) // new and copy will insert a new record in file level meta data
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
@@ -259,7 +260,7 @@ public class Sync implements Runnable {
                 		fileInfo tmp=it1.next(); // for new and copy, as long as file name and hash is the same, which means it's copy
                 		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 && tmp.filehash.compareToIgnoreCase(fi.filehash)==0)
                 		{
-                			if(fi.dt.after(tmp.dt))//local is more latest
+                			if(fi.dt.after(tmp.dt))//local is newer
                 			{
                 				fi.fop=FOP.NONE;
                 				tmp.copyfrom(fi);
@@ -280,7 +281,7 @@ public class Sync implements Runnable {
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
                 	while(it1.hasNext()){
-                		fileInfo tmp=it1.next(); //file name and file guid are the same but file hash might be not because content might be changed
+                		fileInfo tmp=it1.next(); //file name and file uuid are the same but file hash might be not because content might be changed
                 		if(tmp.filename.compareToIgnoreCase(fi.filename)==0)
                 		{
                 			if(fi.dt.after(tmp.dt))//local is more latest
@@ -509,13 +510,14 @@ public class Sync implements Runnable {
 		if(rr.result==true)
 		{
 			String strETag=rr.msg.toUpperCase();
-			//Config.logger.debug("Get ETag for USERMETAFile:"+strETag);
+			Config.logger.debug("Get ETag for USERMETAFile:"+strETag);
 		    MessageDigest md = MessageDigest.getInstance("MD5");
 		    md.update(Files.readAllBytes(Paths.get(m_metafile)));
 		    byte[] digest = md.digest();
 		    String strMD5sum = DatatypeConverter
 		      .printHexBinary(digest).toUpperCase();
 		         
+		    Config.logger.debug("Get MD5 for /JBoxLog/local metadata:"+strMD5sum);
 		    if(strMD5sum.equals(strETag)){return true;}else{return false;}
 		}
 		else{return true;}

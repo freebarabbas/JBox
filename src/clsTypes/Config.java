@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Level;
@@ -108,6 +109,8 @@ public class Config {
     	}
     }  
 	
+    
+    public static Date datetimeRun = new Date();
 	//public static String syncfolder=System.getProperty("user.dir")+"/JBox";
 	//public static String syncfolder="/home/ubuntu/JBox";
 	
