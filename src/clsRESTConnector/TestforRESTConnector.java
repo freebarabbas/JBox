@@ -9,7 +9,7 @@ import java.security.MessageDigest;
 
 import javax.xml.bind.DatatypeConverter;
 
-import clsTypes.Config;
+//import clsTypes.Config;
 
 
 //import JBox.RestConnector;

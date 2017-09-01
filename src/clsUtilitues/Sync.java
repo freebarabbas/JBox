@@ -10,7 +10,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -500,10 +499,6 @@ public class Sync implements Runnable {
         return filedata;
 	}
 	
-	//private File File(String filename) {
-	// TODO Auto-generated method stub
-//	return null;
-//}
 
 	private boolean checkUSERMETAFILEETag() throws Exception {
 		RestResult rr = RestConnector.GetETag(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
@@ -527,6 +522,131 @@ public class Sync implements Runnable {
 		else{return true;}
     }
 	
+	private userMetaData syncPreparation(String m_metafile, List<String> m_syncfolders, String m_tkn, String m_usercontainer, ebProxy m_pxy) throws Exception{
+		/*identify sync status: compare 
+		 * 1. current snapshot in File System - localMetaData
+		 * 2. local - USERMETAFILE			  - localSyncFolder
+		 * 3. remote (server) - USERMETAFILE  - remoteMetaData
+		 * sync preparation
+		 * -------
+		 * |1|2|3|
+		 * -------
+		 1 |N|N|N| => create blank 1, create syncfolder 2, put container 3 => 3 => RUN syncMergeMetaData
+		 * -------
+		 2 |N|N|Y| => create blank 1, create syncfolder 2 => 6 ==> RUN syncMergeMetaData
+		 * -------
+		 3 |N|Y|N| => create blank 1, put container 3 => RUN syncMergeMetaData
+		 * -------
+		 4 |Y|N|N| => delete 1, create blank 1, create syncfolder 2, put container 3 => RUN syncMergeMetaData
+		 * -------
+		 5 |Y|Y|N| => put container 3 => RUN syncMergeMetaData
+		 * -------
+		 6 |N|Y|Y| => assign empty to 2 and merge with 3 as 1 ( download new from server first ) => RUN syncMergeMetaData => then upload current snapshot to server => RUN syncMergeMetaData
+		 * -------
+		 7 |Y|N|Y| => delete 1, create blank 1, create syncfolder 2 => RUN syncMergeMetaData
+		 * -------
+		 8 |Y|Y|Y| => RUN syncMergeMetaData
+		 * -------
+		 * */
+   		SyncStatus.SetStatus("1. Sync Preparation for Getting localMetaData(metadatafile).");
+		//Declare metadata class for local metadata file
+		userMetaData localMetaData = null;
+    	/*if local doesn't has then just get snapshot and create one base on currenct snapshot*/
+        File localmetafile=new File(m_metafile);
+        Config.logger.debug("checking metadata file exist:"+m_metafile);
+        if (localmetafile.exists()){
+        	localMetaData = new userMetaData(m_metafile);
+            Config.logger.debug(localMetaData.ConvertToHTML("Last snapshot from localMetaData file."));
+        }
+        
+        SyncStatus.SetStatus("2. Sync Preparation for Getting localSyncFolder(snapshot syncfolder).");
+        //Declare metadata class for local syncfolder snapshot
+        userMetaData localSyncFolder = new userMetaData(); 
+        /*Get syncfolder snapshot into metadata class - lastlocal
+        m_syncfolders is list will scan this list, 
+        if doesn't exist JBox will create it*/
+        boolean bollocalSyncFolder = localSyncFolder.GenerateFilesStructure(m_syncfolders);
+        Config.logger.debug(localSyncFolder.ConvertToHTML("Current snapshot from localSyncFolder."));
+
+        SyncStatus.SetStatus("3. Sync Preparation for remoteMetaData.");
+        //Declare metadata class for remote metadata file
+        userMetaData remoteMetaData = new userMetaData();
+        /*comparing (merge) local and remote: start ==========================================start*/
+        SyncStatus.SetStatus("Getting remoteMetaData(USERMETAFILE) from server");
+        RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
+        byte[] remotebin=null;
+        if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND) //ifUSERMETAFILE not found , then remotebin = still null
+        {RestConnector.PutContainer(m_tkn, m_usercontainer, m_pxy);}
+        else{remotebin=rr.data;}
+        
+        SyncStatus.SetStatus("4. Sync Preparation for syncMergeMetaData, Decide 1(localMetaData) should be deleted(set to null) or download from remote first, then upload local later.");
+        /* if remotebin == null which means can't find USERMETAFILE, then use local directly */
+        if (remotebin != null)
+        {         
+    		remoteMetaData=new userMetaData(remotebin);
+            Config.logger.debug(remoteMetaData.ConvertToHTML("Getting remote file metadata snapshot"));
+            if (!bollocalSyncFolder){
+                Config.logger.debug("HAS USERMETAFILE in server but localSyncFolder is empty, thus update tmp.status = 1.");
+            	Iterator<fileInfo> it = remoteMetaData.filelist.iterator();
+                while(it.hasNext())
+                {
+                	fileInfo tmp=it.next();
+                	if (tmp.type ==0){
+                		tmp.status=1;
+                	}
+                }  
+            }
+        }
+        if (localmetafile.exists())
+        {if (!bollocalSyncFolder){localMetaData = null;}}
+        
+        /*comparing (merge) local and remote: end ==========================================end*/
+        SyncStatus.SetStatus("Run syncMergeMetaData.");
+		return syncMergeMetaData(localMetaData,localSyncFolder,remoteMetaData);
+		
+	}
+	
+	private userMetaData syncMergeMetaData(userMetaData localMetaData, userMetaData localSyncFolder, userMetaData remoteMetaData) throws Exception{
+		userMetaData merged = null;
+		//localSyncFolder will never null. It can be empty but not null
+		
+		if ((localMetaData == null) && (remoteMetaData.filelist == null)){
+            Config.logger.debug("NO USERMETAFILE in server at this time.");
+        	Iterator<fileInfo> it = localSyncFolder.filelist.iterator();
+            while(it.hasNext())
+            {
+            	fileInfo tmp=it.next();
+            	if(tmp.fop != FOP.LOCAL_HAS_DELETED)
+            	{
+            		tmp.fop=FOP.UPLOAD;
+            		if(tmp.type ==0 && tmp.filehash=="")
+            			tmp.filehash= HashCalc.GetFileCityHash(tmp.filename);
+            	}
+            }  
+            merged = localSyncFolder;
+    		return merged;
+		}
+        else{
+	        if (localMetaData != null)
+	        {
+				localSyncFolder.MergeWithLocal(localMetaData);
+	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localMetaData with localSyncFolder(Last Local SyncFolder Snahpshot)."));                          	
+	        }	
+	        /*
+    		if ((localMetaData != null) && (remoteMetaData != null)){
+    			if (checkUSERMETAFILEETag()) {
+    				Config.logger.debug("NO Change USERMETAFILE between local and server, assign userMetadata class null, skip everything this time."); 
+    				return merged;
+    			}
+    		}*/			
+    		if (remoteMetaData.filelist != null) {
+	            localSyncFolder.Merge(remoteMetaData);
+	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localSyncFolder(LocalMetaData+LocalSyncFolder) with remoteMetaData."));
+	        }  
+	        merged = localSyncFolder;
+			return merged;
+        }
+	}
 	
 	private  void StartSync() throws Exception
 	{
@@ -565,38 +685,26 @@ public class Sync implements Runnable {
         		if(gbc != null)
         			gbc.clear();
         		gbc=GetBackupChunk(); //get cold storage layer , backup chunk
-        		
-        		/*identify sync status: compare 
-        		 * 1. current snapshot in File System
-        		 * 2. local - USERMETAFILE
-        		 * 3. remote (server) - USERMETAFILE
-        		 * */
-        		
-        		/*comparing (merge) current snapshot and local into local
-        		 * 1. local meta
-        		 * 2. local sync folder
-        		 * 3. remote meta
-        		 * if no 1, 2, and 3, then, create 2, then take 1 => merge 2 => merge 3 as final 
-        		 * if no 1 but has 2 but no 3, then just like 1st scenario just doesn't need to create 2 
-        		 * if has 1, 2 but not 3, then delete 1 and recreate base on 2, then take 1 => merge 2 => merge 3 as final 
-        		 * 
-        		 * if no 1, 2 but 3 exist, then download 3 as final then download all the objects to local, 2nd time upload exisint obj to remote
-        		 * if has 1 but not 2,  3, then delete 1 and recreate 1 , then create 2 then push to 3
-        		 * if no 1 but has 2 and 3, then download 3 to 1 and 1 => merge 2 => merge 3
-        		 * */
+ 		
+        		/*
         		SyncStatus.SetStatus("Identitying the changes between current snapshot and local");	
-            	userMetaData local = null;
-            	/*if local doesn't has then just get snapshot and create one base on currenct snapshot*/
+        		
+        		//Declare metadata class for local metadata file
+        		userMetaData local = null;
+        		
                 File localmetafile=new File(m_metafile);
                 Config.logger.debug("checking metadata file exist:"+m_metafile);
+                
                 if (localmetafile.exists())
                 {
                     local = new userMetaData(m_metafile);
                     Config.logger.debug(local.ConvertToHTML("Last snapshot"));
                 }
                 
+                //Declare metadata class for local syncfolder snapshot
                 userMetaData lastlocal = new userMetaData();              
 
+                //Get syncfolder snapshot into meetadata class - lastlocal
                 lastlocal.GenerateFilesStructure(m_syncfolders);
                 Config.logger.debug(lastlocal.ConvertToHTML("Current snapshot"));
                 if (local != null)
@@ -605,9 +713,6 @@ public class Sync implements Runnable {
                     Config.logger.debug(lastlocal.ConvertToHTML("Merged with last snapshot"));                          	
                 }
 
-                
-
-                /*comparing (merge) local and remote: start ==========================================start*/
                 SyncStatus.SetStatus("Getting user information, file metadata from server");
                 rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
                 byte[] remotebin=null;
@@ -616,7 +721,7 @@ public class Sync implements Runnable {
                 else{remotebin=rr.data;}
                 
                 SyncStatus.SetStatus("Identitying the changes between local merge and remote");
-                /* if remotebin == null which means can't find USERMETAFILE, then use local directly */
+                //if remotebin == null which means can't find USERMETAFILE, then use local directly
                 if (remotebin == null)
                 {                    
                     Config.logger.debug("NO USERMETAFILE in server at this time.");
@@ -652,15 +757,14 @@ public class Sync implements Runnable {
 	                    lastlocal.Merge(tmpumd);
 	                    Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
                 	}
-                }
-                /*comparing (merge) local and remote: end ==========================================end*/
+                }         
+                */
                 
                 /* transfer lastlocal ==> merged then ==> it*/
-                userMetaData merged;
-                merged = lastlocal;               
+                userMetaData merged = syncPreparation(m_metafile, m_syncfolders, m_tkn, m_usercontainer, m_pxy);               
                 Iterator<fileInfo> it = merged.filelist.iterator();
                 SyncStatus.SetStatus("Identitying done and start to processsing objects");
-                boolean flgchanged = false; // default set flgchanged into false , don't delete any object
+                boolean flgchanged = false; // default set flgchanged into false , don't update localMetaData, any upload/download will update this flag
                 
                 while(it.hasNext())
                 {
@@ -1889,7 +1993,7 @@ public class Sync implements Runnable {
                     }
                 }
                 merged.user = m_username;
-
+                SyncStatus.SetStatus("Last, Finishing All the Uploadings, Writing to localMetaData."); 
                 if (flgchanged){             
                     merged.WriteToDisk(m_metafile); 
                     //fxController.MainController.readMetaDataintoTable();
