@@ -572,11 +572,23 @@ public class Sync implements Runnable {
         		 * 3. remote (server) - USERMETAFILE
         		 * */
         		
-        		/*comparing (merge) current snapshot and local into local*/
-        		SyncStatus.SetStatus("Identitying the changes between current snapshot and local");
+        		/*comparing (merge) current snapshot and local into local
+        		 * 1. local meta
+        		 * 2. local sync folder
+        		 * 3. remote meta
+        		 * if no 1, 2, and 3, then, create 2, then take 1 => merge 2 => merge 3 as final 
+        		 * if no 1 but has 2 but no 3, then just like 1st scenario just doesn't need to create 2 
+        		 * if has 1, 2 but not 3, then delete 1 and recreate base on 2, then take 1 => merge 2 => merge 3 as final 
+        		 * 
+        		 * if no 1, 2 but 3 exist, then download 3 as final then download all the objects to local, 2nd time upload exisint obj to remote
+        		 * if has 1 but not 2,  3, then delete 1 and recreate 1 , then create 2 then push to 3
+        		 * if no 1 but has 2 and 3, then download 3 to 1 and 1 => merge 2 => merge 3
+        		 * */
+        		SyncStatus.SetStatus("Identitying the changes between current snapshot and local");	
             	userMetaData local = null;
-            	
+            	/*if local doesn't has then just get snapshot and create one base on currenct snapshot*/
                 File localmetafile=new File(m_metafile);
+                Config.logger.debug("checking metadata file exist:"+m_metafile);
                 if (localmetafile.exists())
                 {
                     local = new userMetaData(m_metafile);
