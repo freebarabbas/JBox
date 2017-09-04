@@ -25,6 +25,7 @@ public class TestFSWatcher {
 	                	return bolreturn;
 	                }
 	            });
+	    
 	    tasks.add(
 	            new Callable<Boolean>()
 	            {
@@ -33,11 +34,10 @@ public class TestFSWatcher {
 	                {
 	                    while(true){
 		                    FSWatcher.getfsDump();
-		                    Thread.sleep(5000);
+		                    Thread.sleep(10000);
 	                    }
 	                }
 	            });
-
 	    executorService.invokeAll(tasks);
 
     }

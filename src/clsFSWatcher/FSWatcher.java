@@ -17,14 +17,16 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FSWatcher {
     private final WatchService watcher;
     private final Map<WatchKey, Path> keys;
-    private final static Map<String, String> fs  =new HashMap<String, String>();
+    private final static Map<String, List<String>> fs  =new HashMap<String, List<String>>();
     
     
     /**
@@ -103,7 +105,17 @@ public class FSWatcher {
 	                	//System.out.format("%s: %s in time: %s\n", event.kind().name(), child, getTimeStamp());
 	                	TestDump(event.kind().name(),child.toString(),getTimeStamp());
 	                	if(!fs.containsKey(child.toString())){
-	                		fs.put(child.toString(), event.kind().name());
+	                		if (kind == ENTRY_CREATE){
+		                		List<String> createprofile = new ArrayList<String>();
+		                		createprofile.add(new String(event.kind().name()));
+		                		createprofile.add(new String(getTimeStamp()));
+		                		fs.put(child.toString(), createprofile);
+	                		}else{
+		                		List<String> modifyprofile = new ArrayList<String>();
+		                		modifyprofile.add(new String(event.kind().name()));
+		                		modifyprofile.add(new String(getTimeStamp()));
+		                		fs.put(child.toString(), modifyprofile);
+	                		}
 	                	}
 	                }
                 }
@@ -113,7 +125,10 @@ public class FSWatcher {
                 		//System.out.format("%s: %s in time: %s\n", event.kind().name(), child, getTimeStamp());
                 		TestDump(event.kind().name(),child.toString(),getTimeStamp());
 	                	if(!fs.containsKey(child.toString())){
-	                		fs.put(child.toString(), event.kind().name());
+	                		List<String> deleteprofile = new ArrayList<String>();
+	                		deleteprofile.add(new String(event.kind().name()));
+	                		deleteprofile.add(new String(getTimeStamp()));
+	                		fs.put(child.toString(), deleteprofile);
 	                	}
                 	}
                 }
@@ -148,22 +163,26 @@ public class FSWatcher {
 		return null;
     }
     
-    public Map<String, String> getfs() {
+    public Map<String, List<String>> getfs() {
         return fs;
     }
     
     public static boolean getfsDump(){
-    	String strDumpFile = "fsmap";
+    	//String strDumpFile = "fsmap";
     	try {
-    		FileWriter fw = new FileWriter("/tmp/"+strDumpFile+".log", true);
-    		for (Map.Entry<String,String> entry : fs.entrySet()) {
-    			  String key = entry.getKey();
-    			  String value = entry.getValue();
-    			  fw.write(key +"\t"+ value + "\t" + getTimeStamp() + System.getProperty("line.separator"));
-    			  System.out.println(key +"\t"+ value + "\t" + getTimeStamp());
-    			}
-    		fw.close();
-    		fs.clear();
+    		//FileWriter fw = new FileWriter("/tmp/"+strDumpFile+".log", true);
+    		if (!fs.isEmpty()){
+	    		for (Map.Entry<String,List<String>> entry : fs.entrySet()) {
+	    			  String key = entry.getKey();
+	    			  List<String> value = (ArrayList<String>) entry.getValue();
+	    			  String value1 = value.get(0);
+	    			  String value2 = value.get(1);
+	    			  //fw.write(key +"\t"+ value + "\t" + getTimeStamp() + System.getProperty("line.separator"));
+	    			  System.out.println(key +"\t"+ value1 + "\t" + value2);
+	    			}
+	    		//fw.close();
+	    		fs.clear();
+    		}
     		return true;
     	}catch(Exception e){System.out.println(e);return false;}
     }
