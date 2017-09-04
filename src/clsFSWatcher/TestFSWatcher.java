@@ -12,33 +12,43 @@ public class TestFSWatcher {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
-		ExecutorService executorService = Executors.newFixedThreadPool(2);
-		final Path dir = Paths.get("/tmp/test");
-	    ArrayList<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
-	    tasks.add(
-	            new Callable<Boolean>()
-	            {
-	                @Override
-	                public Boolean call() throws Exception
-	                {
-	                	Boolean bolreturn = new FSWatcher(dir).processEvents();
-	                	return bolreturn;
-	                }
-	            });
-	    
-	    tasks.add(
-	            new Callable<Boolean>()
-	            {
-	                @Override
-	                public Boolean call() throws Exception
-	                {
-	                    while(true){
-		                    FSWatcher.getfsDump();
-		                    Thread.sleep(10000);
-	                    }
-	                }
-	            });
-	    executorService.invokeAll(tasks);
+		if (args[0].isEmpty()){
+			System.out.println("Please input a watch direcgtory");
+		}
+		else{
+			String strDirectory="";
+			for (String s: args){
+				strDirectory = s;
+				System.out.println("watching direcgory: "+s);
+			}
+			ExecutorService executorService = Executors.newFixedThreadPool(2);
+			final Path dir = Paths.get(strDirectory);
+		    ArrayList<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
+		    tasks.add(
+		            new Callable<Boolean>()
+		            {
+		                @Override
+		                public Boolean call() throws Exception
+		                {
+		                	Boolean bolreturn = new FSWatcher(dir).processEvents();
+		                	return bolreturn;
+		                }
+		            });
+		    
+		    tasks.add(
+		            new Callable<Boolean>()
+		            {
+		                @Override
+		                public Boolean call() throws Exception
+		                {
+		                    while(true){
+			                    FSWatcher.getfsDump();
+			                    Thread.sleep(10000);
+		                    }
+		                }
+		            });
+		    executorService.invokeAll(tasks);
+		}
 
     }
 }
