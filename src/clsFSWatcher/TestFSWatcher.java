@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,7 +13,7 @@ public class TestFSWatcher {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
-		if (args[0].isEmpty()){
+		if ((args.length==0)||(args[0].isEmpty())){
 			System.out.println("Please input a watch direcgtory");
 		}
 		else{
@@ -42,8 +43,12 @@ public class TestFSWatcher {
 		                public Boolean call() throws Exception
 		                {
 		                    while(true){
-			                    FSWatcher.getfsDump();
-			                    Thread.sleep(10000);
+			                    //FSWatcher.getfsDump();
+			                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
+			                    for (Map.Entry<String,String> entry : mapReturn.entrySet()) {
+			                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
+			                    }
+			                    Thread.sleep(5000);
 		                    }
 		                }
 		            });

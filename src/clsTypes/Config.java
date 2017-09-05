@@ -78,7 +78,8 @@ public class Config {
     //public static String defaultrefcounter="9000000001";
     
     public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge
-    
+    public static int runmode=0; // 0 is master mode, 1 is slaves mode
+
     public static int versionkeep=20; //keep last 20 versioin
     
     //Credential
@@ -101,7 +102,8 @@ public class Config {
     public static void setswiftsynctime(long longswiftsynctime){ synctime = longswiftsynctime; } 
     public static void setcontainername(String strcontainername){ containername = strcontainername; } 
     public static void setswiftclientnum(int intswiftclientnum){ clientnum = intswiftclientnum; }  
-    
+    public static void setrunmode(int intrumode){ runmode = intrumode; }  
+
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
     
