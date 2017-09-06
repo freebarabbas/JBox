@@ -17,14 +17,29 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import clsFSWatcher.FSWatcher.Tuple;
 
 public class FSWatcher {
     private final WatchService watcher;
     private final Map<WatchKey, Path> keys;
-    private final static Map<String, Long> fsfinal = new HashMap<String, Long>();
+    private final static Map<String, Tuple<Long, Integer>> fsfinal = new HashMap<String, Tuple<Long, Integer>>();
+    
+    
+	@SuppressWarnings("hiding")
+	public class Tuple<Long, Integer> { 
+    	  public final Long lngTimeStamp; 
+    	  public final Integer intDirectory; 
+    	  public Tuple(Long lngTimeStamp, Integer intDirectory) { 
+    	    this.lngTimeStamp =lngTimeStamp; 
+    	    this.intDirectory =intDirectory; 
+    	  }
+    } 
     
     
     /**
@@ -67,7 +82,8 @@ public class FSWatcher {
      * @return 
      * @throws IOException 
      */
-    Boolean processEvents() throws IOException {
+    @SuppressWarnings("unchecked")
+	Boolean processEvents() throws IOException {
         for (;;) {
  
             // wait for key to be signalled
@@ -89,22 +105,17 @@ public class FSWatcher {
                 WatchEvent.Kind kind = event.kind();
  
                 // Context for directory entry event is the file name of entry
-                @SuppressWarnings("unchecked")
                 Path name = ((WatchEvent<Path>)event).context();
                 Path child = dir.resolve(name);
  
-                if (kind != ENTRY_DELETE){
-	                if ((FolderOrFileIndentifier(child)) ) {
-	                	TestDump(event.kind().name(),child.toString(),getTimeStamp(System.currentTimeMillis()));
-	                	fsfinal.put(kind+child.toString(), System.currentTimeMillis());
-	                }
+                if ((CheckValidFileName(child, event.kind().name())) ) {
+                	TestDump(event.kind().name(),child.toString(),getTimeStamp(System.currentTimeMillis()));
+                	//Tuple<Long, Integer> ls = new Tuple<Long, Integer>();
+                	//ls.add(System.currentTimeMillis());
+                	//ls.add(FolderOrFileIndentifier(child.toString()));O)
+                	fsfinal.put(kind+child.toString(), new Tuple<Long, Integer>(new Long(System.currentTimeMillis()), new Integer(FolderOrFileIndentifier(child.toString()))));
                 }
-                else{
-	                if (CheckFileNameStartWPeriod(child)) {
-	                	TestDump(event.kind().name(),child.toString(),getTimeStamp(System.currentTimeMillis()));
-	                	fsfinal.put(kind+child.toString(), System.currentTimeMillis());              	
-	                }
-                }
+
                 // if directory is created, and watching recursively, then register it and its sub-directories
                 if ((kind == ENTRY_CREATE) || (kind == ENTRY_DELETE)) {
                     try {
@@ -134,17 +145,21 @@ public class FSWatcher {
         
 
     @SuppressWarnings("finally")
-	public static Map<String, String> getfsfinalDump(){
-    	Map<String, String> fsfinalDump = new HashMap<String, String>();
+	public static Map<String, List<String>> getfsfinalDump(){
+    	Map<String, List<String>> fsfinalDump = new HashMap<String, List<String>>();
     	try {
 			if (!fsfinal.isEmpty()){
-	    		for (Iterator<Map.Entry<String,Long>> it = fsfinal.entrySet().iterator(); it.hasNext();) {
-	    			  Map.Entry<String, Long> entry = it.next();
+	    		for (Iterator<Map.Entry<String,Tuple<Long, Integer>>> it = fsfinal.entrySet().iterator(); it.hasNext();) {
+	    			  Map.Entry<String, Tuple<Long, Integer>> entry = it.next();
 	    			  String key = entry.getKey();
-    			      long intervalmilliseconds = System.currentTimeMillis() - entry.getValue();
+	    			  Tuple<Long, Integer> lsfinal= entry.getValue();
+    			      long intervalmilliseconds = System.currentTimeMillis() - lsfinal.lngTimeStamp;
     			      if (intervalmilliseconds > 5000){
-    			    	  System.out.println(key +"\t"+ getTimeStamp(entry.getValue()) + "\t" +intervalmilliseconds);
-    			    	  fsfinalDump.put(key.substring(12, key.length()), key.substring(0, 12));
+    			    	  System.out.println(key +"\t"+ getTimeStamp(lsfinal.lngTimeStamp) + "\t" +intervalmilliseconds + "\t" + lsfinal.intDirectory);
+    			    	  List<String> ls = new ArrayList<String>();
+    			    	  ls.add(key.substring(0, 12));
+    			    	  ls.add(Integer.toString(lsfinal.intDirectory));
+    			    	  fsfinalDump.put(key.substring(12, key.length()), ls);
     			    	  it.remove();
 	    			  }
 	    		}
@@ -157,35 +172,41 @@ public class FSWatcher {
     	}
     }
     
-    private boolean CheckFileNameStartWPeriod(Path dir) throws IOException {
+    private Integer FolderOrFileIndentifier(String dir) throws IOException {
     	File f = new File(dir.toString());
-    	String s = ".";
-    	if (f.getName().toString().charAt(0) == s.charAt(0)){
-    		return false;
+    	if (f.isDirectory()){
+    		return 1;
     	}else{
-    		return true;
+    		return 0;
     	}
     }
     
-    private boolean FolderOrFileIndentifier(Path dir) throws IOException {
+    private boolean CheckValidFileName(Path dir, String strEvent) throws IOException {
     	File f = new File(dir.toString());
     	String s = ".";
-    	if (f.exists());{
-    		if (f.isDirectory()){
-	    		return false;
-	    	}
-	    	else if (f.isHidden()){
-	    		return false;
-	    	}
-	    	else if (f.isFile()){
-		    	if (f.getName().toString().charAt(0) == s.charAt(0)){
+    	if (strEvent !="ENTRY_DELETE"){
+	    	if (f.exists()){
+	    		if (f.isHidden()){
 		    		return false;
-		    	}else{
-		    		return true;
 		    	}
-	    	}
-	    	else{
+		    	else if (f.isFile()){
+			    	if (f.getName().toString().charAt(0) == s.charAt(0)){
+			    		return false;
+			    	}else{
+			    		return true;
+			    	}
+		    	}
+		    	else{
+		    		return false;
+		    	}
+	    	}else{
 	    		return false;
+	    	}
+    	}else{
+	    	if (f.getName().toString().charAt(0) == s.charAt(0)){
+	    		return false;
+	    	}else{
+	    		return true;
 	    	}
     	}
     }

@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,9 +46,10 @@ public class TestFSWatcher {
 		                {
 		                    while(true){
 			                    //FSWatcher.getfsDump();
-			                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
-			                    for (Map.Entry<String,String> entry : mapReturn.entrySet()) {
-			                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
+			                    Map<String, List<String>> mapReturn = FSWatcher.getfsfinalDump();
+			                    for (Entry<String, List<String>> entry : mapReturn.entrySet()) {
+			                    	List<String> ls= entry.getValue();
+			                    	System.out.println(entry.getKey()+"\t"+ls.get(0)+"\t"+ls.get(1));
 			                    }
 			                    Thread.sleep(5000);
 		                    }
