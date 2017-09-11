@@ -1,7 +1,17 @@
 package clsUtilitues;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import clsFSWatcher.FSWatcher;
 import clsTypes.Config;
 import clsTypes.clsProperties;
 
@@ -72,6 +82,56 @@ public class JBox {
 						}
 						break;		
 	                    //mod = 64, 32KB ~ 128KB
+					case "p":
+						Config.logger.debug(Config.ConvertToHTML());
+						ExecutorService executorService = Executors.newFixedThreadPool(2);
+						final Path dir = Paths.get(Config.syncfolders.toString());
+					    ArrayList<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
+					    tasks.add(
+					            new Callable<Boolean>()
+					            {
+					            	@Override
+					                public Boolean call() throws Exception
+					                {
+					                	Boolean bolreturn = new FSWatcher(dir).processEvents();
+					                	return bolreturn;
+					                }
+					            });
+					    
+					    tasks.add(
+					            new Callable<Boolean>()
+					            {
+					                @Override
+					                public Boolean call() throws Exception
+					                {
+					                    while(true){
+						                    //FSWatcher.getfsDump();
+						                    Map<String, List<String>> mapReturn = FSWatcher.getfsfinalDump();
+						                    if (!mapReturn.isEmpty()){
+							                    for (Entry<String, List<String>> entry : mapReturn.entrySet()) {
+							                    	List<String> ls= entry.getValue();
+							                    	System.out.println(entry.getKey()+"\t"+ls.get(0)+"\t"+ls.get(1));
+							                    }
+						                    }
+						                    Thread.sleep(5000);
+					                    }
+					                }
+					            });
+					    executorService.invokeAll(tasks);
+						/***
+						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
+						new Thread(r).start();
+						while(true)
+						{
+							String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
+							//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+							String strStatus = "";
+							if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
+							System.out.println(timeStamp+": "+ strStatus);
+							System.gc(); //garbage collection
+							Thread.sleep(1000);
+						}
+						***/
 					case "s":
 						Config.logger.debug(Config.ConvertToHTML());
 						
@@ -86,7 +146,7 @@ public class JBox {
 							System.out.println(timeStamp+": "+ strStatus);
 							System.gc(); //garbage collection
 							Thread.sleep(1000);
-						}
+						}	
 					default:
 						Helper m = new Helper("r");
 						m.GetMenu();

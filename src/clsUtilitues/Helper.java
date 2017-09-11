@@ -18,6 +18,16 @@ public class Helper {
 		return strSync;
 	}
 	
+	private String GetPush(){
+		String strPush=""
+		+ "    Push[p]:Push trigger by FSWacher every 5 ~ 10 second \n"
+		+ "          <Options for p>(mandatory): p\n"
+		+ "    <example>\n"
+		+ "    e.g: java -jar ./JBox.jar p \n"
+		+ "\n";
+		return strPush;
+	}
+	
 	private String GetQuery(){
 		String strQuery=""
 		+ "   Query[q]:Query current file level metadata, list all the files and chunk level metadata, list all the versions\n"
@@ -60,6 +70,12 @@ public class Helper {
 					+ GetRetrieve()
 					+ "");			
 			break;
+		case "p":
+			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
+					+ "                [p] for Sync \n"
+					+ GetPush()
+					+ "");			
+			break;			
 		case "s":
 			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
 					+ "                [s] for Sync \n"

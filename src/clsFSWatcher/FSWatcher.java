@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import clsFSWatcher.FSWatcher.Tuple;
-
 public class FSWatcher {
     private final WatchService watcher;
     private final Map<WatchKey, Path> keys;
@@ -45,7 +43,7 @@ public class FSWatcher {
     /**
      * Creates a WatchService and registers the given directory
      */
-    FSWatcher(Path dir) throws IOException {
+    public FSWatcher(Path dir) throws IOException {
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey, Path>();
  
@@ -64,8 +62,7 @@ public class FSWatcher {
     
     /**
      * Register the given directory, and all its sub-directories, with the WatchService.
-     */
-    
+     */  
     private void walkAndRegisterDirectories(final Path start) throws IOException {
         // register directory and sub-directories
         Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
@@ -83,6 +80,7 @@ public class FSWatcher {
      * @throws IOException 
      */
     @SuppressWarnings("unchecked")
+	public
 	Boolean processEvents() throws IOException {
         for (;;) {
  
@@ -143,7 +141,6 @@ public class FSWatcher {
 		return null;
     }
         
-
     @SuppressWarnings("finally")
 	public static Map<String, List<String>> getfsfinalDump(){
     	Map<String, List<String>> fsfinalDump = new HashMap<String, List<String>>();
@@ -159,7 +156,9 @@ public class FSWatcher {
     			    	  List<String> ls = new ArrayList<String>();
     			    	  ls.add(key.substring(0, 12));
     			    	  ls.add(Integer.toString(lsfinal.intDirectory));
-    			    	  fsfinalDump.put(key.substring(12, key.length()), ls);
+    			    	  if (!fsfinalDump.keySet().contains(key.substring(12, key.length()))){
+	    			    	  fsfinalDump.put(key.substring(12, key.length()), ls);
+    			    	  }
     			    	  it.remove();
 	    			  }
 	    		}

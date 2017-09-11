@@ -47,9 +47,11 @@ public class TestFSWatcher {
 		                    while(true){
 			                    //FSWatcher.getfsDump();
 			                    Map<String, List<String>> mapReturn = FSWatcher.getfsfinalDump();
-			                    for (Entry<String, List<String>> entry : mapReturn.entrySet()) {
-			                    	List<String> ls= entry.getValue();
-			                    	System.out.println(entry.getKey()+"\t"+ls.get(0)+"\t"+ls.get(1));
+			                    if (!mapReturn.isEmpty()){
+				                    for (Entry<String, List<String>> entry : mapReturn.entrySet()) {
+				                    	List<String> ls= entry.getValue();
+				                    	System.out.println(entry.getKey()+"\t"+ls.get(0)+"\t"+ls.get(1));
+				                    }
 			                    }
 			                    Thread.sleep(5000);
 		                    }
