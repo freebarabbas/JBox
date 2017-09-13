@@ -26,6 +26,7 @@ public class TestFSWatcher {
 			}
 			ExecutorService executorService = Executors.newFixedThreadPool(2);
 			final Path dir = Paths.get(strDirectory);
+			System.out.println(dir.toString());
 		    ArrayList<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 		    tasks.add(
 		            new Callable<Boolean>()
@@ -46,11 +47,11 @@ public class TestFSWatcher {
 		                {
 		                    while(true){
 			                    //FSWatcher.getfsDump();
-			                    Map<String, List<String>> mapReturn = FSWatcher.getfsfinalDump();
+			                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
 			                    if (!mapReturn.isEmpty()){
-				                    for (Entry<String, List<String>> entry : mapReturn.entrySet()) {
-				                    	List<String> ls= entry.getValue();
-				                    	System.out.println(entry.getKey()+"\t"+ls.get(0)+"\t"+ls.get(1));
+				                    for (Entry<String, String> entry : mapReturn.entrySet()) {
+				                    	//List<String> ls= entry.getValue();
+				                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
 				                    }
 			                    }
 			                    Thread.sleep(5000);

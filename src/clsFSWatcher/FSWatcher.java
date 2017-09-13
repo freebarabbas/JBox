@@ -107,10 +107,7 @@ public class FSWatcher {
                 Path child = dir.resolve(name);
  
                 if ((CheckValidFileName(child, event.kind().name())) ) {
-                	TestDump(event.kind().name(),child.toString(),getTimeStamp(System.currentTimeMillis()));
-                	//Tuple<Long, Integer> ls = new Tuple<Long, Integer>();
-                	//ls.add(System.currentTimeMillis());
-                	//ls.add(FolderOrFileIndentifier(child.toString()));O)
+                	//TestDump(event.kind().name(),child.toString(),getTimeStamp(System.currentTimeMillis()));
                 	fsfinal.put(kind+child.toString(), new Tuple<Long, Integer>(new Long(System.currentTimeMillis()), new Integer(FolderOrFileIndentifier(child.toString()))));
                 }
 
@@ -142,8 +139,8 @@ public class FSWatcher {
     }
         
     @SuppressWarnings("finally")
-	public static Map<String, List<String>> getfsfinalDump(){
-    	Map<String, List<String>> fsfinalDump = new HashMap<String, List<String>>();
+	public static Map<String, String> getfsfinalDump(){
+    	Map<String, String> fsfinalDump = new HashMap<String, String>();
     	try {
 			if (!fsfinal.isEmpty()){
 	    		for (Iterator<Map.Entry<String,Tuple<Long, Integer>>> it = fsfinal.entrySet().iterator(); it.hasNext();) {
@@ -152,12 +149,12 @@ public class FSWatcher {
 	    			  Tuple<Long, Integer> lsfinal= entry.getValue();
     			      long intervalmilliseconds = System.currentTimeMillis() - lsfinal.lngTimeStamp;
     			      if (intervalmilliseconds > 5000){
-    			    	  System.out.println(key +"\t"+ getTimeStamp(lsfinal.lngTimeStamp) + "\t" +intervalmilliseconds + "\t" + lsfinal.intDirectory);
-    			    	  List<String> ls = new ArrayList<String>();
-    			    	  ls.add(key.substring(0, 12));
-    			    	  ls.add(Integer.toString(lsfinal.intDirectory));
+    			    	  //System.out.println(key +"\t"+ getTimeStamp(lsfinal.lngTimeStamp) + "\t" +intervalmilliseconds + "\t" + lsfinal.intDirectory);
+    			    	  //List<String> ls = new ArrayList<String>();
+    			    	  //ls.add(key.substring(0, 12));
+    			    	  //ls.add(Integer.toString(lsfinal.intDirectory));
     			    	  if (!fsfinalDump.keySet().contains(key.substring(12, key.length()))){
-	    			    	  fsfinalDump.put(key.substring(12, key.length()), ls);
+	    			    	  fsfinalDump.put(key.substring(12, key.length()), key.substring(0, 12));
     			    	  }
     			    	  it.remove();
 	    			  }

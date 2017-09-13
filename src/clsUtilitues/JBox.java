@@ -4,7 +4,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -85,7 +84,8 @@ public class JBox {
 					case "p":
 						Config.logger.debug(Config.ConvertToHTML());
 						ExecutorService executorService = Executors.newFixedThreadPool(2);
-						final Path dir = Paths.get(Config.syncfolders.toString());
+						final Path dir = Paths.get(Config.syncfolders.get(0).toString());
+						System.out.println("watching direcgory: "+dir.toString());
 					    ArrayList<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 					    tasks.add(
 					            new Callable<Boolean>()
@@ -106,12 +106,20 @@ public class JBox {
 					                {
 					                    while(true){
 						                    //FSWatcher.getfsDump();
-						                    Map<String, List<String>> mapReturn = FSWatcher.getfsfinalDump();
+						                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
 						                    if (!mapReturn.isEmpty()){
-							                    for (Entry<String, List<String>> entry : mapReturn.entrySet()) {
-							                    	List<String> ls= entry.getValue();
-							                    	System.out.println(entry.getKey()+"\t"+ls.get(0)+"\t"+ls.get(1));
-							                    }
+						                    	Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
+						                    	new Thread(r).start();
+						                    	String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
+												//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+												String strStatus = "";
+												if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
+												System.out.println(timeStamp+": "+ strStatus);
+												System.gc(); //garbage collection
+							                    //for (Entry<String, String> entry : mapReturn.entrySet()) {
+							                    	//List<String> ls= entry.getValue();
+							                    //	System.out.println(entry.getKey()+"\t"+entry.getValue());
+							                    //}
 						                    }
 						                    Thread.sleep(5000);
 					                    }
