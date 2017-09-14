@@ -1,15 +1,17 @@
 package clsFSWatcher;
 
+import static java.lang.Thread.currentThread;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TestFSWatcher {
 
@@ -53,6 +55,20 @@ public class TestFSWatcher {
 				                    	//List<String> ls= entry.getValue();
 				                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
 				                    }
+				                    //TestSync s =new TestSync("input test");
+			                    	//Thread t = new Thread(s);
+			                    	//t.start();
+				                    TestSyncRunnable[] randomNumberTasks = new TestSyncRunnable[1];
+
+				                    //for (int i = 0; i < 5; i++)
+				                    //{
+				                        randomNumberTasks[0] = new TestSyncRunnable();
+				                        Thread t = new Thread(randomNumberTasks[0]);
+				                        t.start();
+				                    //}
+
+				                    //for (int i = 0; i < 5; i++)
+				                        System.out.println(randomNumberTasks[0].get());
 			                    }
 			                    Thread.sleep(5000);
 		                    }

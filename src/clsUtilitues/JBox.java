@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -109,13 +108,16 @@ public class JBox {
 						                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
 						                    if (!mapReturn.isEmpty()){
 						                    	Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
-						                    	new Thread(r).start();
+						                    	Thread t = new Thread(r);
+						                    	t.start();
 						                    	String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
 												//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
 												String strStatus = "";
 												if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
 												System.out.println(timeStamp+": "+ strStatus);
 												System.gc(); //garbage collection
+												System.out.println();
+												t.stop();
 							                    //for (Entry<String, String> entry : mapReturn.entrySet()) {
 							                    	//List<String> ls= entry.getValue();
 							                    //	System.out.println(entry.getKey()+"\t"+entry.getValue());

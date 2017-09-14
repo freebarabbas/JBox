@@ -16,11 +16,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class FSWatcher {
@@ -207,12 +204,13 @@ public class FSWatcher {
     	}
     }
     
+    /*
     private static String getTimeStamp(Long lngDate){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         String formattedDate = sdf.format(lngDate);
         return formattedDate;
     }
-    
+    */
     public static boolean TestDump(String strKey, String strFile, String strTimeStamp){
     	String strDumpFile = "test";
     	try {

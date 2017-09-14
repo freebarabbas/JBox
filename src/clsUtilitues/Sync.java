@@ -49,6 +49,7 @@ public class Sync implements Runnable {
 	private boolean fthread = true;
 	//private static long l_buffer=10*1024*1024;
 	
+	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
 		m_syncfolders=p_syncfolders;
@@ -1932,6 +1933,7 @@ public class Sync implements Runnable {
             //Sync Interval is milliseconds = 1/1000 seconds which means 5000 milliseconds = 5 seconds
             System.gc();
             Thread.sleep(m_synctime);
+            
         }
 		
 	}
@@ -1943,10 +1945,13 @@ public class Sync implements Runnable {
 		{
 			StartSync();
 		}
+		catch(InterruptedException ex){
+			Config.logger.debug(ex.getMessage());
+		}
 		catch(Exception e)
 		{
 			Config.logger.fatal("Cannot sync."+e.getMessage());
-		}	
+		}
 		
 	}
 }
