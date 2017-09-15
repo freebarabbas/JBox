@@ -5,9 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import clsFSWatcher.FSWatcher;
 import clsTypes.Config;
@@ -107,41 +110,54 @@ public class JBox {
 						                    //FSWatcher.getfsDump();
 						                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
 						                    if (!mapReturn.isEmpty()){
-						                    	Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
-						                    	Thread t = new Thread(r);
-						                    	t.start();
+						                    	
 						                    	String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
 												//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
 												String strStatus = "";
 												if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
 												System.out.println(timeStamp+": "+ strStatus);
+						                    	
+							                    for (Entry<String, String> entry : mapReturn.entrySet()) {
+							                    	//List<String> ls= entry.getValue();
+							                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
+							                    }
+							                    
+							                    final ExecutorService service;
+							                    final Future<Boolean>  task;
+
+							                    service = Executors.newFixedThreadPool(1);        
+							                    task    = service.submit(new SyncCallable(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername));
+
+							                    try {
+							                        final Boolean bolReturn;
+
+							                        // waits the 10 seconds for the Callable.call to finish.
+							                        bolReturn = task.get(); // this raises ExecutionException if thread dies
+							                        if (bolReturn) {
+							                        	System.out.println("Thread kill and finishing !");
+							                        }else{
+							                        	System.out.println("Something Wrong !");
+							                        }
+							                    } catch(final InterruptedException ex) {
+							                        ex.printStackTrace();
+							                    } catch(final ExecutionException ex) {
+							                        ex.printStackTrace();
+							                    }
+
+							                    service.shutdownNow();
+						                    							                    	
+						                    	//Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
+						                    	//Thread t = new Thread(r);
+						                    	//t.start();
+
 												System.gc(); //garbage collection
 												System.out.println();
-												t.stop();
-							                    //for (Entry<String, String> entry : mapReturn.entrySet()) {
-							                    	//List<String> ls= entry.getValue();
-							                    //	System.out.println(entry.getKey()+"\t"+entry.getValue());
-							                    //}
 						                    }
 						                    Thread.sleep(5000);
 					                    }
 					                }
 					            });
 					    executorService.invokeAll(tasks);
-						/***
-						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
-						new Thread(r).start();
-						while(true)
-						{
-							String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
-							//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
-							String strStatus = "";
-							if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
-							System.out.println(timeStamp+": "+ strStatus);
-							System.gc(); //garbage collection
-							Thread.sleep(1000);
-						}
-						***/
 					case "s":
 						Config.logger.debug(Config.ConvertToHTML());
 						
