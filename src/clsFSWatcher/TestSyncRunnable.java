@@ -3,6 +3,14 @@ package clsFSWatcher;
 public class TestSyncRunnable implements Runnable {
     private Object result = null;
     
+    public synchronized Object get() throws InterruptedException
+    {
+        while (result == null)
+            wait();
+
+        return result;
+    }
+    
 	private void StartSync()
 	{
 		System.out.println("start sync now");
@@ -37,24 +45,5 @@ public class TestSyncRunnable implements Runnable {
         }
     }
 
-    public synchronized Object get() throws InterruptedException
-    {
-        while (result == null)
-            wait();
 
-        return result;
-    }
-    /*
-     *  try
-		{
-			StartSync();
-		}
-		catch(InterruptedException ex){
-			Config.logger.debug(ex.getMessage());
-		}
-		catch(Exception e)
-		{
-			Config.logger.fatal("Cannot sync."+e.getMessage());
-		}
-     */
 }

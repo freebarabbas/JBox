@@ -1,27 +1,33 @@
 package clsFSWatcher;
 
 	
-import java.util.Random;
 import java.util.concurrent.Callable;
 
-class CallableExample implements Callable<Object>
-{
-
-    public Object call() throws Exception
-    {
-        // Create random number generator
-        Random generator = new Random();
-
-        Integer randomNumber = generator.nextInt(5);
-
-        // To simulate a heavy computation,
-        // we delay the thread for some random time
-        Thread.sleep(randomNumber * 1000);
-
-        return randomNumber;
-    }
+public class TestSyncCallable implements Callable<Boolean> {
+	private boolean bolSyncReturn = false;
+	
+	private  Boolean StartSync() throws Exception{
+		// sleep for 10 seconds
+		Thread.sleep(5 * 1000);
+		System.out.println("running thread now");
+		Thread.sleep(5 * 1000);
+		return true;
+	}
+	
+	public Boolean call() {
+	    try {
+	        bolSyncReturn = StartSync();
+	    } catch(final InterruptedException ex) {
+	        ex.printStackTrace();
+	        bolSyncReturn = false;
+	    } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    return bolSyncReturn;
+	
+	}
 }
-
 
 
 
