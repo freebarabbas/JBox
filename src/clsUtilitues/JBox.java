@@ -145,10 +145,6 @@ public class JBox {
 							                    }
 
 							                    service.shutdownNow();
-						                    							                    	
-						                    	//Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
-						                    	//Thread t = new Thread(r);
-						                    	//t.start();
 
 												System.gc(); //garbage collection
 												System.out.println();

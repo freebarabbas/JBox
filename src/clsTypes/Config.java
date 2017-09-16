@@ -73,8 +73,8 @@ public class Config {
     //Purge
     public static int refcounter=0; //0 default is off, 1 is on
     
-    public static int containerpurgetime=10;	//wait how long to purge the container, 600 second = 10 min seconds, 300 = 5 min, 10 = 10 sec
-    public static int objectpurgetime=10;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month, 300 = 5 min, 10 = 10 sec
+    public static int filepurgesecond=60;	//wait how long to purge the container, 600 second = 10 min seconds, 300 = 5 min, 10 = 10 sec
+    public static int objectpurgesecond=120;		//wait how long to purge the object, 86400 second = 24 hours, 7776,000 seconds = 3 month, 300 = 5 min, 10 = 10 sec
     //public static String defaultrefcounter="9000000001";
     
     public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge

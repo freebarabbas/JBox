@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.util.Calendar;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -71,6 +72,14 @@ public class TestforRESTConnector {
 	//@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
 		
+		Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+		calendar.add(Calendar.SECOND, 60);
+		long l = (calendar.getTimeInMillis() / 1000L);
+	    System.out.println(String.valueOf((calendar.getTimeInMillis() / 1000L)));	
+	
+		
+		
+		
 		//Get the jvm heap size.
         long heapSize = Runtime.getRuntime().totalMemory();
 
@@ -86,7 +95,10 @@ public class TestforRESTConnector {
 		//RestResult rr=RestConnector.GetToken("https://region-a.geo-1.identity.hpcloudsvc.com:35357/auth/v1.0/", "10846130789747:johnny.wang2@hp.com", "Johnny634917", pxy);
 		System.out.println(rr.token);
 		System.out.println(rr.storageurl);
+	
 		
+		RestResult rpost = RestConnector.UpdateObjectRefCount(rr.token, rr.storageurl+"/GenTestNew", "fdad9007ba25f4ca0823cbdaa080a757b", "1505512620", pxy);
+		System.out.println(rpost.httpcode);
 		System.out.println(checkUSERMETAFILEETag(rr.token, rr.storageurl));
 		
 		

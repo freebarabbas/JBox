@@ -89,6 +89,8 @@ public class Sync implements Runnable {
 		m_synctime=p_synctime;
 	}
 	
+
+	
 	private boolean GetToken()
 	{
 		try
@@ -428,7 +430,8 @@ public class Sync implements Runnable {
 	        	
                 String srcguid = fi.guid;
                 //delete file level metadata after 2 min
-        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.containerpurgetime);
+        		//String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime*1000);
+        		String objcount = SmallFunctions.GetXDeleteAt(Config.filepurgesecond);
         		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
         		
         		if (Config.refcounter == 1) {
@@ -629,14 +632,7 @@ public class Sync implements Runnable {
 	        {
 				localSyncFolder.MergeWithLocal(localMetaData);
 	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localMetaData with localSyncFolder(Last Local SyncFolder Snahpshot)."));                          	
-	        }	
-	        /*
-    		if ((localMetaData != null) && (remoteMetaData != null)){
-    			if (checkUSERMETAFILEETag()) {
-    				Config.logger.debug("NO Change USERMETAFILE between local and server, assign userMetadata class null, skip everything this time."); 
-    				return merged;
-    			}
-    		}*/			
+	        }			
     		if (remoteMetaData.filelist != null) {
 	            localSyncFolder.Merge(remoteMetaData);
 	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localSyncFolder(LocalMetaData+LocalSyncFolder) with remoteMetaData."));

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -15,6 +16,12 @@ import java.util.UUID;
  */
 public class SmallFunctions {
 	
+	
+	public static String GetXDeleteAt(int intPurgeTime){
+		Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+		calendar.add(Calendar.SECOND, intPurgeTime);
+	    return String.valueOf((calendar.getTimeInMillis() / 1000L));	
+	}
 	/**
 	 * Convert string to date.
 	 *

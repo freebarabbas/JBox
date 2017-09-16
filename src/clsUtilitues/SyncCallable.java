@@ -430,7 +430,8 @@ public class SyncCallable implements Callable<Boolean>  {
 	        	
                 String srcguid = fi.guid;
                 //delete file level metadata after 2 min
-        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.containerpurgetime);
+        		//String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.containerpurgetime);
+        		String objcount = SmallFunctions.GetXDeleteAt(Config.filepurgesecond);
         		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
         		
         		if (Config.refcounter == 1) {

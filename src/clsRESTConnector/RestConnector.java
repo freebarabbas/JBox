@@ -7,6 +7,7 @@ import java.net.*;
 import javax.xml.bind.DatatypeConverter;
 
 import clsTypes.Config;
+import clsTypes.SmallFunctions;
 
 public class RestConnector {
 	private static HttpURLConnection GetConnection(String url,ebProxy pxy) throws Exception
@@ -304,7 +305,8 @@ public class RestConnector {
 					//RestConnector.CopyFile(curtoken, strContainer + "/" + object, container + "/backup/" +object + "", pxy);
 					//RestConnector.DeleteFile(curtoken,container,object,pxy);
 					
-					objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime);
+					//objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime*1000);
+					objcount = SmallFunctions.GetXDeleteAt(Config.objectpurgesecond);
 					
 					try {
 						UpdateObjectRefCount(curtoken, container, "backup/" + object ,objcount,pxy);
@@ -409,12 +411,12 @@ public class RestConnector {
     {
 		try {
 			if (oldContainer.equals(newContainer)){ // same container but just rename
-				String strContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 6 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
-				RestConnector.CopyFile(curtoken, strContainer + "/" + oldObject, oldContainer + newObject, pxy);
+				String strContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 5 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
+				RestConnector.CopyFile(curtoken, "/"+ strContainer + "/" + oldObject, oldContainer + newObject, pxy);
 			}else{ // diff container, rename and remove
-				String strOldContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 6 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
+				String strOldContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 5 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
 				//String strNewContainer=newContainer.substring(newContainer.indexOf("/AUTH_")+ 6 + (newContainer.length() - (newContainer.indexOf("/AUTH_")+ 6) -1)/2, newContainer.length());
-				RestConnector.CopyFile(curtoken, strOldContainer + "/" + oldObject, newContainer + newObject, pxy);
+				RestConnector.CopyFile(curtoken, "/" + strOldContainer + "/" + oldObject, newContainer + newObject, pxy);
 			}
 			RestConnector.DeleteFile(curtoken,oldContainer,oldObject,pxy);
 			return new RestResult(200,true,"","","");
