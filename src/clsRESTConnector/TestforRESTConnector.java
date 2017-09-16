@@ -74,7 +74,7 @@ public class TestforRESTConnector {
 		
 		Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
 		calendar.add(Calendar.SECOND, 60);
-		long l = (calendar.getTimeInMillis() / 1000L);
+		//long l = (calendar.getTimeInMillis() / 1000L);
 	    System.out.println(String.valueOf((calendar.getTimeInMillis() / 1000L)));	
 	
 		

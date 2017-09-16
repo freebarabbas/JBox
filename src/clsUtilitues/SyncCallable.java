@@ -49,9 +49,6 @@ public class SyncCallable implements Callable<Boolean>  {
 	private boolean fthread = true;
 	private boolean bolSyncReturn = false;
 	
-	//private static long l_buffer=10*1024*1024;
-	
-	
 	public SyncCallable(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
 		m_syncfolders=p_syncfolders;
@@ -163,7 +160,7 @@ public class SyncCallable implements Callable<Boolean>  {
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
 			hs.clear();
 		}		
-		System.out.println("Current Chunks:"+counter);
+		System.out.println(counter);
 		return hs;
 	}
 	
@@ -203,7 +200,7 @@ public class SyncCallable implements Callable<Boolean>  {
 			Config.logger.fatal("Error to get currecnt chunk list:"+e.getMessage());
 			bkhs.clear();
 		}		
-		System.out.println("Backup Chunks:"+counter);
+		System.out.println(counter);
 		return bkhs;
 	}
 	
@@ -429,13 +426,9 @@ public class SyncCallable implements Callable<Boolean>  {
 	        	Config.logger.debug("Start to Reduce ref counter in file level meta file for " + fi.filename);
 	        	
                 String srcguid = fi.guid;
-                //delete file level metadata after 2 min
-        		//String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.containerpurgetime);
-        		String objcount = SmallFunctions.GetXDeleteAt(Config.filepurgesecond);
-        		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
-        		
-        		if (Config.refcounter == 1) {
-        			Config.logger.debug("sum deletion flag at file level for " + "f"+srcguid);
+
+        		if (Config.refcounter >= 1) {
+        			Config.logger.debug("sum deletion flag on objects at file level for " + "f"+srcguid);
 	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
 	                byte[] filedata = rr.data;
 	                //fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
@@ -450,16 +443,41 @@ public class SyncCallable implements Callable<Boolean>  {
 	                		RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
 	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
 	                     }  
-	                	
-	                	//Iterator<fileMetadata> it = fmds.data.iterator();
-	                	//while(it.hasNext()){
-	                	//	//fileInfo tmp=it.hashCode();
-	                	//	RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, Integer.toString(it.hashCode()), m_pxy);
-	                    //   Config.logger.debug("reduce ref counter at object level for " + Integer.toString(it.hashCode()));
-	                	//}
+
 	                }
         		}
+        		else if (Config.refcounter < 0){
+        			//only apply for one way push ( sync ), multi-client won't work since 
+        			// you don't know whether it's one of client delete of one of client new add
+        			Config.logger.debug("deletion all objects at file level for " + "f"+srcguid);
+	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
+	                byte[] filedata = rr.data;
+	                fileMetadata fmds = new fileMetadata(filedata, true);
+	                Collections.sort(fmds.data);
+		        	
+	                if(fi.fop == FOP.LOCAL_HAS_DELETED)
+	                {
+	                	 for(chunk c : fmds.data)
+	                     {
+	                     	//delete object right away
+	                		RestConnector.DeleteFile(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy); 
+	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
+	                     }  
+	                }
+        		}else if (Config.refcounter == 0){
+        			//do nothing keep all the objects forever
+        			Config.logger.debug("delete file level metadata only, keep all the objects");
+        			
+        		}
 
+                //after deal with all the object under file level , then deail with file level metadata
+        		//if file purge seconds = 0, then delete right away or X-Delete-At n Seconds
+        		if (Config.filepurgesecond == 0){
+        			RestConnector.DeleteFile(m_tkn, m_usercontainer, "f"+srcguid,m_pxy);
+        		}else{
+        			RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,SmallFunctions.GetXDeleteAt(Config.filepurgesecond),m_pxy);
+        		}
+        		
                 Config.logger.debug("Done to delete file leve meta data or reduce ref counter at file level meta file for " + fi.filename);
                 return true;
 	        }
@@ -498,6 +516,30 @@ public class SyncCallable implements Callable<Boolean>  {
         aFile.close();
         return filedata;
 	}
+	
+    /*
+	private boolean checkUSERMETAFILEETag() throws Exception {
+		RestResult rr = RestConnector.GetETag(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
+		if(rr.result==true)
+		{
+			String strETag=rr.msg.toUpperCase();
+			Config.logger.debug("Get ETag for USERMETAFile:"+strETag);
+			File f = new File(m_metafile);
+			if(f.exists() && !f.isDirectory()) { 
+			    MessageDigest md = MessageDigest.getInstance("MD5");
+			    md.update(Files.readAllBytes(Paths.get(m_metafile)));
+			    byte[] digest = md.digest();
+			    String strMD5sum = DatatypeConverter
+			      .printHexBinary(digest).toUpperCase();
+			         
+			    Config.logger.debug("Get MD5 for /JBoxLog/local metadata:"+strMD5sum);
+			    if(strMD5sum.equals(strETag)){return true;}else{return false;}
+			}
+			else{return false;}
+		}
+		else{return true;}
+    }
+	*/
 	
 	private userMetaData syncPreparation(String m_metafile, List<String> m_syncfolders, String m_tkn, String m_usercontainer, ebProxy m_pxy) throws Exception{
 		/*identify sync status: compare 
@@ -608,14 +650,7 @@ public class SyncCallable implements Callable<Boolean>  {
 	        {
 				localSyncFolder.MergeWithLocal(localMetaData);
 	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localMetaData with localSyncFolder(Last Local SyncFolder Snahpshot)."));                          	
-	        }	
-	        /*
-    		if ((localMetaData != null) && (remoteMetaData != null)){
-    			if (checkUSERMETAFILEETag()) {
-    				Config.logger.debug("NO Change USERMETAFILE between local and server, assign userMetadata class null, skip everything this time."); 
-    				return merged;
-    			}
-    		}*/			
+	        }			
     		if (remoteMetaData.filelist != null) {
 	            localSyncFolder.Merge(remoteMetaData);
 	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localSyncFolder(LocalMetaData+LocalSyncFolder) with remoteMetaData."));
@@ -624,6 +659,7 @@ public class SyncCallable implements Callable<Boolean>  {
 			return merged;
         }
 	}
+	
 	
 	private Boolean StartSync() throws Exception
 	{
@@ -1919,7 +1955,6 @@ public class SyncCallable implements Callable<Boolean>  {
 		
 	}
 
-	
 	@Override
 	public Boolean call() {
 		try

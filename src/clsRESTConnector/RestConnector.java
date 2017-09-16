@@ -306,10 +306,12 @@ public class RestConnector {
 					//RestConnector.DeleteFile(curtoken,container,object,pxy);
 					
 					//objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime*1000);
-					objcount = SmallFunctions.GetXDeleteAt(Config.objectpurgesecond);
+					//objcount = SmallFunctions.GetXDeleteAt(Config.objectpurgesecond);
+					Config.logger.debug("move object "+object+" to /backup/");
 					
 					try {
-						UpdateObjectRefCount(curtoken, container, "backup/" + object ,objcount,pxy);
+						UpdateObjectRefCount(curtoken, container, "backup/" + object ,SmallFunctions.GetXDeleteAt(Config.objectpurgesecond),pxy);
+						Config.logger.debug("sum X-Delete-At for backup/"+object+" for deletion in the future");
 					}catch (Exception e){
 						System.err.println(e.getMessage());
 					}

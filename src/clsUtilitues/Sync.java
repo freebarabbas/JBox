@@ -89,7 +89,6 @@ public class Sync implements Runnable {
 		m_synctime=p_synctime;
 	}
 	
-
 	
 	private boolean GetToken()
 	{
@@ -429,13 +428,9 @@ public class Sync implements Runnable {
 	        	Config.logger.debug("Start to Reduce ref counter in file level meta file for " + fi.filename);
 	        	
                 String srcguid = fi.guid;
-                //delete file level metadata after 2 min
-        		//String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime*1000);
-        		String objcount = SmallFunctions.GetXDeleteAt(Config.filepurgesecond);
-        		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
-        		
-        		if (Config.refcounter == 1) {
-        			Config.logger.debug("sum deletion flag at file level for " + "f"+srcguid);
+
+        		if (Config.refcounter >= 1) {
+        			Config.logger.debug("sum deletion flag on objects at file level for " + "f"+srcguid);
 	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
 	                byte[] filedata = rr.data;
 	                //fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
@@ -450,16 +445,41 @@ public class Sync implements Runnable {
 	                		RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
 	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
 	                     }  
-	                	
-	                	//Iterator<fileMetadata> it = fmds.data.iterator();
-	                	//while(it.hasNext()){
-	                	//	//fileInfo tmp=it.hashCode();
-	                	//	RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, Integer.toString(it.hashCode()), m_pxy);
-	                    //   Config.logger.debug("reduce ref counter at object level for " + Integer.toString(it.hashCode()));
-	                	//}
+
 	                }
         		}
+        		else if (Config.refcounter < 0){
+        			//only apply for one way push ( sync ), multi-client won't work since 
+        			// you don't know whether it's one of client delete of one of client new add
+        			Config.logger.debug("deletion all objects at file level for " + "f"+srcguid);
+	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
+	                byte[] filedata = rr.data;
+	                fileMetadata fmds = new fileMetadata(filedata, true);
+	                Collections.sort(fmds.data);
+		        	
+	                if(fi.fop == FOP.LOCAL_HAS_DELETED)
+	                {
+	                	 for(chunk c : fmds.data)
+	                     {
+	                     	//delete object right away
+	                		RestConnector.DeleteFile(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy); 
+	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
+	                     }  
+	                }
+        		}else if (Config.refcounter == 0){
+        			//do nothing keep all the objects forever
+        			Config.logger.debug("delete file level metadata only, keep all the objects");
+        			
+        		}
 
+                //after deal with all the object under file level , then deail with file level metadata
+        		//if file purge seconds = 0, then delete right away or X-Delete-At n Seconds
+        		if (Config.filepurgesecond == 0){
+        			RestConnector.DeleteFile(m_tkn, m_usercontainer, "f"+srcguid,m_pxy);
+        		}else{
+        			RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,SmallFunctions.GetXDeleteAt(Config.filepurgesecond),m_pxy);
+        		}
+        		
                 Config.logger.debug("Done to delete file leve meta data or reduce ref counter at file level meta file for " + fi.filename);
                 return true;
 	        }
