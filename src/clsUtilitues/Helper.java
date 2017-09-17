@@ -79,7 +79,7 @@ public class Helper {
 			break;
 		case "p":
 			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
-					+ "                [p] for Sync \n"
+					+ "                [p] for push \n"
 					+ GetPush()
 					+ "");			
 			break;			
