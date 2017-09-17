@@ -65,6 +65,7 @@ public class clsProperties {
 			if (prop.getProperty("synctime") != null && !prop.getProperty("synctime").isEmpty()){Config.setswiftsynctime(Long.parseLong(prop.getProperty("synctime")));}
 			if (prop.getProperty("refcounter") != null && !prop.getProperty("refcounter").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("refcounter")));}
 			if (prop.getProperty("clientnum") != null && !prop.getProperty("clientnum").isEmpty()){Config.setswiftclientnum(Integer.parseInt(prop.getProperty("clientnum")));}
+			if (prop.getProperty("runmode") != null && !prop.getProperty("runmode").isEmpty()){Config.setrunmode(Integer.parseInt(prop.getProperty("runmode")));}
 
 			
 		} catch (Exception e) {

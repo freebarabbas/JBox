@@ -44,10 +44,11 @@ public class Sync implements Runnable {
 	//private double m_max;
 	private long m_synctime;
 	private String m_containername;
-	private static long l_buffer=1*1024*1024*1024;
-	private static int l_worker=20;
+	private static long l_buffer=Config.processbuffer;
+	private static int l_worker=Config.threadsworker;
 	private boolean fthread = true;
 	//private static long l_buffer=10*1024*1024;
+	
 	
 	public Sync(List<String> p_syncfolders,String p_metafile, String p_url,String p_username,String p_pwd,ebProxy p_pxy,int p_mod, long p_synctime, String p_containername)
 	{
@@ -87,6 +88,7 @@ public class Sync implements Runnable {
 		//m_max=p_max;
 		m_synctime=p_synctime;
 	}
+	
 	
 	private boolean GetToken()
 	{
@@ -213,27 +215,28 @@ public class Sync implements Runnable {
             byte[] lockbin=rr.data;
             while (lockbin != null)//have lock at this time
             {
-            	Config.logger.debug("find lock when update user meta file for " + fi.filename);
+            	Config.logger.debug("found lock file /USERMETAFILE-L when update user meta file for " + fi.filename);
             	String tmp=new String(lockbin);
             	Date lockdt=SmallFunctions.String2Date(tmp);
             	Calendar ca=Calendar.getInstance();
             	ca.setTime(lockdt);
             	ca.add(Calendar.MINUTE, 1);
-                if (ca.getTime().after(lockdt))//exceeded 1 minute to be locked
+                if (ca.getTime().after(lockdt))//exceeded 1 minute to be locked, then just pass , doens't need to add locer file since it has locker file already
                 {
                 	Config.logger.debug("Remove lock forcely to update user meta file for " + fi.filename);                       
                     break;
                 }
-				Thread.sleep(1000);
+				Thread.sleep(5000); //wait 5 seconds
+				/*try to get locker file again*/
                 rr= RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE-L", m_pxy);
                 lockbin=rr.data;
 
             }
-            Config.logger.debug("Add lock  to update user meta file for " + fi.filename); 
+            Config.logger.debug("Add locker to update user meta file for " + fi.filename); 
             RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE-L", SmallFunctions.Date2String(new Date()).getBytes(), m_pxy);
             rr = RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
             byte[] remotebin=rr.data;
-            if (remotebin == null)
+            if (remotebin == null)//first time upload
             {
                 userMetaData umd = new userMetaData();
                 umd.user = m_username;
@@ -242,10 +245,10 @@ public class Sync implements Runnable {
                 umd.filelist.add(fi);
                 RestConnector.PutFile(m_tkn,  m_usercontainer, "USERMETAFILE", umd.ConvertToByteArray(), m_pxy);
             }
-            else
+            else //not first time upload
             {
             	userMetaData umd = new userMetaData(remotebin); //remote meta data version
-                umd.dt = new Date();
+                //umd.dt = new Date();
                 if (fi.fop == FOP.UPLOAD || fi.fop==FOP.COPY) // new and copy will insert a new record in file level meta data
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
@@ -254,7 +257,7 @@ public class Sync implements Runnable {
                 		fileInfo tmp=it1.next(); // for new and copy, as long as file name and hash is the same, which means it's copy
                 		if(tmp.filename.compareToIgnoreCase(fi.filename)==0 && tmp.filehash.compareToIgnoreCase(fi.filehash)==0)
                 		{
-                			if(fi.dt.after(tmp.dt))//local is more latest
+                			if(fi.dt.after(tmp.dt))//local is newer
                 			{
                 				fi.fop=FOP.NONE;
                 				tmp.copyfrom(fi);
@@ -275,7 +278,7 @@ public class Sync implements Runnable {
                 {
                 	Iterator<fileInfo> it1 = umd.filelist.iterator();
                 	while(it1.hasNext()){
-                		fileInfo tmp=it1.next(); //file name and file guid are the same but file hash might be not because content might be changed
+                		fileInfo tmp=it1.next(); //file name and file uuid are the same but file hash might be not because content might be changed
                 		if(tmp.filename.compareToIgnoreCase(fi.filename)==0)
                 		{
                 			if(fi.dt.after(tmp.dt))//local is more latest
@@ -425,12 +428,9 @@ public class Sync implements Runnable {
 	        	Config.logger.debug("Start to Reduce ref counter in file level meta file for " + fi.filename);
 	        	
                 String srcguid = fi.guid;
-                //delete file level metadata after 2 min
-        		String objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.containerpurgetime);
-        		RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,objcount,m_pxy);
-        		
-        		if (Config.refcounter == 1) {
-        			Config.logger.debug("sum deletion flag at file level for " + "f"+srcguid);
+
+        		if (Config.refcounter >= 1) {
+        			Config.logger.debug("sum deletion flag on objects at file level for " + "f"+srcguid);
 	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
 	                byte[] filedata = rr.data;
 	                //fileMetadataWithVersion fmds = new fileMetadataWithVersion(filedata);
@@ -445,16 +445,41 @@ public class Sync implements Runnable {
 	                		RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy);
 	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
 	                     }  
-	                	
-	                	//Iterator<fileMetadata> it = fmds.data.iterator();
-	                	//while(it.hasNext()){
-	                	//	//fileInfo tmp=it.hashCode();
-	                	//	RestConnector.ReduceObjectRefCount(m_tkn, m_usercontainer, Integer.toString(it.hashCode()), m_pxy);
-	                    //   Config.logger.debug("reduce ref counter at object level for " + Integer.toString(it.hashCode()));
-	                	//}
+
 	                }
         		}
+        		else if (Config.refcounter < 0){
+        			//only apply for one way push ( sync ), multi-client won't work since 
+        			// you don't know whether it's one of client delete of one of client new add
+        			Config.logger.debug("deletion all objects at file level for " + "f"+srcguid);
+	                RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+srcguid, m_pxy);
+	                byte[] filedata = rr.data;
+	                fileMetadata fmds = new fileMetadata(filedata, true);
+	                Collections.sort(fmds.data);
+		        	
+	                if(fi.fop == FOP.LOCAL_HAS_DELETED)
+	                {
+	                	 for(chunk c : fmds.data)
+	                     {
+	                     	//delete object right away
+	                		RestConnector.DeleteFile(m_tkn, m_usercontainer, "c"+ Integer.toString(c.flag) + c.hashvalue, m_pxy); 
+	                        Config.logger.debug("reduce ref counter at object level for " + "c"+ Integer.toString(c.flag) + c.hashvalue);
+	                     }  
+	                }
+        		}else if (Config.refcounter == 0){
+        			//do nothing keep all the objects forever
+        			Config.logger.debug("delete file level metadata only, keep all the objects");
+        			
+        		}
 
+                //after deal with all the object under file level , then deail with file level metadata
+        		//if file purge seconds = 0, then delete right away or X-Delete-At n Seconds
+        		if (Config.filepurgesecond == 0){
+        			RestConnector.DeleteFile(m_tkn, m_usercontainer, "f"+srcguid,m_pxy);
+        		}else{
+        			RestConnector.UpdateObjectRefCount(m_tkn, m_usercontainer, "f"+srcguid,SmallFunctions.GetXDeleteAt(Config.filepurgesecond),m_pxy);
+        		}
+        		
                 Config.logger.debug("Done to delete file leve meta data or reduce ref counter at file level meta file for " + fi.filename);
                 return true;
 	        }
@@ -465,36 +490,8 @@ public class Sync implements Runnable {
 	        }
     }
 	
-	
 	public static byte[] GetFileByteArray(String filepath, int dcount) throws IOException{
 		RandomAccessFile aFile = new RandomAccessFile(filepath, "r");
-		/*
-        FileChannel inChannel = aFile.getChannel();
-        long fileSize = inChannel.size();
-        System.out.println(fileSize);
-        ByteBuffer buffer = ByteBuffer.allocate((int)l_buffer);
-		byte[] filedata = new byte[(int)l_buffer];
-		int buffercount = 1;
-        while(inChannel.read(buffer) > 0)
-        {
-            System.out.println(buffercount);
-        	buffer.flip();
-            
-            if (dcount == buffercount){
-            	filedata = new byte[buffer.remaining()];
-            	buffer.get(filedata);
-                int intsize = filedata.length;
-                System.out.println(intsize);
-            	buffer.clear();
-            	break;
-            }
-            buffer.clear(); // do something with the data and clear/compact it.
-            buffercount = buffercount + 1;
-        }
-        inChannel.close();
-        aFile.close();
-		return filedata;
-		*/
 		
 		//read startPosition ~ endPosition or end of file to byteArray[]
 		long startPosition = (dcount-1) * l_buffer;
@@ -520,6 +517,149 @@ public class Sync implements Runnable {
         inChannel.close();
         aFile.close();
         return filedata;
+	}
+	
+    /*
+	private boolean checkUSERMETAFILEETag() throws Exception {
+		RestResult rr = RestConnector.GetETag(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
+		if(rr.result==true)
+		{
+			String strETag=rr.msg.toUpperCase();
+			Config.logger.debug("Get ETag for USERMETAFile:"+strETag);
+			File f = new File(m_metafile);
+			if(f.exists() && !f.isDirectory()) { 
+			    MessageDigest md = MessageDigest.getInstance("MD5");
+			    md.update(Files.readAllBytes(Paths.get(m_metafile)));
+			    byte[] digest = md.digest();
+			    String strMD5sum = DatatypeConverter
+			      .printHexBinary(digest).toUpperCase();
+			         
+			    Config.logger.debug("Get MD5 for /JBoxLog/local metadata:"+strMD5sum);
+			    if(strMD5sum.equals(strETag)){return true;}else{return false;}
+			}
+			else{return false;}
+		}
+		else{return true;}
+    }
+	*/
+	
+	private userMetaData syncPreparation(String m_metafile, List<String> m_syncfolders, String m_tkn, String m_usercontainer, ebProxy m_pxy) throws Exception{
+		/*identify sync status: compare 
+		 * 1. current snapshot in File System - localMetaData
+		 * 2. local - USERMETAFILE			  - localSyncFolder
+		 * 3. remote (server) - USERMETAFILE  - remoteMetaData
+		 * sync preparation
+		 * -------
+		 * |1|2|3|
+		 * -------
+		 1 |N|N|N| => create blank 1, create syncfolder 2, put container 3 => 3 => RUN syncMergeMetaData
+		 * -------
+		 2 |N|N|Y| => create blank 1, create syncfolder 2 => 6 ==> RUN syncMergeMetaData
+		 * -------
+		 3 |N|Y|N| => create blank 1, put container 3 => RUN syncMergeMetaData
+		 * -------
+		 4 |Y|N|N| => delete 1, create blank 1, create syncfolder 2, put container 3 => RUN syncMergeMetaData
+		 * -------
+		 5 |Y|Y|N| => put container 3 => RUN syncMergeMetaData
+		 * -------
+		 6 |N|Y|Y| => assign empty to 2 and merge with 3 as 1 ( download new from server first ) => RUN syncMergeMetaData => then upload current snapshot to server => RUN syncMergeMetaData
+		 * -------
+		 7 |Y|N|Y| => delete 1, create blank 1, create syncfolder 2 => RUN syncMergeMetaData
+		 * -------
+		 8 |Y|Y|Y| => RUN syncMergeMetaData
+		 * -------
+		 * */
+   		SyncStatus.SetStatus("1. Sync Preparation for Getting localMetaData(metadatafile).");
+		//Declare metadata class for local metadata file
+		userMetaData localMetaData = null;
+    	/*if local doesn't has then just get snapshot and create one base on currenct snapshot*/
+        File localmetafile=new File(m_metafile);
+        Config.logger.debug("checking metadata file exist:"+m_metafile);
+        if (localmetafile.exists()){
+        	localMetaData = new userMetaData(m_metafile);
+            Config.logger.debug(localMetaData.ConvertToHTML("Last snapshot from localMetaData file."));
+        }
+        
+        SyncStatus.SetStatus("2. Sync Preparation for Getting localSyncFolder(snapshot syncfolder).");
+        //Declare metadata class for local syncfolder snapshot
+        userMetaData localSyncFolder = new userMetaData(); 
+        /*Get syncfolder snapshot into metadata class - lastlocal
+        m_syncfolders is list will scan this list, 
+        if doesn't exist JBox will create it*/
+        boolean bollocalSyncFolder = localSyncFolder.GenerateFilesStructure(m_syncfolders);
+        Config.logger.debug(localSyncFolder.ConvertToHTML("Current snapshot from localSyncFolder."));
+
+        SyncStatus.SetStatus("3. Sync Preparation for remoteMetaData.");
+        //Declare metadata class for remote metadata file
+        userMetaData remoteMetaData = new userMetaData();
+        /*comparing (merge) local and remote: start ==========================================start*/
+        SyncStatus.SetStatus("Getting remoteMetaData(USERMETAFILE) from server");
+        RestResult rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
+        byte[] remotebin=null;
+        if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND) //ifUSERMETAFILE not found , then remotebin = still null
+        {RestConnector.PutContainer(m_tkn, m_usercontainer, m_pxy);}
+        else{remotebin=rr.data;}
+        
+        SyncStatus.SetStatus("4. Sync Preparation for syncMergeMetaData, Decide 1(localMetaData) should be deleted(set to null) or download from remote first, then upload local later.");
+        /* if remotebin == null which means can't find USERMETAFILE, then use local directly */
+        if (remotebin != null)
+        {         
+    		remoteMetaData=new userMetaData(remotebin);
+            Config.logger.debug(remoteMetaData.ConvertToHTML("Getting remote file metadata snapshot"));
+            if (!bollocalSyncFolder){
+                Config.logger.debug("HAS USERMETAFILE in server but localSyncFolder is empty, thus update tmp.status = 1.");
+            	Iterator<fileInfo> it = remoteMetaData.filelist.iterator();
+                while(it.hasNext())
+                {
+                	fileInfo tmp=it.next();
+                	if (tmp.type ==0){
+                		tmp.status=1;
+                	}
+                }  
+            }
+        }
+        if (localmetafile.exists())
+        {if (!bollocalSyncFolder){localMetaData = null;}}
+        
+        /*comparing (merge) local and remote: end ==========================================end*/
+        SyncStatus.SetStatus("Run syncMergeMetaData.");
+		return syncMergeMetaData(localMetaData,localSyncFolder,remoteMetaData);
+		
+	}
+	
+	private userMetaData syncMergeMetaData(userMetaData localMetaData, userMetaData localSyncFolder, userMetaData remoteMetaData) throws Exception{
+		userMetaData merged = null;
+		//localSyncFolder will never null. It can be empty but not null
+		
+		if ((localMetaData == null) && (remoteMetaData.filelist == null)){
+            Config.logger.debug("NO USERMETAFILE in server at this time.");
+        	Iterator<fileInfo> it = localSyncFolder.filelist.iterator();
+            while(it.hasNext())
+            {
+            	fileInfo tmp=it.next();
+            	if(tmp.fop != FOP.LOCAL_HAS_DELETED)
+            	{
+            		tmp.fop=FOP.UPLOAD;
+            		if(tmp.type ==0 && tmp.filehash=="")
+            			tmp.filehash= HashCalc.GetFileCityHash(tmp.filename);
+            	}
+            }  
+            merged = localSyncFolder;
+    		return merged;
+		}
+        else{
+	        if (localMetaData != null)
+	        {
+				localSyncFolder.MergeWithLocal(localMetaData);
+	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localMetaData with localSyncFolder(Last Local SyncFolder Snahpshot)."));                          	
+	        }			
+    		if (remoteMetaData.filelist != null) {
+	            localSyncFolder.Merge(remoteMetaData);
+	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localSyncFolder(LocalMetaData+LocalSyncFolder) with remoteMetaData."));
+	        }  
+	        merged = localSyncFolder;
+			return merged;
+        }
 	}
 	
 	private  void StartSync() throws Exception
@@ -549,6 +689,7 @@ public class Sync implements Runnable {
         {
             try
             {
+            	/*get chunks and backup chunks(has been deleted) from server*/
             	SyncStatus.SetStatus("Getting the chunk list from server");
         		if(gcc != null) 
         			gcc.clear();
@@ -558,83 +699,19 @@ public class Sync implements Runnable {
         		if(gbc != null)
         			gbc.clear();
         		gbc=GetBackupChunk(); //get cold storage layer , backup chunk
-        		//gbc=GetCurrentChunk();
-        		
-        		SyncStatus.SetStatus("Identitying the changes between current snapshot and local");
-            	userMetaData local = null;
-            	
-                File localmetafile=new File(m_metafile);
-                if (localmetafile.exists())
-                {
-                    local = new userMetaData(m_metafile);
-                    Config.logger.debug(local.ConvertToHTML("Last snapshot"));
-                }
-                
-                userMetaData lastlocal = new userMetaData();              
-
-                lastlocal.GenerateFilesStructure(m_syncfolders);
-                Config.logger.debug(lastlocal.ConvertToHTML("Current snapshot"));
-                if (local != null)
-                {
-                    lastlocal.MergeWithLocal(local);
-                    Config.logger.debug(lastlocal.ConvertToHTML("Merged with last snapshot"));                          	
-                }
-
-                boolean flgchanged = false; // default set flgchanged into false , don't delete any object
-        		//if (Config.refcounter == 1) {
-        		//	flgchanged = true;
-        		//}
-                
-
-                
-
-                SyncStatus.SetStatus("Getting user information, file metadata from server");
-                rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
-                byte[] remotebin=null;
-                if(rr.httpcode==HttpURLConnection.HTTP_NOT_FOUND)
-                {
-                	RestConnector.PutContainer(m_tkn, m_usercontainer, m_pxy);
-                }
-                else
-                	remotebin=rr.data;
-                
-                SyncStatus.SetStatus("Identitying the changes between local merge and remote");
-                if (remotebin == null)
-                {                    
-                    Config.logger.debug("NO user metadata file in server at this time.");
-                	Iterator<fileInfo> it = lastlocal.filelist.iterator();
-                    while(it.hasNext())
-                    {
-                    	fileInfo tmp=it.next();
-                    	if(tmp.fop != FOP.LOCAL_HAS_DELETED)
-                    	{
-                    		tmp.fop=FOP.UPLOAD;
-                    		if(tmp.type ==0 && tmp.filehash=="")
-                    			tmp.filehash= HashCalc.GetFileCityHash(tmp.filename);
-                    	}
-                    }                   
-                }
-                else
-                {                  
-                    userMetaData tmpumd=new userMetaData(remotebin);
-                    Config.logger.debug(tmpumd.ConvertToHTML("Getting remote file metadata snapshot"));
-                    lastlocal.Merge(tmpumd);
-                    Config.logger.debug(lastlocal.ConvertToHTML("Merged with remote metafile"));
-                }
-                
-                userMetaData merged;
-                merged = lastlocal;
-                               
+ 		              
+                userMetaData merged = syncPreparation(m_metafile, m_syncfolders, m_tkn, m_usercontainer, m_pxy);               
                 Iterator<fileInfo> it = merged.filelist.iterator();
-                
                 SyncStatus.SetStatus("Identitying done and start to processsing objects");
+                boolean flgchanged = false; // default set flgchanged into false , don't update localMetaData, any upload/download will update this flag
                 
                 while(it.hasNext())
                 {
                     fileInfo fi=it.next();
                     Config.logger.debug("Start to process:"+fi.ConvertToHTML());
                     SyncStatus.SetStatus(fi.filename,"start to sync","Syncing (upload/download/copy/overwrite) "+ fi.filename);
-                	if (fi.type == 1 || fi.type == 2)//2 root folder, 1 sub folder
+                    // fi.type = 2 root folder, fi.type = 1 sub folder
+                    if (fi.type == 1 || fi.type == 2)
                     {
                         if(fi.fop == FOP.NEW)//fi.fop 1. NEW, 2. DOWNLOAD, 3. UPLOAD and 4. NONE
                         	flgchanged=true;
@@ -648,15 +725,14 @@ public class Sync implements Runnable {
                         if (fi.fop == FOP.UPLOAD || fi.fop == FOP.REMOTE_NEED_TOBE_DELETED)
                         {
                             flgchanged = true;
-                            UpdateRemoteUserMetaFile(fi);  
-                        //}else if (fi.top == FOP.REMOTE_NEED_TOBE_DELETED)
-                        //{
-                        	
+                            UpdateRemoteUserMetaFile(fi);                          	
                         }
                         fi.fop=FOP.NONE;
                         continue;
                     }
-                    switch (fi.fop)//except 2 and 1, 0 represent files
+                  
+                    //except 2 and 1, fi.type = 0 represent files
+                    switch (fi.fop)
                     {
                         case COPY:
                             {
@@ -1856,7 +1932,7 @@ public class Sync implements Runnable {
                     }
                 }
                 merged.user = m_username;
-
+                SyncStatus.SetStatus("Last, Finishing All the Uploadings, Writing to localMetaData."); 
                 if (flgchanged){             
                     merged.WriteToDisk(m_metafile); 
                     //fxController.MainController.readMetaDataintoTable();
@@ -1871,17 +1947,13 @@ public class Sync implements Runnable {
                 SyncStatus.SetStatus("Cannot sync with server");
             }
             //Sync Interval is milliseconds = 1/1000 seconds which means 5000 milliseconds = 5 seconds
-            //Thread.sleep(5000);
             System.gc();
             Thread.sleep(m_synctime);
+            
         }
 		
 	}
 
-	//private File File(String filename) {
-		// TODO Auto-generated method stub
-	//	return null;
-	//}
 
 	@Override
 	public void run() {
@@ -1889,10 +1961,13 @@ public class Sync implements Runnable {
 		{
 			StartSync();
 		}
+		catch(InterruptedException ex){
+			Config.logger.debug(ex.getMessage());
+		}
 		catch(Exception e)
 		{
 			Config.logger.fatal("Cannot sync."+e.getMessage());
-		}	
+		}
 		
 	}
 }

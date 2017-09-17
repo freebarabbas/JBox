@@ -99,7 +99,7 @@ public class userMetaData  implements Metadata {
     }
     public userMetaData()
     {
-        dt = new Date();
+        dt = Config.datetimeRun;
         user = "";
         version = "2.0";
         filelist = null;
@@ -112,66 +112,66 @@ public class userMetaData  implements Metadata {
     //chunk level metadata - base on file
     public boolean GenerateFilesStructure(List<String> syncfolders) throws Exception
     {
+    	boolean bolReturn = true;
         try
         {
             filelist = new ArrayList<fileInfo>();
             for (String folder : syncfolders)
             {
                 File file=new File(folder);
-                if(file.exists())
-                {
-                	String baseguid=SmallFunctions.GenerateGUID();
-                	Path rootfd=  FileSystems.getDefault().getPath(folder);
-                	BasicFileAttributes attrs = Files.readAttributes(rootfd,BasicFileAttributes.class);
-                	FileTime rootla=attrs.lastAccessTime();
-                	FileTime rootlw=attrs.lastModifiedTime();
-                		
+                if(!file.exists())
+                {file.mkdir();bolReturn = false;}
                 	
-                	fileInfo rootfi=new fileInfo(folder, baseguid, SmallFunctions.GetDummyGUID(), 0, 2, new Date(rootlw.to(TimeUnit.SECONDS)*1000), new Date(rootla.to(TimeUnit.SECONDS)*1000));
-                	filelist.add(rootfi);
-                	LinkedList<File> list = new LinkedList<File>();  
-                	File[] files = file.listFiles();  
-                    for (File file2 : files) {  
+            	String baseguid=SmallFunctions.GenerateGUID();
+            	Path rootfd=  FileSystems.getDefault().getPath(folder);
+            	BasicFileAttributes attrs = Files.readAttributes(rootfd,BasicFileAttributes.class);
+            	FileTime rootla=attrs.lastAccessTime();
+            	FileTime rootlw=attrs.lastModifiedTime();
+            		
+            	fileInfo rootfi=new fileInfo(folder, baseguid, SmallFunctions.GetDummyGUID(), 0, 2, new Date(rootlw.to(TimeUnit.SECONDS)*1000), new Date(rootla.to(TimeUnit.SECONDS)*1000));
+            	filelist.add(rootfi);
+            	LinkedList<File> list = new LinkedList<File>();  
+            	File[] files = file.listFiles();  
+                for (File file2 : files) {  
+                	String subguid=SmallFunctions.GenerateGUID();
+                	Path subfd=  FileSystems.getDefault().getPath(file2.getAbsolutePath());
+                	BasicFileAttributes subattrs = Files.readAttributes(subfd,BasicFileAttributes.class);
+                	FileTime subla=subattrs.lastAccessTime();
+                	FileTime sublw=subattrs.lastModifiedTime();
+                	if (file2.isDirectory()) {                        	
+                    	fileInfo subfi=new fileInfo(file2.getAbsolutePath(), subguid, baseguid, 0, 1, new Date(sublw.to(TimeUnit.SECONDS)*1000), new Date(subla.to(TimeUnit.SECONDS)*1000));
+                    	filelist.add(subfi);
+                        list.add(file2);  
+                    } else {  
+                    	fileInfo subfi=new fileInfo(file2.getAbsolutePath(), subguid, baseguid, 0, 0, new Date(sublw.to(TimeUnit.SECONDS)*1000), new Date(subla.to(TimeUnit.SECONDS)*1000));
+                    	subfi.bytelength=file2.length();
+                    	filelist.add(subfi);
+                    }  
+                }
+                File temp_file;  
+                while (!list.isEmpty()) {  
+                    temp_file = list.removeFirst();  
+                    files = temp_file.listFiles();  
+                    for (File file2 : files) { 
                     	String subguid=SmallFunctions.GenerateGUID();
                     	Path subfd=  FileSystems.getDefault().getPath(file2.getAbsolutePath());
                     	BasicFileAttributes subattrs = Files.readAttributes(subfd,BasicFileAttributes.class);
                     	FileTime subla=subattrs.lastAccessTime();
                     	FileTime sublw=subattrs.lastModifiedTime();
-                    	if (file2.isDirectory()) {                        	
+                        if (file2.isDirectory()) {  
                         	fileInfo subfi=new fileInfo(file2.getAbsolutePath(), subguid, baseguid, 0, 1, new Date(sublw.to(TimeUnit.SECONDS)*1000), new Date(subla.to(TimeUnit.SECONDS)*1000));
                         	filelist.add(subfi);
-                            list.add(file2);  
+                            list.add(file2); 
                         } else {  
                         	fileInfo subfi=new fileInfo(file2.getAbsolutePath(), subguid, baseguid, 0, 0, new Date(sublw.to(TimeUnit.SECONDS)*1000), new Date(subla.to(TimeUnit.SECONDS)*1000));
                         	subfi.bytelength=file2.length();
-                        	filelist.add(subfi);
+                        	filelist.add(subfi);  
                         }  
-                    }
-                    File temp_file;  
-                    while (!list.isEmpty()) {  
-                        temp_file = list.removeFirst();  
-                        files = temp_file.listFiles();  
-                        for (File file2 : files) { 
-                        	String subguid=SmallFunctions.GenerateGUID();
-                        	Path subfd=  FileSystems.getDefault().getPath(file2.getAbsolutePath());
-                        	BasicFileAttributes subattrs = Files.readAttributes(subfd,BasicFileAttributes.class);
-                        	FileTime subla=subattrs.lastAccessTime();
-                        	FileTime sublw=subattrs.lastModifiedTime();
-                            if (file2.isDirectory()) {  
-                            	fileInfo subfi=new fileInfo(file2.getAbsolutePath(), subguid, baseguid, 0, 1, new Date(sublw.to(TimeUnit.SECONDS)*1000), new Date(subla.to(TimeUnit.SECONDS)*1000));
-                            	filelist.add(subfi);
-                                list.add(file2); 
-                            } else {  
-                            	fileInfo subfi=new fileInfo(file2.getAbsolutePath(), subguid, baseguid, 0, 0, new Date(sublw.to(TimeUnit.SECONDS)*1000), new Date(subla.to(TimeUnit.SECONDS)*1000));
-                            	subfi.bytelength=file2.length();
-                            	filelist.add(subfi);  
-                            }  
-                        }  
-                    }
-                }                              
+                    }  
+                }
+                    
             }
-
-            return true;
+            return bolReturn;
         }
         catch (Exception e)
         {

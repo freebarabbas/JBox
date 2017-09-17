@@ -7,6 +7,7 @@ import java.net.*;
 import javax.xml.bind.DatatypeConverter;
 
 import clsTypes.Config;
+import clsTypes.SmallFunctions;
 
 public class RestConnector {
 	private static HttpURLConnection GetConnection(String url,ebProxy pxy) throws Exception
@@ -63,6 +64,30 @@ public class RestConnector {
         }
 		
 	}
+	
+	public static RestResult GetETag(String curtoken, String container, ebProxy pxy) throws Exception
+    {
+        
+		HttpURLConnection conn=GetConnection(container,pxy);
+		conn.setRequestMethod("GET");
+
+		conn.setRequestProperty("X-Auth-Token", curtoken);
+		conn.setRequestProperty("Accept", "*/*");
+		int responseCode = conn.getResponseCode();
+		if (responseCode == HttpURLConnection.HTTP_OK)
+        {
+			String msg=conn.getHeaderField("ETag");
+			return new RestResult(responseCode,true,msg,"","");
+        }
+		else if(responseCode == HttpURLConnection.HTTP_NO_CONTENT)
+		{
+			return new RestResult(responseCode,true,"can not find ETag","","");
+		}
+        else
+        {
+            return new RestResult(responseCode,false,Integer.toString(responseCode),"","");
+        }			
+    }
 
 	public static RestResult PutContainer(String curtoken, String container, ebProxy pxy) throws Exception
     {
@@ -280,10 +305,13 @@ public class RestConnector {
 					//RestConnector.CopyFile(curtoken, strContainer + "/" + object, container + "/backup/" +object + "", pxy);
 					//RestConnector.DeleteFile(curtoken,container,object,pxy);
 					
-					objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime);
+					//objcount = String.valueOf((System.currentTimeMillis() / 1000L) + Config.objectpurgetime*1000);
+					//objcount = SmallFunctions.GetXDeleteAt(Config.objectpurgesecond);
+					Config.logger.debug("move object "+object+" to /backup/");
 					
 					try {
-						UpdateObjectRefCount(curtoken, container, "backup/" + object ,objcount,pxy);
+						UpdateObjectRefCount(curtoken, container, "backup/" + object ,SmallFunctions.GetXDeleteAt(Config.objectpurgesecond),pxy);
+						Config.logger.debug("sum X-Delete-At for backup/"+object+" for deletion in the future");
 					}catch (Exception e){
 						System.err.println(e.getMessage());
 					}
@@ -385,12 +413,12 @@ public class RestConnector {
     {
 		try {
 			if (oldContainer.equals(newContainer)){ // same container but just rename
-				String strContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 6 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
-				RestConnector.CopyFile(curtoken, strContainer + "/" + oldObject, oldContainer + newObject, pxy);
+				String strContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 5 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
+				RestConnector.CopyFile(curtoken, "/"+ strContainer + "/" + oldObject, oldContainer + newObject, pxy);
 			}else{ // diff container, rename and remove
-				String strOldContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 6 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
+				String strOldContainer=oldContainer.substring(oldContainer.indexOf("/AUTH_")+ 5 + (oldContainer.length() - (oldContainer.indexOf("/AUTH_")+ 6) -1)/2, oldContainer.length());
 				//String strNewContainer=newContainer.substring(newContainer.indexOf("/AUTH_")+ 6 + (newContainer.length() - (newContainer.indexOf("/AUTH_")+ 6) -1)/2, newContainer.length());
-				RestConnector.CopyFile(curtoken, strOldContainer + "/" + oldObject, newContainer + newObject, pxy);
+				RestConnector.CopyFile(curtoken, "/" + strOldContainer + "/" + oldObject, newContainer + newObject, pxy);
 			}
 			RestConnector.DeleteFile(curtoken,oldContainer,oldObject,pxy);
 			return new RestResult(200,true,"","","");

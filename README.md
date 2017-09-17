@@ -48,13 +48,13 @@ What's technoloies JBox adopt ?
     - Open
 - `File Share` feature means share your file to other people which means JBox can generate a temp link and people can download from link.
   - ~~Extra Web Service to repeat "download specific version" function since other people need to get the file from internet.~~
-  - ~~Extra DB to maintain the link, availabe time ( expire date ) and privilege ... etc.~~
+  - ~~Extra DB to maintain the link, available time ( expire date ) and privilege ... etc.~~
     - Open
 
 How to run JBox ?
 =============
 ## Execution
-For run JBox, you need to have a OpenStack Environement, Swfit All In One aka (SAIO) is an option if you didn't want to purchase any public cloud solution. The SAIO setup can be found in [SAIO](http://docs.openstack.org/developer/swift/development_saio.html ""). or my post before [OpenStack - Swift Dev Box - SAIO on Ubuntu 14.04 via VirtualBox](http://chianingwang.blogspot.com/2015/01/openstack-swift-dev-box-saio-on-ubuntu.html "").
+For run JBox, you need to have a OpenStack Environment, Swift All In One aka (SAIO) is an option if you didn't want to purchase any public cloud solution. The SAIO setup can be found in [SAIO](http://docs.openstack.org/developer/swift/development_saio.html ""). or my post before [OpenStack - Swift Dev Box - SAIO on Ubuntu 14.04 via VirtualBox](http://chianingwang.blogspot.com/2015/01/openstack-swift-dev-box-saio-on-ubuntu.html "").
 - (1) Install Java
   - [how to install Linux 32 bit Java](https://java.com/en/download/help/linux_install.xml "").
   - [how to install Linux 64 bit Java](https://java.com/en/download/help/linux_x64_install.xml "").
@@ -62,6 +62,8 @@ For run JBox, you need to have a OpenStack Environement, Swfit All In One aka (S
 - (2) Find the code localtion and copy c++ *.so ( shared object ) under /usr/lib/
 ```bash
 $ sudo cp ./dll/libclsJavaVariableChunk.so ./usr/lib/*
+or 
+$ cp ./dll/libclsJavaVariableChunk.so /tmp/*
 ```
 if you have question about reference the *.so in java you can reference this post. 
   - [how to reference c lib in java via jni](http://chianingwang.blogspot.com/2015/09/how-to-reference-c-lib-in-java-via-jni.html "how to reference c lib in java via jni").

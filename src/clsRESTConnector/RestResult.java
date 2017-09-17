@@ -11,7 +11,7 @@ public class RestResult {
 	{
 		httpcode=c;
 		result=r;
-		msg=m;
+		msg=m;                    //for ETag use msg
 		storageurl=storage;
 		token=tkn;
 		data=null;

@@ -1,7 +1,18 @@
 package clsUtilitues;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import clsFSWatcher.FSWatcher;
 import clsTypes.Config;
 import clsTypes.clsProperties;
 
@@ -72,7 +83,118 @@ public class JBox {
 						}
 						break;		
 	                    //mod = 64, 32KB ~ 128KB
+					case "p":
+						Config.logger.debug(Config.ConvertToHTML());
+						ExecutorService executorFSWatcherService = Executors.newFixedThreadPool(2);
+						final Path dir = Paths.get(Config.syncfolders.get(0).toString());
+						System.out.println("watching direcgory: "+dir.toString());
+					    ArrayList<Callable<Boolean>> tasksFSWatcher = new ArrayList<Callable<Boolean>>();
+					    tasksFSWatcher.add(
+					            new Callable<Boolean>()
+					            {
+					            	@Override
+					                public Boolean call() throws Exception
+					                {
+					                	Boolean bolreturn = new FSWatcher(dir).processEvents();
+					                	return bolreturn;
+					                }
+					            });
+					    
+					    tasksFSWatcher.add(
+					            new Callable<Boolean>()
+					            {
+					                @Override
+					                public Boolean call() throws Exception
+					                {
+					                    while(true){
+						                    //FSWatcher.getfsDump();
+						                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
+						                    if (!mapReturn.isEmpty()){
+						                    	
+						                    	String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
+												//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+												String strStatus = "";
+												if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
+												System.out.println(timeStamp+": "+ strStatus);
+						                    	
+							                    for (Entry<String, String> entry : mapReturn.entrySet()) {
+							                    	//List<String> ls= entry.getValue();
+							                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
+							                    }
+							                    
+							                    final ExecutorService executorSyncCallableService;
+							                    final Future<Boolean>  futureSyncCallabletask;
+
+							                    executorSyncCallableService = Executors.newFixedThreadPool(1);        
+							                    futureSyncCallabletask = executorSyncCallableService.submit(new SyncCallable(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername));
+
+							                    try {
+							                        final Boolean bolReturn;
+
+							                        // waits the 10 seconds for the Callable.call to finish.
+							                        bolReturn = futureSyncCallabletask.get(); // this raises ExecutionException if thread dies
+							                        if (bolReturn) {
+							                        	System.out.println("Thread kill and finishing !");
+							                        }else{
+							                        	System.out.println("Something Wrong !");
+							                        }
+							                    } catch(final InterruptedException ex) {
+							                        ex.printStackTrace();
+							                    } catch(final ExecutionException ex) {
+							                        ex.printStackTrace();
+							                    }
+
+							                    executorSyncCallableService.shutdownNow();
+
+												System.gc(); //garbage collection
+												System.out.println();
+						                    }
+						                    Thread.sleep(5000);
+					                    }
+					                }
+					            });
+					    executorFSWatcherService.invokeAll(tasksFSWatcher);
 					case "s":
+						Config.logger.debug(Config.ConvertToHTML());
+						
+						//Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
+						//new Thread(r).start();
+						while(true)
+						{
+							String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
+							//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+							String strStatus = "";
+							if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
+							System.out.println(timeStamp+": "+ strStatus);
+							
+							final ExecutorService executorSyncCallableService;
+							final Future<Boolean>  futureSyncCallabletask;
+							
+							executorSyncCallableService = Executors.newFixedThreadPool(1);        
+							futureSyncCallabletask = executorSyncCallableService.submit(new SyncCallable(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername));
+						
+						    try {
+						        final Boolean bolReturn;
+							
+								// waits the 10 seconds for the Callable.call to finish.
+								bolReturn = futureSyncCallabletask.get(); // this raises ExecutionException if thread dies
+								if (bolReturn) {
+									System.out.println("Thread kill and finishing !");
+								}else{
+									System.out.println("Something Wrong !");
+								}
+							} catch(final InterruptedException ex) {
+							    ex.printStackTrace();
+							} catch(final ExecutionException ex) {
+							    ex.printStackTrace();
+							}
+							
+						    executorSyncCallableService.shutdownNow();
+							
+							System.gc(); //garbage collection
+							Thread.sleep(Config.synctime);
+						}
+					case "t":
 						Config.logger.debug(Config.ConvertToHTML());
 						
 						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
@@ -86,7 +208,7 @@ public class JBox {
 							System.out.println(timeStamp+": "+ strStatus);
 							System.gc(); //garbage collection
 							Thread.sleep(1000);
-						}
+						}						
 					default:
 						Helper m = new Helper("r");
 						m.GetMenu();
