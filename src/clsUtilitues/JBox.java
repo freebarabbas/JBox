@@ -18,6 +18,33 @@ import clsTypes.clsProperties;
 
 public class JBox {
 
+	private static Boolean StartCallableSyncThread(){
+		final ExecutorService executorSyncCallableService;
+		final Future<Boolean>  futureSyncCallabletask;
+		Boolean bolReturn = false;
+		executorSyncCallableService = Executors.newFixedThreadPool(1);        
+		futureSyncCallabletask = executorSyncCallableService.submit(new SyncCallable(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername));
+	
+	    try {
+			// waits the 10 seconds for the Callable.call to finish.
+			bolReturn = futureSyncCallabletask.get(); // this raises ExecutionException if thread dies
+			if (bolReturn) {
+				System.out.println("Thread killed and finished");
+			}else{
+				System.out.println("Something Wrong !");
+			}
+		} 
+	    catch(final InterruptedException ex) {
+		    ex.printStackTrace();
+		} 
+	    catch(final ExecutionException ex) {
+		    ex.printStackTrace();
+		}
+		executorSyncCallableService.shutdownNow();
+	    return bolReturn;
+	}
+	
+	
 	public static void main(String[] args) {
 		if(!Config.InitLogger())
 		{
@@ -87,7 +114,7 @@ public class JBox {
 						Config.logger.debug(Config.ConvertToHTML());
 						ExecutorService executorFSWatcherService = Executors.newFixedThreadPool(2);
 						final Path dir = Paths.get(Config.syncfolders.get(0).toString());
-						System.out.println("watching direcgory: "+dir.toString());
+						System.out.println("<Push> watching direcgory: "+dir.toString());
 					    ArrayList<Callable<Boolean>> tasksFSWatcher = new ArrayList<Callable<Boolean>>();
 					    tasksFSWatcher.add(
 					            new Callable<Boolean>()
@@ -106,6 +133,10 @@ public class JBox {
 					                @Override
 					                public Boolean call() throws Exception
 					                {
+										//when start then always initial
+					                	if (StartCallableSyncThread()){System.out.println("SyncThread Done!");
+										}else{ System.out.println("Sync Thread Error !");}
+										
 					                    while(true){
 						                    //FSWatcher.getfsDump();
 						                    Map<String, String> mapReturn = FSWatcher.getfsfinalDump();
@@ -134,7 +165,7 @@ public class JBox {
 							                        // waits the 10 seconds for the Callable.call to finish.
 							                        bolReturn = futureSyncCallabletask.get(); // this raises ExecutionException if thread dies
 							                        if (bolReturn) {
-							                        	System.out.println("Thread kill and finishing !");
+							                        	System.out.println("Thread killed and finished !");
 							                        }else{
 							                        	System.out.println("Something Wrong !");
 							                        }
@@ -167,6 +198,9 @@ public class JBox {
 							if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
 							System.out.println(timeStamp+": "+ strStatus);
 							
+							if (StartCallableSyncThread()){System.out.println("SyncThread Done!");
+							}else{ System.out.println("Sync Thread Error !");}
+							/*
 							final ExecutorService executorSyncCallableService;
 							final Future<Boolean>  futureSyncCallabletask;
 							
@@ -179,7 +213,7 @@ public class JBox {
 								// waits the 10 seconds for the Callable.call to finish.
 								bolReturn = futureSyncCallabletask.get(); // this raises ExecutionException if thread dies
 								if (bolReturn) {
-									System.out.println("Thread kill and finishing !");
+									System.out.println("Thread killed and finished");
 								}else{
 									System.out.println("Something Wrong !");
 								}
@@ -190,7 +224,7 @@ public class JBox {
 							}
 							
 						    executorSyncCallableService.shutdownNow();
-							
+							*/
 							System.gc(); //garbage collection
 							Thread.sleep(Config.synctime);
 						}
