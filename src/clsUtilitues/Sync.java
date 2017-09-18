@@ -578,14 +578,18 @@ public class Sync implements Runnable {
         if (localmetafile.exists()){
         	localMetaData = new userMetaData(m_metafile);
             Config.logger.debug(localMetaData.ConvertToHTML("Last snapshot from localMetaData file."));
+        }else{
+        	//Config.logger.debug(localMetaData.ConvertToHTML("localMetaData file doesn't exist and will use syncfolder snapshot."));
+        	SyncStatus.SetStatus("Notify ! localMetaData file doesn't exist and will use syncfolder snapshot.");
         }
         
+        /*
+         * Get syncfolder snapshot into metadata class - lastlocal
+         * m_syncfolders is list from scan local sync folder, 
+         * if doesn't exist JBox will create it
+         * */
         SyncStatus.SetStatus("2. Sync Preparation for Getting localSyncFolder(snapshot syncfolder).");
-        //Declare metadata class for local syncfolder snapshot
         userMetaData localSyncFolder = new userMetaData(); 
-        /*Get syncfolder snapshot into metadata class - lastlocal
-        m_syncfolders is list will scan this list, 
-        if doesn't exist JBox will create it*/
         boolean bollocalSyncFolder = localSyncFolder.GenerateFilesStructure(m_syncfolders);
         Config.logger.debug(localSyncFolder.ConvertToHTML("Current snapshot from localSyncFolder."));
 
@@ -618,8 +622,9 @@ public class Sync implements Runnable {
                 }  
             }
         }
-        if (localmetafile.exists())
-        {if (!bollocalSyncFolder){localMetaData = null;}}
+        if (localmetafile.exists()){if (!bollocalSyncFolder){localMetaData = null;}}
+        else{if (bollocalSyncFolder){localSyncFolder.WriteToDisk(m_metafile);}}
+
         
         /*comparing (merge) local and remote: end ==========================================end*/
         SyncStatus.SetStatus("Run syncMergeMetaData.");
@@ -652,7 +657,7 @@ public class Sync implements Runnable {
 	        {
 				localSyncFolder.MergeWithLocal(localMetaData);
 	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localMetaData with localSyncFolder(Last Local SyncFolder Snahpshot)."));                          	
-	        }			
+	        }else		
     		if (remoteMetaData.filelist != null) {
 	            localSyncFolder.Merge(remoteMetaData);
 	            Config.logger.debug(localSyncFolder.ConvertToHTML("Merged localSyncFolder(LocalMetaData+LocalSyncFolder) with remoteMetaData."));

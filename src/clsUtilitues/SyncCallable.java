@@ -616,8 +616,8 @@ public class SyncCallable implements Callable<Boolean>  {
                 }  
             }
         }
-        if (localmetafile.exists())
-        {if (!bollocalSyncFolder){localMetaData = null;}}
+        if (localmetafile.exists()){if (!bollocalSyncFolder){localMetaData = null;}}
+        else{if (bollocalSyncFolder){localSyncFolder.WriteToDisk(m_metafile);}}
         
         /*comparing (merge) local and remote: end ==========================================end*/
         SyncStatus.SetStatus("Run syncMergeMetaData.");
