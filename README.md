@@ -19,15 +19,14 @@ How to run JBox ?
 =============
 ## Execution
 - (1) Get Swift and has Access
-- (2) Find the code localtion and copy c++ *.so ( shared object ) under /usr/lib/
+- (2) Find the code localtion and copy c++ `*.so ( shared object ) under /usr/lib/`
 ```bash
 $ sudo cp ./dll/libclsJavaVariableChunk.so ./usr/lib/*
 or
 $ cp ./dll/libclsJavaVariableChunk.so /tmp/*
 ```
-if you have question about reference the *.so in java you can reference this post.
+if you have question about reference the `*.so in java you can reference this post.`
   - [how to reference c lib in java via jni](http://chianingwang.blogspot.com/2015/09/how-to-reference-c-lib-in-java-via-jni.html "how to reference c lib in java via jni").
-```
 
 - (3) Prepare JBox Configuration `JBoxconfig.properties` with the JBox executable in the same Directory
 ```
@@ -83,8 +82,8 @@ runmode=0
 - (4) run JBox with arguments
 ```
 $ JBox <p, s, r, q> or <help>
-More detail you can try $ JBox h
 ```
+More detail you can try $ JBox h
 
 PS: Setup Swift
 For run JBox, you need to have a OpenStack Environment, Swift All In One aka (SAIO) is an option if you didn't want to purchase any public cloud solution. The SAIO setup can be found in [SAIO](http://docs.openstack.org/developer/swift/development_saio.html ""). or my post before [OpenStack - Swift Dev Box - SAIO on Ubuntu 14.04 via VirtualBox](http://chianingwang.blogspot.com/2015/01/openstack-swift-dev-box-saio-on-ubuntu.html "").
@@ -119,7 +118,7 @@ $ cd ./JBox
   - Add Library reference path
   - ![Alt text](https://github.com/chianingwang/JBox/blob/master/img/Required_obj.png "Configure Reference Object Directory")
 
-- (4) Start to debug or run JBox 
+- (4) Start to debug or run JBox
 
 What's technologies JBox adopt ?
 =============
