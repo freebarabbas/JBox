@@ -190,5 +190,3 @@ For the 2-Tier Metadata and what's the algorithm logic to identify new/update/co
   then (2^22)/(2^18) = 4 > 3, then JBox Dedup Anchor will be wiped out then use 22 as Dedup Anchor.
   </code></pre>
     - f. refcounter flag, if we would like to turn on then set 1, otherwise 0
-
-  # **Copyright (c) 2017 Chianing Wang**
