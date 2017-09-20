@@ -1,5 +1,6 @@
 package clsUtilitues;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
 import java.text.DecimalFormat;
@@ -7,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import clsTypes.*;
 import clsCompExtract.ZipProcess;
@@ -113,6 +115,7 @@ public class Retrieve {
 		}
 	}
 	
+	@SuppressWarnings("resource")
 	public  void StartRetrieve() throws Exception
 	{
 		
@@ -167,7 +170,7 @@ public class Retrieve {
 	                {strDash = strDash + "-";}
 
 	                System.out.println(strDash);
-	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Directory and Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "Size(Byte)" ));
+	                System.out.println(String.format("|%-"+intCol+"s|%-32s|%-32s|%-20s|%-20s|%-20s|" , "File Name", "File GUID", "File Content Hash", "Create Time", "Update Time", "(Byte)" ));
 	                
 	                
 	                Iterator<fileInfo> it = tmpumd.filelist.iterator();
@@ -185,69 +188,87 @@ public class Retrieve {
 	                System.out.println(strDash);
 	            }
         		if (!m_guid.equalsIgnoreCase("")&&(intCol!=0)){
-        			int downloadsize=0;
+        			long downloadsize=0;
         			rr=null;
         			System.out.print("Getting chunk level metadata ... ");
                 	rr=RestConnector.GetContainer(m_tkn, m_usercontainer+"/f"+m_guid, m_pxy);
                 	byte[] filedata = rr.data;
                     fileMetadataWithVersion fmd = new fileMetadataWithVersion(filedata);
                     Collections.sort(fmd.data);
+                    boolean bolFileExistOverwrite = false;
+                    File fdownload = new File(m_name);
+                    if (fdownload.exists()){
+                    	System.out.println(m_name + " exist, Would you like to overwrite it <true/false> ?");
+                		//@SuppressWarnings("resource")
+						Scanner scanner = new Scanner(System.in);
+                		if(scanner.nextBoolean()==true) {
+                			bolFileExistOverwrite = true;
+                		    System.out.println("Will overwrite it");
+                		} else {
+                		    System.out.println("Skip Download");
+                		    return;
+                		}
+                    }
 
-                    //fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);
-                    
                     int lastversion=0;
                     if (m_version==0){lastversion=fmd.data.size();}
                     else{lastversion=m_version;}
                     
-                    byte[] realdata = new byte[(int) fmd.data.get(lastversion-1).byteslength];
-                    fmd.data.get(lastversion-1).data.size();
-                   
-                    long dsize = 0;
-                    Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
-                    System.out.print("Done !");
-                    System.out.print("\n");
-                    if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {    
+                    if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {   
+                        long dsize = 0;
                     	System.out.println("Will download file size:" + fmd.data.get(lastversion-1).byteslength);
-                    	FileOutputStream out = new FileOutputStream(m_name, true);
+                    	System.out.print("\n");
+                    	FileOutputStream out = new FileOutputStream(m_name+".tmp", true);
                     	try{
 		                    for (chunk c : fmd.data.get(lastversion-1).data)
 		                    {
 		                        long lngtemp = 0;
-		                    	if (ht.get(c.hashvalue)!=null)
-		                        {
-		                        	System.arraycopy((byte[])ht.get(c.hashvalue), 0, realdata, (int)c.start, ((byte[])ht.get(c.hashvalue)).length);
-		                        }
-		                        else
-		                        {
-		                            byte[]  temp=RestConnector.GetContainer(m_tkn, m_usercontainer+"/c"+ Integer.toString(c.flag) +c.hashvalue, m_pxy).data;
-		                        	lngtemp = temp.length;
-		                            downloadsize +=temp.length;
-		                            if( (c.flag & 1) == 1) //compressed chunk
-		                            {
-		                            	temp=ZipProcess.unzip(temp);
-		                            }
-		                            
-		                            out.write(temp);
-		                            //ht.put(c.hashvalue, temp.clone());
-		                            //System.arraycopy(temp, 0, realdata, (int)c.start, temp.length);   
-		                        }
+
+	                            byte[]  temp=RestConnector.GetContainer(m_tkn, m_usercontainer+"/c"+ Integer.toString(c.flag) +c.hashvalue, m_pxy).data;
+	                        	lngtemp = temp.length;
+	                            downloadsize +=temp.length;
+	                            if( (c.flag & 1) == 1) //compressed chunk
+	                            {
+	                            	temp=ZipProcess.unzip(temp);
+	                            }
+	                            
+	                            out.write(temp);
+
 		                        dsize =dsize + c.end - c.start + 1;
 		                        double dbpercentage = (double)dsize / (double)fmd.data.get(lastversion-1).byteslength;
 		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
-		                        
-		                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " -- Just Download/Original(Chunk Size):"+ lngtemp + "/" + (c.end - c.start + 1) + ", and Downloaded/Total: " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "          ");
+		                        //put the cursor back to the beginning of line, if output line over screen then won't work
+		                        String strinfo = "\rDownloaded:" + percentFormat.format(dbpercentage) + " -- Unzip(Chunk):"+ lngtemp + "/" + (c.end - c.start + 1) + "; Total(File): " + dsize + "/" + fmd.data.get(lastversion-1).byteslength + "      ";
+		                        System.out.print(strinfo);
 		                    }
-		                    System.out.print("\n");
-			                ht.clear();     
+		                    System.out.print("\n");    
                          }finally {
                             out.close();
-		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                            File ftmp = new File(m_name+".tmp");
+                        	if (bolFileExistOverwrite){
+                            	if(ftmp.renameTo(fdownload)){
+        		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+        		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                            	}else{
+        		                	Config.logger.info("file " + m_name + ".tmp rename to "+ m_name + "Fail !");
+        		                	System.out.println("file " + m_name + ".tmp rename to "+ m_name +" Fila !");
+                            	}
+                            }else{
+    		                	Config.logger.info("file " + m_name + " exist ! Download Fail !");
+    		                	System.out.println("file " + m_name + " exist ! Download Fila !");
+                            }
                          }
-
                     }
                     else
                     {
+                    	//if file size less than l_buffer which is 1G, 
+                    	//we can put into byte array ( memory ) and write it out.
+                        byte[] realdata = new byte[(int) fmd.data.get(lastversion-1).byteslength];
+                        fmd.data.get(lastversion-1).data.size();
+                       
+                        long dsize = 0;
+                        Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
+                        System.out.print("\n");
                     
 	                    for (chunk c : fmd.data.get(lastversion-1).data)
 	                    {
@@ -274,19 +295,41 @@ public class Retrieve {
 	                    
 	                    ht.clear();
 	                    if (!m_name.equalsIgnoreCase("")){
-		                    FileOutputStream out = new FileOutputStream(m_name);
+		                    FileOutputStream out = new FileOutputStream(m_name+".tmp", true);
 		                	out.write(realdata);
 		                	out.close();
 		                	System.out.println("and Write out file: " + m_name + " from memory (ByteArray) !" );
-		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                            File ftmp = new File(m_name+".tmp");
+                        	if (bolFileExistOverwrite){
+                            	if(ftmp.renameTo(fdownload)){
+        		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+        		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                            	}else{
+        		                	Config.logger.info("file " + m_name + ".tmp rename to "+ m_name + "Fail !");
+        		                	System.out.println("file " + m_name + ".tmp rename to "+ m_name +" Fila !");
+                            	}
+                            }else{
+    		                	Config.logger.info("file " + m_name + " exist ! Download Fail !");
+    		                	System.out.println("file " + m_name + " exist ! Download Fila !");
+                            }
 	                    }
 	                    else{
 		                    FileOutputStream out = new FileOutputStream(strFileName);
 		                	out.write(realdata);
 		                	out.close();
-		                	Config.logger.info("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-		                	System.out.println("Downloaded at: " + strFileName + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");                    	
+	                        File ftmp = new File(m_name+".tmp");
+                        	if (bolFileExistOverwrite){
+                            	if(ftmp.renameTo(fdownload)){
+        		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+        		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
+                            	}else{
+        		                	Config.logger.info("file " + m_name + ".tmp rename to "+ m_name + "Fail !");
+        		                	System.out.println("file " + m_name + ".tmp rename to "+ m_name +" Fila !");
+                            	}
+                            }else{
+    		                	Config.logger.info("file " + m_name + " exist ! Download Fail !");
+    		                	System.out.println("file " + m_name + " exist ! Download Fila !");
+                            }
 	                    }
 
                     }

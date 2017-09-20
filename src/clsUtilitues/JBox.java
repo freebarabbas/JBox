@@ -153,6 +153,10 @@ public class JBox {
 							                    	System.out.println(entry.getKey()+"\t"+entry.getValue());
 							                    }
 							                    
+												if (StartCallableSyncThread()){System.out.println("SyncThread Done!");
+												}else{ System.out.println("Sync Thread Error !");}
+												
+												/*
 							                    final ExecutorService executorSyncCallableService;
 							                    final Future<Boolean>  futureSyncCallabletask;
 
@@ -176,7 +180,7 @@ public class JBox {
 							                    }
 
 							                    executorSyncCallableService.shutdownNow();
-
+												*/
 												System.gc(); //garbage collection
 												System.out.println();
 						                    }
@@ -188,8 +192,6 @@ public class JBox {
 					case "s":
 						Config.logger.debug(Config.ConvertToHTML());
 						
-						//Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
-						//new Thread(r).start();
 						while(true)
 						{
 							String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
@@ -200,31 +202,7 @@ public class JBox {
 							
 							if (StartCallableSyncThread()){System.out.println("SyncThread Done!");
 							}else{ System.out.println("Sync Thread Error !");}
-							/*
-							final ExecutorService executorSyncCallableService;
-							final Future<Boolean>  futureSyncCallabletask;
-							
-							executorSyncCallableService = Executors.newFixedThreadPool(1);        
-							futureSyncCallabletask = executorSyncCallableService.submit(new SyncCallable(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername));
-						
-						    try {
-						        final Boolean bolReturn;
-							
-								// waits the 10 seconds for the Callable.call to finish.
-								bolReturn = futureSyncCallabletask.get(); // this raises ExecutionException if thread dies
-								if (bolReturn) {
-									System.out.println("Thread killed and finished");
-								}else{
-									System.out.println("Something Wrong !");
-								}
-							} catch(final InterruptedException ex) {
-							    ex.printStackTrace();
-							} catch(final ExecutionException ex) {
-							    ex.printStackTrace();
-							}
-							
-						    executorSyncCallableService.shutdownNow();
-							*/
+
 							System.gc(); //garbage collection
 							Thread.sleep(Config.synctime);
 						}
