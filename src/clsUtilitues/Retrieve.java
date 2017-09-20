@@ -134,7 +134,6 @@ public class Retrieve {
 			
         	if (m_level.equalsIgnoreCase("c")){
         		int intCol=0;
-        		String strFileName="";
 	            SyncStatus.SetStatus("Getting user information, file metadata from server");
 	            rr=RestConnector.GetContainer(m_tkn, m_usercontainer + "/USERMETAFILE", m_pxy);
 	            byte[] remotebin=null;
@@ -203,11 +202,13 @@ public class Retrieve {
 						Scanner scanner = new Scanner(System.in);
                 		if(scanner.nextBoolean()==true) {
                 			bolFileExistOverwrite = true;
-                		    System.out.println("Will overwrite it");
+                		    System.out.println("Will overwrite " + m_name);
                 		} else {
                 		    System.out.println("Skip Download");
                 		    return;
                 		}
+                    }else{
+                    	bolFileExistOverwrite = true;
                     }
 
                     int lastversion=0;
@@ -216,7 +217,7 @@ public class Retrieve {
                     
                     if ( fmd.data.get(lastversion-1).byteslength > l_buffer ) {   
                         long dsize = 0;
-                    	System.out.println("Will download file size:" + fmd.data.get(lastversion-1).byteslength);
+                    	System.out.println("Will download version: "+ m_version +"; file size:" + fmd.data.get(lastversion-1).byteslength);
                     	System.out.print("\n");
                     	FileOutputStream out = new FileOutputStream(m_name+".tmp", true);
                     	try{
@@ -255,7 +256,7 @@ public class Retrieve {
                             	}
                             }else{
     		                	Config.logger.info("file " + m_name + " exist ! Download Fail !");
-    		                	System.out.println("file " + m_name + " exist ! Download Fila !");
+    		                	System.out.println("file " + m_name + " exist ! Download Fail !");
                             }
                          }
                     }
@@ -264,10 +265,11 @@ public class Retrieve {
                     	//if file size less than l_buffer which is 1G, 
                     	//we can put into byte array ( memory ) and write it out.
                         byte[] realdata = new byte[(int) fmd.data.get(lastversion-1).byteslength];
-                        fmd.data.get(lastversion-1).data.size();
+                        //fmd.data.get(lastversion-1).data.size();
                        
                         long dsize = 0;
                         Hashtable<String, byte[]> ht = new Hashtable<String, byte[]>();
+                    	System.out.println("Will download version: "+ m_version +"; file size:" + fmd.data.get(lastversion-1).byteslength);
                         System.out.print("\n");
                     
 	                    for (chunk c : fmd.data.get(lastversion-1).data)
@@ -290,48 +292,26 @@ public class Retrieve {
 	                        dsize =dsize + c.end - c.start + 1;
 	                        double dbpercentage = (double)dsize / (double)fmd.data.get(lastversion-1).byteslength;
 	                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
-	                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " to the memory (ByteArray) ");
+	                        System.out.print("\rDownload%:" + percentFormat.format(dbpercentage) + " to the memory (ByteArray)   ");
 	                    }
 	                    
 	                    ht.clear();
-	                    if (!m_name.equalsIgnoreCase("")){
-		                    FileOutputStream out = new FileOutputStream(m_name+".tmp", true);
-		                	out.write(realdata);
-		                	out.close();
-		                	System.out.println("and Write out file: " + m_name + " from memory (ByteArray) !" );
-                            File ftmp = new File(m_name+".tmp");
-                        	if (bolFileExistOverwrite){
-                            	if(ftmp.renameTo(fdownload)){
-        		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-        		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-                            	}else{
-        		                	Config.logger.info("file " + m_name + ".tmp rename to "+ m_name + "Fail !");
-        		                	System.out.println("file " + m_name + ".tmp rename to "+ m_name +" Fila !");
-                            	}
-                            }else{
-    		                	Config.logger.info("file " + m_name + " exist ! Download Fail !");
-    		                	System.out.println("file " + m_name + " exist ! Download Fila !");
-                            }
+                    	if (bolFileExistOverwrite){
+                    		try{
+			                    FileOutputStream out = new FileOutputStream(m_name, true);
+			                	out.write(realdata);
+			                	out.close();
+			                	System.out.print("\n");
+                    		}
+                    		catch(Exception e){
+			                	Config.logger.info("Download Fail because " + e.getMessage());
+			                	System.out.println("Download Fail because " + e.getMessage());
+                    		}
+                    		finally{
+			                	Config.logger.info("Write out file: " + m_name + " from memory (ByteArray) !");
+			                	System.out.println("Write out file: " + m_name + " from memory (ByteArray) !");	                    			
+                    		}
 	                    }
-	                    else{
-		                    FileOutputStream out = new FileOutputStream(strFileName);
-		                	out.write(realdata);
-		                	out.close();
-	                        File ftmp = new File(m_name+".tmp");
-                        	if (bolFileExistOverwrite){
-                            	if(ftmp.renameTo(fdownload)){
-        		                	Config.logger.info("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-        		                	System.out.println("Downloaded at: " + m_name + " with Original Size:"+ dsize +" Bytes, Download Size:" + downloadsize + " Bytes");
-                            	}else{
-        		                	Config.logger.info("file " + m_name + ".tmp rename to "+ m_name + "Fail !");
-        		                	System.out.println("file " + m_name + ".tmp rename to "+ m_name +" Fila !");
-                            	}
-                            }else{
-    		                	Config.logger.info("file " + m_name + " exist ! Download Fail !");
-    		                	System.out.println("file " + m_name + " exist ! Download Fila !");
-                            }
-	                    }
-
                     }
                     
         		}else{
