@@ -659,8 +659,7 @@ public class SyncCallable implements Callable<Boolean>  {
 			return merged;
         }
 	}
-	
-	
+		
 	private Boolean StartSync() throws Exception
 	{
 		Config.logger.info("Starting sync process");
@@ -956,10 +955,12 @@ public class SyncCallable implements Callable<Boolean>  {
                                     {
                                     	fileMetadata fmd = fileMetadata.GetMetadata(fi.filename, m_mod,Config.divider,Config.refactor,Config.min,Config.max,Config.fixedchunksize,Config.ct);                                                                              
                                     	Date dtm=new Date();
-
-	                                    if(clsExperiment.ExperimentMetaDataDump(fi.filename, (dtm.getTime() - dts.getTime()), fmd.data.toString()))
-	                                    {Config.logger.debug("Experiment Dump Meta OK");}
-	                                    else{Config.logger.debug("Experiment Dump Meta Fail");}
+                                    	
+                                    	if(Config.bolExperimentDump){
+		                                    if(clsExperiment.ExperimentMetaDataDump(fi.filename, (dtm.getTime() - dts.getTime()), fmd.data.toString()))
+		                                    {Config.logger.debug("Experiment Dump Meta OK");}
+		                                    else{Config.logger.debug("Experiment Dump Meta Fail");}
+                                    	}
                                     	
                                         //fmd.data.size();
                                         if (fmd.byteslength > l_buffer){
@@ -971,10 +972,12 @@ public class SyncCallable implements Callable<Boolean>  {
                                             
                                         	Date dti=new Date();
                                         	
-    	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
-    	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
-    	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
-                                            
+                                        	if(Config.bolExperimentDump){
+	    	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
+	    	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
+	    	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
+                                        	}
+                                        	
     	                                    Hashtable<String, String> ht = new Hashtable<String, String>();
                                 	        
 	                                        
@@ -1046,10 +1049,12 @@ public class SyncCallable implements Callable<Boolean>  {
 			                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
 			                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
 			                    		                        
-			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
-			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
-			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
-			            	                                    
+			                    		                        if(Config.bolExperimentDump){
+				            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+				            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+				            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+			                    		                        }
+			                    		                        
 			            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
 			            	                        			if(GetToken()==false)
 			            	                        				return false;
@@ -1140,10 +1145,12 @@ public class SyncCallable implements Callable<Boolean>  {
 			                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
 			                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
 			                    		                        
-			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
-			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
-			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
-			            	                                    
+			                    		                        if(Config.bolExperimentDump){
+				            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+				            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+				            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+			                    		                        }
+			                    		                        
 			            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
 			            	                        			if(GetToken()==false)
 			            	                        				return false;
@@ -1314,9 +1321,13 @@ public class SyncCallable implements Callable<Boolean>  {
 	                                    UpdateRemoteUserMetaFile(fi);
 	                                    Date dte=new Date();
 	                                    Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + dsize + "/" + fi.bytelength);
-	                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize,fi.bytelength, fmds.ConvertToByteArray().length))
-	                                    {Config.logger.debug("Experiment Dump OK");}
-	                                    else{Config.logger.debug("Experiment Dump Fail");}
+	                                    
+	                                    if(Config.bolExperimentDump){
+		                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize,fi.bytelength, fmds.ConvertToByteArray().length))
+		                                    {Config.logger.debug("Experiment Dump OK");}
+		                                    else{Config.logger.debug("Experiment Dump Fail");}
+	                                    }
+	                                    
 	                                    fi.fop = FOP.NONE;
 	                                }
                                 }
@@ -1440,9 +1451,12 @@ public class SyncCallable implements Callable<Boolean>  {
                                         byte[] filedata = GetFileByteArray(fi.filename, dcount);
                               
                                     	Date dti=new Date();
-	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
-	                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
-	                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}	
+                                    	
+                                    	if(Config.bolExperimentDump){
+		                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dti.getTime() - dts.getTime()), Integer.toString(dcount), 0, 0, 0, "0.00%"))
+		                                    {Config.logger.debug("Experiment Dump Dcount First OK");}
+		                                    else{Config.logger.debug("Experiment Dump Dcount Frist Fail");}
+                                    	}
 	                                    
                                         Hashtable<String, String> ht = new Hashtable<String, String>();
                            
@@ -1515,10 +1529,12 @@ public class SyncCallable implements Callable<Boolean>  {
 		                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
 		                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
 		                    		                        
-		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
-		            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
-		            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}
-		            	                                    
+		                    		                        if(Config.bolExperimentDump){
+			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}
+		                    		                        }
+		                    		                        
 		            	                        			Config.logger.debug("Renew token from m_usernameserver when remote_need_overwrite upload");
 		            	                        			if(GetToken()==false)
 		            	                        				return false;
@@ -1640,10 +1656,12 @@ public class SyncCallable implements Callable<Boolean>  {
 		                    		                        double dbpercentage = (double)dsize / (double)fi.bytelength;
 		                    		                        DecimalFormat percentFormat= new DecimalFormat("#.##%");
 		                    		                        
-		            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
-		            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
-		            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
-		            	                                    
+		                    		                        if(Config.bolExperimentDump){
+			            	                                    if(clsExperiment.ExperimentDcountDump(fi.filename, (dtj.getTime() - dti.getTime()), Integer.toString(dcount), uploadsize, dsize,fi.bytelength, String.valueOf(percentFormat.format(dbpercentage))))
+			            	                                    {Config.logger.debug("Experiment Dump Dcount Loop OK");}
+			            	                                    else{Config.logger.debug("Experiment Dump Dcount Loop Fail");}	
+		                    		                        }
+		                    		                        
 		            	                        			Config.logger.debug("Renew token from m_usernameserver when new upload");
 		            	                        			if(GetToken()==false)
 		            	                        				return false;
@@ -1806,9 +1824,13 @@ public class SyncCallable implements Callable<Boolean>  {
                                     UpdateRemoteUserMetaFile(fi);
                                     Date dte=new Date();
                                     Config.logger.info("Cost----Times:" + (dte.getTime() - dts.getTime()) + " MillSeconds    Traffic:" + uploadsize + "/" + dsize + "/" + fi.bytelength);
-                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize, fi.bytelength, fmds.ConvertToByteArray().length))
-                                    {Config.logger.debug("Experiment Dump OK");}
-                                    else{Config.logger.debug("Experiment Dump Fail");}
+                                    
+                                    if(Config.bolExperimentDump){
+	                                    if(clsExperiment.ExperimentDump(fi.filename, (dte.getTime() - dts.getTime()), uploadsize, dsize, fi.bytelength, fmds.ConvertToByteArray().length))
+	                                    {Config.logger.debug("Experiment Dump OK");}
+	                                    else{Config.logger.debug("Experiment Dump Fail");}
+                                    }
+                                    
                                     fi.fop = FOP.NONE;
                                 }
                                 catch (Exception ex)
