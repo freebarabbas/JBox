@@ -219,7 +219,5 @@ public class FSWatcher {
     		fw.close();
     		return true;
     	}catch(Exception e){System.out.println(e);return false;}
-    	//System.out.println("Experiment Dump Success!");
-    	//return true;
     }
 }

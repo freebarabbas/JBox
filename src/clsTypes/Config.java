@@ -88,6 +88,8 @@ public class Config {
     
     public static String containername; //equal to username or any other customized name
     
+    public static boolean bolExperimentDump=true;
+    
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
     public static String usermetafile;//="/home/johnny/JBoxLog/johnnywa";
