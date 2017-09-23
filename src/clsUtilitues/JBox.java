@@ -111,7 +111,7 @@ public class JBox {
 						break;		
 	                    //mod = 64, 32KB ~ 128KB
 					case "w":
-						if (args.length==2)
+						if (args.length==1)
 						{
 							Config.logger.debug(Config.ConvertToHTML());
 							ExecutorService executorFSWatcherService = Executors.newFixedThreadPool(2);
@@ -170,8 +170,9 @@ public class JBox {
 							Helper m = new Helper("w");
 							m.GetMenu();
 						}
+						break;
 					case "s":
-						if (args.length==2)
+						if (args.length==1)
 						{
 							Config.logger.debug(Config.ConvertToHTML());
 							while(true)
@@ -193,8 +194,9 @@ public class JBox {
 							Helper m = new Helper("s");
 							m.GetMenu();							
 						}
+						break;
 					case "p":
-						if (args.length==2)
+						if (args.length==1)
 						{
 							Config.logger.debug(Config.ConvertToHTML());
 							String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
@@ -209,28 +211,35 @@ public class JBox {
 							System.gc(); //garbage collection
 							System.out.println("Push Once Done !");
 						}
-						else{
+						else
+						{
 							Helper m = new Helper("p");
 							m.GetMenu();							
-						}						
+						}
+						break;
 					case "t":
-						Config.logger.debug(Config.ConvertToHTML());
-						
-						Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
-						new Thread(r).start();
-						while(true)
+						if (args.length==1)
 						{
-							String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
-							//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
-							String strStatus = "";
-							if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
-							System.out.println(timeStamp+": "+ strStatus);
-							System.gc(); //garbage collection
-							Thread.sleep(1000);
-						}						
+							Config.logger.debug(Config.ConvertToHTML());
+							
+							Runnable r=new Sync(Config.syncfolders, Config.usermetafile, Config.serverlogin, Config.swiftusr, Config.swiftpwd,Config.proxyobj,Config.power,Config.synctime,Config.containername);
+							new Thread(r).start();
+							while(true)
+							{
+								String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
+								//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
+								String strStatus = "";
+								if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
+								System.out.println(timeStamp+": "+ strStatus);
+								System.gc(); //garbage collection
+								Thread.sleep(1000);
+							}
+						}
+						break;
 					default:
-						Helper m = new Helper("r");
+						Helper m = new Helper("q");
 						m.GetMenu();
+						break;
 					}
 				}
 				else{
