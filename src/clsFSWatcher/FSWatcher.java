@@ -50,7 +50,6 @@ public class FSWatcher {
     /**
      * Register the given directory with the WatchService; This function will be called by FileVisitor
      */
-    
     private void registerDirectory(Path dir) throws IOException 
     {
         WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
@@ -104,10 +103,10 @@ public class FSWatcher {
                 Path child = dir.resolve(name);
  
                 if ((CheckValidFileName(child, event.kind().name())) ) {
-                	//TestDump(event.kind().name(),child.toString(),getTimeStamp(System.currentTimeMillis()));
-                	fsfinal.put(kind+child.toString(), new Tuple<Long, Integer>(new Long(System.currentTimeMillis()), new Integer(FolderOrFileIndentifier(child.toString()))));
+                	if ((kind == ENTRY_MODIFY) || (kind == ENTRY_DELETE)) {
+                		fsfinal.put(kind+child.toString(), new Tuple<Long, Integer>(new Long(System.currentTimeMillis()), new Integer(FolderOrFileIndentifier(child.toString()))));
+                	}
                 }
-
                 // if directory is created, and watching recursively, then register it and its sub-directories
                 if ((kind == ENTRY_CREATE) || (kind == ENTRY_DELETE)) {
                     try {
