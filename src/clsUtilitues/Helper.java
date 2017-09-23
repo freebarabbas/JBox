@@ -21,11 +21,22 @@ public class Helper {
 	
 	private String GetPush(){
 		String strPush=""
-		+ "    Push[p]:Push trigger by FSWacher and re-check every <SyncSeconds> \n"
+		+ "    Push[p]:Push trigger by Manual and run only once \n"
 		+ "          <Options for p>(mandatory): p\n"
 		+ "    <example>\n"
 		+ "    e.g:$ java -jar ./JBox.jar p \n"
 		+ "        $ JBox p"
+		+ "\n";
+		return strPush;
+	}
+	
+	private String GetWatcher(){
+		String strPush=""
+		+ "    Push[p]:Watcher trigger by FSWacher and re-check every <SyncSeconds> \n"
+		+ "          <Options for w>(mandatory): p\n"
+		+ "    <example>\n"
+		+ "    e.g:$ java -jar ./JBox.jar w \n"
+		+ "        $ JBox w"
 		+ "\n";
 		return strPush;
 	}
@@ -79,24 +90,34 @@ public class Helper {
 			break;
 		case "p":
 			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
-					+ "                [p] for push \n"
+					+ "                [p] for Push Once\n"
 					+ GetPush()
 					+ "");			
 			break;			
 		case "s":
 			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
-					+ "                [s] for Sync \n"
+					+ "                [s] for Sync by Sync Time \n"
 					+ GetSync()
 					+ "");			
 			break;
+		case "w":
+			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
+					+ "                [s] for Watcher which is triggered by FS \n"
+					+ GetWatcher()
+					+ "");			
+			break;			
 		default:
 			System.out.print("Usage: JBox.jar or java -jar ./JBox.jar \n"
 					+ "                [q] for Query \n"
 					+ "                [r] for Retrieve \n"
 					+ "                [s] for Sync \n"
+					+ "                [w] for Watcher \n"
+					+ "                [p] for Push \n"					
 					+ GetQuery()
 					+ GetRetrieve()
 					+ GetSync()
+					+ GetWatcher()
+					+ GetPush()
 					+ "");
 			break;
 		}
