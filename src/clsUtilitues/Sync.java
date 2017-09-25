@@ -1175,7 +1175,11 @@ public class Sync implements Runnable {
     	                                        try {
     	                                            //print the return value of Future, notice the output delay in console
     	                                            // because Future.get() waits for task to get completed
-    	                                            System.out.println(new Date()+ "::"+fut.get());
+    	                                        	if (Config.bolExperimentDump){
+    	                                        		System.out.println(new Date()+ "::"+fut.get());
+    	                                        	}else{
+    	                                        		Config.logger.debug(new Date()+ "::"+fut.get());
+    	                                        	}
     	                                        } catch (InterruptedException | ExecutionException e) {
     	                                            e.printStackTrace();
     	                                        }
@@ -1307,7 +1311,12 @@ public class Sync implements Runnable {
     	                                        try {
     	                                            //print the return value of Future, notice the output delay in console
     	                                            // because Future.get() waits for task to get completed
-    	                                            System.out.println(new Date()+ "::"+fut.get());
+    	                                            //System.out.println(new Date()+ "::"+fut.get());
+    	                                        	if (Config.bolExperimentDump){
+    	                                        		System.out.println(new Date()+ "::"+fut.get());
+    	                                        	}else{
+    	                                        		Config.logger.debug(new Date()+ "::"+fut.get());
+    	                                        	}
     	                                        } catch (InterruptedException | ExecutionException e) {
     	                                            e.printStackTrace();
     	                                        }
@@ -1685,7 +1694,12 @@ public class Sync implements Runnable {
 	                                        try {
 	                                            //print the return value of Future, notice the output delay in console
 	                                            // because Future.get() waits for task to get completed
-	                                            System.out.println(new Date()+ "::"+fut.get());
+	                                            //System.out.println(new Date()+ "::"+fut.get());
+	                                        	if (Config.bolExperimentDump){
+	                                        		System.out.println(new Date()+ "::"+fut.get());
+	                                        	}else{
+	                                        		Config.logger.debug(new Date()+ "::"+fut.get());
+	                                        	}
 	                                        } catch (InterruptedException | ExecutionException e) {
 	                                            e.printStackTrace();
 	                                        }
@@ -1810,7 +1824,12 @@ public class Sync implements Runnable {
 	                                        try {
 	                                            //print the return value of Future, notice the output delay in console
 	                                            // because Future.get() waits for task to get completed
-	                                            System.out.println(new Date()+ "::"+fut.get());
+	                                            //System.out.println(new Date()+ "::"+fut.get());
+	                                        	if (Config.bolExperimentDump){
+	                                        		System.out.println(new Date()+ "::"+fut.get());
+	                                        	}else{
+	                                        		Config.logger.debug(new Date()+ "::"+fut.get());
+	                                        	}
 	                                        } catch (InterruptedException | ExecutionException e) {
 	                                            e.printStackTrace();
 	                                        }

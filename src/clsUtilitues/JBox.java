@@ -187,7 +187,7 @@ public class JBox {
 								}else{ System.out.println("Sync Thread Error !");}
 	
 								System.gc(); //garbage collection
-								Thread.sleep(Config.synctime);
+								Thread.sleep(Config.synctime); //wait x seconds and re-check
 							}
 						}
 						else{
@@ -233,7 +233,8 @@ public class JBox {
 								if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
 								System.out.println(timeStamp+": "+ strStatus);
 								System.gc(); //garbage collection
-								//Thread.interrupted();
+								//this wait 1 second for print out message
+								//the real wait is in Syhnc runnable thread
 								Thread.sleep(1000);
 							}
 						}
