@@ -187,7 +187,7 @@ public class JBox {
 								}else{ System.out.println("Sync Thread Error !");}
 	
 								System.gc(); //garbage collection
-								Thread.sleep(Config.synctime);
+								Thread.sleep(Config.synctime); //wait x seconds and re-check
 							}
 						}
 						else{
@@ -226,12 +226,15 @@ public class JBox {
 							new Thread(r).start();
 							while(true)
 							{
+
 								String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
 								//System.out.println(SyncStatus.GetTimeStamp().toString()+" "+ SyncStatus.GetMessage());
 								String strStatus = "";
 								if( SyncStatus.GetMessage().equals("") ) {strStatus = "Start";} else {strStatus=SyncStatus.GetMessage();}
 								System.out.println(timeStamp+": "+ strStatus);
 								System.gc(); //garbage collection
+								//this wait 1 second for print out message
+								//the real wait is in Syhnc runnable thread
 								Thread.sleep(1000);
 							}
 						}
