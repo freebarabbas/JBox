@@ -1963,7 +1963,8 @@ public class SyncCallable implements Callable<Boolean>  {
                SyncStatus.SetStatus("All to update");   
                //Sync Interval is milliseconds = 1/1000 seconds which means 5000 milliseconds = 5 seconds
                System.gc();
-               Thread.sleep(m_synctime);
+               //Thread.sleep(m_synctime);
+               System.out.println("wait " + m_synctime + " millions seconds.");
                return true;
             }
             catch (Exception e)
@@ -1992,6 +1993,7 @@ public class SyncCallable implements Callable<Boolean>  {
 		{
 			Config.logger.fatal("Cannot sync."+e.getMessage());
 			e.printStackTrace();
+			bolSyncReturn = false;
 		}
 		return bolSyncReturn;
 	}
