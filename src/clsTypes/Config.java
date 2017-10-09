@@ -1,5 +1,7 @@
 package clsTypes;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -89,6 +91,7 @@ public class Config {
     public static String containername; //equal to username or any other customized name
     
     public static boolean bolExperimentDump=true;
+    public static boolean bolSqlite=true;
     
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
@@ -214,12 +217,13 @@ public class Config {
             
             syncfolders.add(syncfolder);
             
-            /*
-            dbpath=String.format("%s\\%s.db",apppath,swiftusr.replace(':', ' '));
-            File f=new File(dbpath);
-            if(!f.exists())
-            	Files.copy(Paths.get(sourcedbpath), Paths.get(dbpath));
-            dbop.InitConnection(dbpath);*/
+            if (bolSqlite){
+	            dbpath=String.format("%s\\%s.db",apppath,swiftusr.replace(':', ' '));
+	            File f=new File(dbpath);
+	            if(!f.exists())
+	            	Files.copy(Paths.get(dbpath), Paths.get(dbpath));
+	            dbop.InitConnection(dbpath);
+            }
             
             return true;
         }

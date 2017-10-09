@@ -1,6 +1,8 @@
 package clsTypes;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class TestforJBoxTypes {
 		System.out.println(HashCalc.GetCityHash("yeft2l34oi2u34oi234234234"));
 		System.out.println(HashCalc.GetFileCityHash("c:\\JBox\\JBOX.txt"));
 		//return ;
-
+		*/
 		
 		List<String> aa=new ArrayList<String>();
 		aa.add("c:\\Jbox");
@@ -47,7 +49,7 @@ public class TestforJBoxTypes {
 		
 		System.out.println(umd.filelist.size());
 		
-		dbop.InitConnection("C:\\JBox\\userdata.db");
+		dbop.InitConnection("/tmp/test.db");
 		dbop.InsertUserMetaData(new Date(), umd.filelist);
 		System.out.println(dbop.GetDBVersion());
 		
@@ -55,6 +57,7 @@ public class TestforJBoxTypes {
 		System.out.println(fi.size());
 		//return;
 		
+		/*
 		FileTime ft = FileTime.from(1600, TimeUnit.DAYS);
 		System.out.println(ft.toString());
 		System.out.println(ft.toMillis());
@@ -128,20 +131,20 @@ public class TestforJBoxTypes {
 	        	//fileInfo pre=null;
 	        	while (it.hasNext()) 
 	            {
-	        		fileInfo fi=it.next();
-	        		System.out.println(fi.bytelength);
+	        		fileInfo fi1=it.next();
+	        		System.out.println(fi1.bytelength);
 	        		//System.out.println(fi.dbid);
-	        		System.out.println(fi.filehash);
-	        		System.out.println(fi.filename);
-	        		System.out.println(fi.guid);
+	        		System.out.println(fi1.filehash);
+	        		System.out.println(fi1.filename);
+	        		System.out.println(fi1.guid);
 	        		//System.out.println(fi.owner);
-	        		System.out.println(fi.parentguid);
-	        		System.out.println(fi.status); //0 sync done, 1 syncing
-	        		System.out.println(fi.type);
-	        		System.out.println(fi.versionflag);
-	        		System.out.println(fi.dt);
+	        		System.out.println(fi1.parentguid);
+	        		System.out.println(fi1.status); //0 sync done, 1 syncing
+	        		System.out.println(fi1.type);
+	        		System.out.println(fi1.versionflag);
+	        		System.out.println(fi1.dt);
 	        		//System.out.println(fi.fop);	  
-	        		System.out.println(fi.lastaction);	  
+	        		System.out.println(fi1.lastaction);	  
 	        		//System.out.println(fi.);	   	        		
 
 	            }
