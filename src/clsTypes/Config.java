@@ -82,7 +82,7 @@ public class Config {
     public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge
     public static int runmode=0; // 0 is master mode, 1 is slaves mode
 
-    public static int versionkeep=20; //keep last 20 versioin
+    public static int versionkeep=30; //keep last 30 versioin
     
     //Credential
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
@@ -91,7 +91,9 @@ public class Config {
     public static String containername; //equal to username or any other customized name
     
     public static boolean bolExperimentDump=true;
-    public static boolean bolSqlite=true;
+    
+    //using sqlite db or not
+    public static boolean bolSqlite=false;
     
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
@@ -108,7 +110,9 @@ public class Config {
     public static void setcontainername(String strcontainername){ containername = strcontainername; } 
     public static void setswiftclientnum(int intswiftclientnum){ clientnum = intswiftclientnum; }  
     public static void setrunmode(int intrumode){ runmode = intrumode; }  
-
+    public static void setversionkeep(int intversionkeep){ versionkeep = intversionkeep; }  
+    
+    
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
     

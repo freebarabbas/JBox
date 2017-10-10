@@ -3,6 +3,7 @@ package clsTypes;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,7 @@ public class fileMetadataWithVersion {
             }
             
             Collections.sort(data);
+            checkNumOfVersionRemoveExtra();
 
         }
         catch (Exception e)
@@ -87,6 +89,7 @@ public class fileMetadataWithVersion {
             	br.close();
 
             Collections.sort(data);
+            checkNumOfVersionRemoveExtra();
 
         }
         catch (Exception e)
@@ -121,5 +124,17 @@ public class fileMetadataWithVersion {
     {
     	return ConvertToString().getBytes(Charset.forName("UTF-8"));
     }
-
+    public void checkNumOfVersionRemoveExtra(){   
+        int lastversion=data.size();
+        Collections.sort(data, Collections.reverseOrder());
+        if (lastversion > Config.versionkeep) {
+	        for (int i=lastversion-1; (i>=0 && i >= Config.versionkeep); i--){  	
+	        	String TimeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(data.get(i).dt.getTime());
+	        	if (i >= Config.versionkeep){        		
+		            System.out.println(String.format("Remove version with timestamp %s, size %s and file size hash %s" , TimeStamp, data.get(i).byteslength, data.get(i).hashcode));
+		            data.remove(i);
+	        	}
+	        }
+        }
+    }
 }

@@ -66,7 +66,7 @@ public class clsProperties {
 			if (prop.getProperty("refcounter") != null && !prop.getProperty("refcounter").isEmpty()){Config.setswiftrefcounter(Integer.parseInt(prop.getProperty("refcounter")));}
 			if (prop.getProperty("clientnum") != null && !prop.getProperty("clientnum").isEmpty()){Config.setswiftclientnum(Integer.parseInt(prop.getProperty("clientnum")));}
 			if (prop.getProperty("runmode") != null && !prop.getProperty("runmode").isEmpty()){Config.setrunmode(Integer.parseInt(prop.getProperty("runmode")));}
-
+			if (prop.getProperty("versionkeep") != null && !prop.getProperty("versionkeep").isEmpty()){Config.setversionkeep(Integer.parseInt(prop.getProperty("versionkeep")));}
 			
 		} catch (Exception e) {
 			System.out.println("Exception: " + e);
