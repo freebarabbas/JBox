@@ -1,5 +1,7 @@
 package clsTypes;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,7 +82,7 @@ public class Config {
     public static int clientnum=1; // clientnum=file level metadata status , default = 0, using for purge
     public static int runmode=0; // 0 is master mode, 1 is slaves mode
 
-    public static int versionkeep=20; //keep last 20 versioin
+    public static int versionkeep=30; //keep last 30 versioin
     
     //Credential
 	public static String swiftusr;//"10846130789747:JBOX@hp.com";
@@ -89,6 +91,9 @@ public class Config {
     public static String containername; //equal to username or any other customized name
     
     public static boolean bolExperimentDump=true;
+    
+    //using sqlite db or not
+    public static boolean bolSqlite=false;
     
     public static String serverlogin;// = "http://csl-a-swift-lb-001-us-rdu-2.cisco.com/auth/v1.0";
     public static void setserverlogin(String strserverlogin){ serverlogin = strserverlogin; } 
@@ -105,7 +110,9 @@ public class Config {
     public static void setcontainername(String strcontainername){ containername = strcontainername; } 
     public static void setswiftclientnum(int intswiftclientnum){ clientnum = intswiftclientnum; }  
     public static void setrunmode(int intrumode){ runmode = intrumode; }  
-
+    public static void setversionkeep(int intversionkeep){ versionkeep = intversionkeep; }  
+    
+    
     public static String token="";
     public static void settoken(String strtoken){ token = strtoken; }  
     
@@ -214,12 +221,13 @@ public class Config {
             
             syncfolders.add(syncfolder);
             
-            /*
-            dbpath=String.format("%s\\%s.db",apppath,swiftusr.replace(':', ' '));
-            File f=new File(dbpath);
-            if(!f.exists())
-            	Files.copy(Paths.get(sourcedbpath), Paths.get(dbpath));
-            dbop.InitConnection(dbpath);*/
+            if (bolSqlite){
+	            dbpath=String.format("%s\\%s.db",apppath,swiftusr.replace(':', ' '));
+	            File f=new File(dbpath);
+	            if(!f.exists())
+	            	Files.copy(Paths.get(dbpath), Paths.get(dbpath));
+	            dbop.InitConnection(dbpath);
+            }
             
             return true;
         }
