@@ -1,27 +1,28 @@
 |Documentation| |Build Status| |Build status| |Report Card| |Say Thanks|
 
-# JBox
 `JBox` is an **Archival Software** with **in-line deduplication** and **compression** features, intended to backup data into Object Storage ( **Swift** ) over internet. It can be triggered by File System Watcher or by Crawlerand  **sync between multiple clients** on the fly.
 
+===== 
 What's JBox can do ?
-=============
+===== 
 - **In-Line Deduplication**
 - **Compression**
 - **Archive over the internet to ObjectStorage, Swift**
-- **File Sync with multi-clients** like Cloud Storage Service e.g. DropBox , GoogleDrive and OneDrive
-- **Delta Sync** which is not sync everything in each sync
+- **File Sync with multi-clients** like Cloud Storage Service e.g. DropBox
+- **Delta Sync** 
 - **Versioning ( Snapshot )**
-- Timing Purging
-- Pure Java, No Extra Installation Required, Fully Leverage OpenStack **Swift**.
-- No File System Watcher Library Required ( JBox has lightweight self-development inotify and combine it with file sync execution )
-- Chunks Garbage Collection
-- ~~Virtual Storage Tiering ( Hot vs Cold )~~
+- **Timing Purging** - Chunks Garbage Collection
+- Pure Java, No Extra Installation Required
+- Fully Leverage OpenStack **Swift**.
+- No File System Watcher Library Required 
 
+===== 
 How to run JBox ?
-=============
-## Execution
-- (1) Get Swift and has Access
-- (2) Find the code localtion and copy c++ `*.so ( shared object ) under /usr/lib/`
+===== 
+Execution
+---------
+1. Get Swift and has Access
+2. Find the code localtion and copy c++ `*.so ( shared object ) under /usr/lib/`
 ```bash
 $ sudo cp ./dll/libclsJavaVariableChunk.so ./usr/lib/*
 or
@@ -30,7 +31,7 @@ $ cp ./dll/libclsJavaVariableChunk.so /tmp/*
 if you have question about reference the `*.so in java you can reference this post.`
   - [how to reference c lib in java via jni](http://chianingwang.blogspot.com/2015/09/how-to-reference-c-lib-in-java-via-jni.html "how to reference c lib in java via jni").
 
-- (3) Prepare JBox Configuration `JBoxconfig.properties` with the JBox executable in the same Directory
+3. Prepare JBox Configuration `JBoxconfig.properties` with the JBox executable in the same Directory
 ```
 #Local configuration
 #syncfolders=/home/vagrant/Yuan/JBoxGenReport_V4/syncfolder
@@ -81,7 +82,7 @@ clientnum=1
 runmode=0
 ```
 
-- (4) run JBox with arguments
+4. run JBox with arguments
 ```
 $ JBox <p, s, r, q> or <help>
 ```
@@ -93,9 +94,11 @@ For run JBox, you need to have a OpenStack Environment, Swift All In One aka (SA
   - [how to install Linux 32 bit Java](https://java.com/en/download/help/linux_install.xml "").
   - [how to install Linux 64 bit Java](https://java.com/en/download/help/linux_x64_install.xml "").
 
+===== 
 How to join JBox coding ?
-=============
-## Installation and Setup
+===== 
+Installation and Setup
+--------
 JBox is the Java code which is composed with `Eclipse IDE`. It's Eclipse project and easy to debug and test.
 Here is the steps how to open it in eclipse.
 
@@ -123,7 +126,7 @@ $ cd ./JBox
 - (4) Start to debug or run JBox
 
 What's technologies JBox adopt ?
-=============
+=====
 
 `JBox` adopts `2-tier metadata structure` in order to effectively operate file system and allows to sync with multiple clients. During the file syncing, `copy on write(CoW)` makes sure metadata can be updated mutually exclusive and `Reference Counter` supports object purge to save more storage space. JBox reduces upload bandwidth and storage consumption by chunk compression and `variable chunk deduplication` which allows `Delta Sync` and `Versioning (Snapshot)` feature. JBox has `Dedup-Map` to make archive configurable to fit different kinds of backup stream. It does not only control the `Dedup Anchor` for numbers of the chunks per file but also provide different kinds of deduplication skins, to try to balance between efficiency and performance.
 
