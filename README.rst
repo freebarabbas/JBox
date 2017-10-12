@@ -1,27 +1,28 @@
 |Documentation| |Build Status| |Build status| |Report Card| |Say Thanks|
 
-# JBox
 `JBox` is an **Archival Software** with **in-line deduplication** and **compression** features, intended to backup data into Object Storage ( **Swift** ) over internet. It can be triggered by File System Watcher or by Crawlerand  **sync between multiple clients** on the fly.
 
+===== 
 What's JBox can do ?
-=============
+===== 
 - **In-Line Deduplication**
 - **Compression**
 - **Archive over the internet to ObjectStorage, Swift**
-- **File Sync with multi-clients** like Cloud Storage Service e.g. DropBox , GoogleDrive and OneDrive
-- **Delta Sync** which is not sync everything in each sync
+- **File Sync with multi-clients** like Cloud Storage Service e.g. DropBox
+- **Delta Sync** 
 - **Versioning ( Snapshot )**
-- Timing Purging
-- Pure Java, No Extra Installation Required, Fully Leverage OpenStack **Swift**.
-- No File System Watcher Library Required ( JBox has lightweight self-development inotify and combine it with file sync execution )
-- Chunks Garbage Collection
-- ~~Virtual Storage Tiering ( Hot vs Cold )~~
+- **Timing Purging** - Chunks Garbage Collection
+- Pure Java, No Extra Installation Required
+- Fully Leverage OpenStack **Swift**.
+- No File System Watcher Library Required 
 
+===== 
 How to run JBox ?
-=============
-## Execution
-- (1) Get Swift and has Access
-- (2) Find the code localtion and copy c++ `*.so ( shared object ) under /usr/lib/`
+===== 
+Execution
+---------
+1. Get Swift and has Access
+2. Find the code localtion and copy c++ `*.so ( shared object ) under /usr/lib/`
 ```bash
 $ sudo cp ./dll/libclsJavaVariableChunk.so ./usr/lib/*
 or
