@@ -117,7 +117,7 @@ html_sidebars = {
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'JBoxdoc'
 
-
+html_logo = 'img/cloud.jpg'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
