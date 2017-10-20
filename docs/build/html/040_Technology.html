@@ -1,0 +1,197 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Technology &#8212; JBox 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Algorithm" href="050_Algorithm.html" />
+    <link rel="prev" title="Development" href="030_Development.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="technology">
+<h1>Technology<a class="headerlink" href="#technology" title="Permalink to this headline">¶</a></h1>
+<p>In this sections we would like to discuss the technologies we applied in JBox.</p>
+<div class="section" id="what-s-technologies-jbox-adopt">
+<h2>What’s technologies JBox adopt ?<a class="headerlink" href="#what-s-technologies-jbox-adopt" title="Permalink to this headline">¶</a></h2>
+<p><strong>JBox</strong> adopts <strong>2-tier metadata structure</strong> in order to effectively operate file system and allows to sync with multiple clients. During the file syncing, <strong>copy on write(CoW)</strong> makes sure metadata can be updated mutually exclusive and <strong>Reference Counter</strong> supports object purge to save more storage space. JBox reduces upload bandwidth and storage consumption by chunk compression and <strong>variable chunk deduplication</strong> which allows <strong>Delta Sync</strong> and <strong>Versioning (Snapshot)</strong> feature. <strong>JBox</strong> has <strong>Dedup-Map</strong> to make archive configurable to fit different kinds of the backup stream. It does not only control the <strong>Dedup Anchor</strong> for numbers of the chunks per file but also provide different kinds of deduplication skins, to try to balance between efficiency and performance.</p>
+<dl class="docutils">
+<dt><strong>JBox</strong> adopts the technologies and provides the features as below.</dt>
+<dd><ul class="first last simple">
+<li><strong>JBox fully leverage OpenStack swift</strong></li>
+<li>Using <a class="reference external" href="http://docs.openstack.org/developer/swift/">Swift</a> as Repository</li>
+<li>Using <a class="reference external" href="http://docs.openstack.org/developer/keystone/">KeyStone</a> as Access Control</li>
+<li><strong>2-tier metadata structure</strong> to make file system operates effectively and allows to sync with multiple clients.</li>
+<li><strong>2-tier metadata structure</strong> can provide <strong>light weight inotify</strong> feature to trigger file sync execution.</li>
+<li>file sync is with <strong>multiple clients</strong> and always make a <strong>newest backup copy in ObjectStorge, Swift</strong>.</li>
+<li><strong>COW (copy on write)</strong> make sure metadata update mutual exclusion</li>
+<li>It’s <strong>chunk-level variable deduplication</strong> by default which allows backup stream has <strong>Delta Sync</strong> and <strong>Versioning (Snapshot)</strong> feature.</li>
+<li>Delta Sync only transfers the chunk containing the modification.</li>
+<li>It’s <strong>in-line deduplication</strong>, which is dedup before saving the data.</li>
+<li>JBox <strong>compresses</strong> the chunk (object) before upload which reduces bandwidth and Object Storage, Swift consumption.</li>
+<li>JBox use <strong>dedup-map</strong> to make archive configurable, it allows to configure as below.</li>
+<li><strong>Dedup Anchor</strong> for number of the chunks per file</li>
+<li><strong>Refector</strong> limit interval for Dedup Anchor growing</li>
+<li><strong>File Level Deduplication</strong> vs. <strong>Chunk Level Deduplication</strong></li>
+<li><strong>Fixed Chunking</strong> vs. <strong>Variable Chunking</strong> Deduplication</li>
+<li>In Config.java and will allow maintaining dedup-map.cfg for the user to adjust dynamically.</li>
+<li>It’s using reference counter to support <cite>metadata and object purge</cite>.</li>
+<li>Purge lead time for chunk level metadata ( fxxxxx )</li>
+<li>Purge lead time for object ( c0xxxxx or c1xxxxx )</li>
+<li>Rename purged object as the cold storage tier, if no further reference, then purge, if objects get reference again, then rename it back w/o upload.</li>
+<li><strong>Virtual Storage Tiering</strong> when screen the existing chunk, scan <strong>Hot Chunks</strong> first which is chunk(object) being the reference at least one in Swift, it can’t find it then move to <strong>Cold Chunk</strong>, if screen can’t find in both then upload new chunk to Swift.</li>
+<li>Phase 1: Hot Chunk is existing referenced chunk, Cold Chunk is purged chunk but hasn’t delete in Swift. Dedup Screen from Hot to Cold.</li>
+<li>Phase 2: Hot Chunk is the chunk been referenced with certain time ( e.g. 3 month ), Cold Chunnk is other than that existing referneced chunk, plus Purged Chunk is the purged chunk but haven’t delete in Swift yet. Dedup Screen from Hot to Cold, then Cold to Purged.</li>
+</ul>
+</dd>
+<dt>For the 2-Tier Metadata and what’s the algorithm logic to identify <strong>new/update/copy/rename/move/delete</strong> can be found in here.</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="http://chianingwang.blogspot.com/2016/01/archival-and-sync-via-objectstorage.html">Archival and Sync via ObjectStorage Swift - JBox</a>. explain, why JBox doesn’t need to adopt any extra library to do the thing like Linux inotify. In such, JBox doesn’t need to reference specific file system monitor library such as FileSystemWatcher in Windows for C# or JNotify in Linux for Java.</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="dedup-parameters-definition">
+<h2>dedup parameters definition<a class="headerlink" href="#dedup-parameters-definition" title="Permalink to this headline">¶</a></h2>
+<ol class="loweralpha simple">
+<li>Deduplication Algorithm, var=variable chunk ( content aware ), fix=fix chunk and no=no chunk, it’s file level</li>
+<li>divider have to be number base on power of 2</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nv">divider</span><span class="o">=</span><span class="m">64</span> example
+<span class="gp">#</span> e.g. <span class="nv">divider</span> <span class="o">=</span> <span class="m">64</span>
+<span class="gp">#</span> <span class="k">then</span> file size / <span class="m">64</span> and
+<span class="gp">#</span> get between lower bound power of <span class="m">2</span> to upper bound power of <span class="m">2</span>,
+<span class="gp">#</span> <span class="k">then</span> Dedup <span class="nv">Anchor</span> <span class="o">=</span> upper bound of the power of <span class="m">2</span>.
+<span class="gp">#</span> Deduplication average size will be around Dedup Anchor.
+<span class="gp">#</span> Here is pseudo code concept
+<span class="go">if var in c,</span>
+<span class="go">then</span>
+<span class="go">  chunk size will be 0.85 x Dedup Anchor ~ 2 x Dedup Anchor</span>
+<span class="go">  number of chunk between 32 ~ 75</span>
+<span class="go">else if fix in c,</span>
+<span class="go">then</span>
+<span class="go">  chunk size will be Dedup Anchor</span>
+<span class="go">  number of chunk will &lt;= 64</span>
+</pre></div>
+</div>
+<ol class="loweralpha simple" start="3">
+<li>refactor=0 which is no refactoring or any number n</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">#</span> Dedup Anchor <span class="m">2</span>^x will be wipe out <span class="k">if</span> new Dedup <span class="m">2</span>^y,
+<span class="gp">#</span> <span class="k">then</span> <span class="o">(</span><span class="m">2</span>^y<span class="o">)</span> / <span class="o">(</span><span class="m">2</span>^x<span class="o">)</span> &gt; n &lt;/p&gt;
+<span class="gp">#</span> <span class="nv">refactor</span><span class="o">=</span><span class="m">3</span> example
+<span class="gp">#</span> e.g. <span class="k">if</span> Dedup <span class="nv">Anchor</span> <span class="o">=</span> <span class="m">18</span> ,
+<span class="gp">#</span> <span class="k">then</span> JBox will divide file size by <span class="m">2</span>^18,
+<span class="gp">#</span> however <span class="k">if</span> file grow and when we found file size
+<span class="gp">#</span> is power of <span class="m">2</span> upper bound is <span class="m">2</span>^22,
+<span class="gp">#</span> <span class="k">then</span> <span class="o">(</span><span class="m">2</span>^22<span class="o">)</span>/<span class="o">(</span><span class="m">2</span>^18<span class="o">)</span> <span class="o">=</span> <span class="m">4</span> &gt; <span class="m">3</span>, <span class="k">then</span>
+<span class="gp">#</span> JBox Dedup Anchor will be wiped out
+<span class="gp">#</span> <span class="k">then</span> use <span class="m">22</span> as Dedup Anchor.
+</pre></div>
+</div>
+<ol class="loweralpha simple" start="4">
+<li>refcounter flag, if we would like to turn on then set 1, otherwise 0.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">JBox</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="010_Introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="020_Execution.html">Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="030_Development.html">Development</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Technology</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-s-technologies-jbox-adopt">What’s technologies JBox adopt ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dedup-parameters-definition">dedup parameters definition</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="050_Algorithm.html">Algorithm</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="030_Development.html" title="previous chapter">Development</a></li>
+      <li>Next: <a href="050_Algorithm.html" title="next chapter">Algorithm</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Johnny ( Chianing ) Wang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/040_Technology.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

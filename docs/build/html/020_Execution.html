@@ -1,0 +1,250 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Execution &#8212; JBox 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Development" href="030_Development.html" />
+    <link rel="prev" title="Introduction" href="010_Introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="execution">
+<h1>Execution<a class="headerlink" href="#execution" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-run-jbox">
+<h2>How to run JBox ?<a class="headerlink" href="#how-to-run-jbox" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="get-swift-and-has-access">
+<h3>1.Get Swift and has Access<a class="headerlink" href="#get-swift-and-has-access" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="copy-c-so">
+<h3>2. Copy C++ so<a class="headerlink" href="#copy-c-so" title="Permalink to this headline">¶</a></h3>
+<p>Find the code location and copy c++ <code class="docutils literal"><span class="pre">*.so</span> <span class="pre">(</span> <span class="pre">shared</span> <span class="pre">object</span> <span class="pre">)</span> <span class="pre">under</span> <span class="pre">/usr/lib/</span></code></p>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> sudo cp ./dll/libclsJavaVariableChunk.so ./usr/lib/*
+<span class="go">or</span>
+<span class="gp">$</span> cp ./dll/libclsJavaVariableChunk.so /tmp/
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>if you have a question about reference the <code class="docutils literal"><span class="pre">*.so</span></code> in java you can reference this post.</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="http://chianingwang.blogspot.com/2015/09/how-to-reference-c-lib-in-java-via-jni.html">how to reference c lib in java via jni</a>.</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="prepare-jbox-configuration">
+<h3>3. Prepare JBox Configuration<a class="headerlink" href="#prepare-jbox-configuration" title="Permalink to this headline">¶</a></h3>
+<p>Prepare JBox Configuration <code class="docutils literal"><span class="pre">JBoxconfig.properties</span></code> with the JBox executable in the same Directory</p>
+<div class="highlight-console"><div class="highlight"><pre><span></span># syncfolders=/home/vagrant/Yuan/JBoxGenReport_V4/syncfolder
+syncfolders=/tmp/JBox
+
+# JBox Properties
+# swift auth url
+authurl=https://www.xxx.com/auth/v1.0
+# swift username
+username=xxx
+# swift password
+password=xxx
+
+# swift container, div, ext, pow, others
+# if div then container name rule will be
+# file-extension_type_power_div, e.g: pdfvar24128
+# else if ext then container name rule will be
+# file-extension_type_power, e.g: pdfvar24
+# else if pow the cotnainer name rule will be type_power, e.g: var24
+# else if others then container name rule will be
+# others - put all the chunks into one container e.g: dedupcontainer
+# else will be default pow
+containername=GenTestNew
+
+# sync time is milliseconds = 1/1000 seconds,
+# 5000 milliseconds = 5 seconds
+# if p: push mode, then means every sync time
+# e.g. 30 min 30*60*1000=1800000 will re-sync
+synctime=5000
+
+# s: sync, q: query, r: retrive
+# dedup algorithm,
+# no - no deduplication, fix - fix chunking, var -variable chunking
+type=var
+
+# divider can be 32, 64, 128...2^n,
+# if fix and var algorithm then use divider=0 or 1
+divider=128
+
+# power default is 0,
+# if you prefer specific anchor then you can assigned it
+# 10 = 2^10 as anchor
+# if type is fix then fix size 2^10
+# if type is var
+# then var size is between 0.85 * 2^10 ~ 2 * 2^10
+power=0
+
+# refactor=0 is
+# no refactor,
+# 1 is refresh all the time,
+# 2 is every 2^x/2^y = 2 then refactor mod
+refactor=0
+
+# extra parameters
+# maximum multiplier
+min=0.25
+# minimum multiplier
+max=32.0
+
+# refcounter,
+# -1: true deletion, 0 : off, 1 : on,
+# if &gt; 1 such as 2, 3, 4 ... ~
+# means you have more than one client need to deal with.
+# if it&#39;s -1 means delete right away,
+# but this is only for push scenario and no multi clients
+# if it&#39;s 0 means won&#39;t add auto purge feature
+# when deleting the object and will keep chunks c+hash forever
+# if it&#39;s 1 then move all deleted object to backup
+# and give X-Delete-At &lt;object purge seconds&gt;
+# if it&#39;s 2~n, then same with 1 but apply
+# how many clients you have
+refcounter=-1
+
+# customized min and max instead of calculate by
+# mod = size / 64, min=0.85*mod and max=2*mod
+clientnum=1
+
+# runmode: 0: master mode,
+# only upload to object storage, 1: slaves mode which can sync
+runmode=0
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-jbox-with-arguments">
+<h3>4. run JBox with arguments<a class="headerlink" href="#run-jbox-with-arguments" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> JBox &lt;p, s, r, q&gt; or &lt;help&gt;
+</pre></div>
+</div>
+<div class="section" id="command-line-help">
+<h4>Command Line Help<a class="headerlink" href="#command-line-help" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li>More detail you can try <code class="docutils literal"><span class="pre">$</span> <span class="pre">JBox</span> <span class="pre">h</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="ps-setup-swift">
+<h3>PS: Setup Swift<a class="headerlink" href="#ps-setup-swift" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>For run JBox, you need to have an OpenStack Environment, Swift All In One aka (SAIO) is an option if you didn’t want to purchase any public cloud solution. The SAIO setup can be found in <a class="reference external" href="http://docs.openstack.org/developer/swift/development_saio.html">SAIO</a>. or my post before <a class="reference external" href="http://chianingwang.blogspot.com/2015/01/openstack-swift-dev-box-saio-on-ubuntu.html">OpenStack - Swift Dev Box - SAIO on Ubuntu 14.04 via VirtualBox</a>.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="ps-install-java">
+<h3>PS: Install Java<a class="headerlink" href="#ps-install-java" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://java.com/en/download/help/linux_install.xml">how to install Linux 32 bit Java</a>.</li>
+<li><a class="reference external" href="https://java.com/en/download/help/linux_x64_install.xml">how to install Linux 64 bit Java</a>.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">JBox</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="010_Introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Execution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-run-jbox">How to run JBox ?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="030_Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="050_Algorithm.html">Algorithm</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="010_Introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="030_Development.html" title="next chapter">Development</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Johnny ( Chianing ) Wang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/020_Execution.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

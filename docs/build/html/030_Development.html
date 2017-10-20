@@ -1,0 +1,167 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Development &#8212; JBox 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="040_Technology.html" />
+    <link rel="prev" title="Execution" href="020_Execution.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-join-jbox-coding">
+<h2>How to join JBox coding ?<a class="headerlink" href="#how-to-join-jbox-coding" title="Permalink to this headline">¶</a></h2>
+<p>JBox is the Java code which is composed with <code class="docutils literal"><span class="pre">Eclipse</span> <span class="pre">IDE</span></code>. It’s Eclipse project and easy to debug and test.
+Here are the steps how to open it in eclipse.</p>
+<div class="section" id="installation-and-setup">
+<h3>Installation and Setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>download the JBox source code or import into Eclipse directly</li>
+</ol>
+<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> git clone https://github.com/chianingwang/JBox.git
+<span class="gp">$</span> <span class="nb">cd</span> ./JBox
+</pre></div>
+</div>
+<p>In eclipse, right click at Package Explore: <code class="docutils literal"><span class="pre">Import</span> <span class="pre">--&gt;</span> <span class="pre">Git</span> <span class="pre">--&gt;</span> <span class="pre">Project</span> <span class="pre">from</span> <span class="pre">Git</span> <span class="pre">--&gt;</span> <span class="pre">Clone</span> <span class="pre">URl</span></code> then paste <strong>https://github.com/chianingwang/JBox.git</strong> <code class="docutils literal"><span class="pre">--&gt;</span> <span class="pre">next</span> <span class="pre">--&gt;</span> <span class="pre">master</span> <span class="pre">--&gt;</span> <span class="pre">next</span> <span class="pre">--&gt;</span> <span class="pre">Import</span> <span class="pre">existing</span> <span class="pre">projects</span> <span class="pre">--&gt;</span> <span class="pre">next</span></code> , then done if you miss the project file you can find .prject and .classpath under prj folder.</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://github.com/chianingwang/JBox/blob/master/img/Import_JBox.png">Import JBox in eclipse</a></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>double check reference library</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>double check required lib</li>
+<li><a class="reference external" href="https://github.com/chianingwang/JBox/blob/master/img/Required_lib.png">Double Check Required Library (JAR)</a>.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>add run/debug configuration</li>
+</ol>
+<dl class="docutils">
+<dt>Right click project and select <code class="docutils literal"><span class="pre">run</span> <span class="pre">configurations</span> <span class="pre">--&gt;</span> <span class="pre">New</span> <span class="pre">Launcha</span> <span class="pre">Configuration</span> <span class="pre">--&gt;</span> <span class="pre">Argument</span> <span class="pre">--&gt;</span> <span class="pre">Program</span> <span class="pre">arguments</span></code>:</dt>
+<dd><ul class="first last simple">
+<li>Setup Run Paramenter: e.g. usr pwd var 64 0 0</li>
+<li>Enlarge the Java VM cache size: VM arguements : -Xms1024m -Xmx2048m</li>
+<li><a class="reference external" href="https://github.com/chianingwang/JBox/blob/master/img/Required_Para.png">Configure Run Paramenters</a>.</li>
+</ul>
+</dd>
+</dl>
+<ol class="arabic simple" start="4">
+<li>reference required <code class="docutils literal"><span class="pre">*.so</span> <span class="pre">(</span> <span class="pre">c++</span> <span class="pre">)</span> <span class="pre">object</span></code></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Add Library reference path</li>
+<li><a class="reference external" href="https://github.com/chianingwang/JBox/blob/master/img/Required_obj.png">Configure Reference Object Directory</a>.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>Start to debug or run JBox</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">JBox</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="010_Introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="020_Execution.html">Execution</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-join-jbox-coding">How to join JBox coding ?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="050_Algorithm.html">Algorithm</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="020_Execution.html" title="previous chapter">Execution</a></li>
+      <li>Next: <a href="040_Technology.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Johnny ( Chianing ) Wang.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/030_Development.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
